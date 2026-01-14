@@ -270,6 +270,12 @@ main {
   color: #fff;
   font-size: 22px;
   cursor: pointer;
+  opacity: 0.70;
+  transition: opacity 0.2s ease;
+}
+
+.zoom-controls button:hover {
+  opacity: 0.90;
 }
 
 /* Solo desktop grande */
