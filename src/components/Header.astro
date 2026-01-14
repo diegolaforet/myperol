@@ -6,9 +6,9 @@ const isHome = currentPath === "/home";
 <header class="header">
   <div class="header-left">
     {isHome ? (
-      <div class="brand-logo" aria-label="MyPerol">
+      <a href="/" class="brand-logo" aria-label="MyPerol">
         <img src="/assets/logo/logo.JPG" alt="MyPerol" />
-      </div>
+      </a>
     ) : (
       <a href="/home" class="home-link" aria-label="Home">
         <svg
