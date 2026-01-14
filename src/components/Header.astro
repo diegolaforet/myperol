@@ -1,12 +1,90 @@
+---
+const { currentPath = "/" } = Astro.props;
+const isHome = currentPath === "/home";
+---
+
 <header class="header">
   <div class="header-left">
-    <a href="/home" class="home-link">Home</a>
+    {isHome ? (
+      <div class="brand-logo" aria-label="MyPerol">
+        <img src="/assets/logo/logo.JPG" alt="MyPerol" />
+      </div>
+    ) : (
+      <a href="/home" class="home-link" aria-label="Home">
+        <svg
+          class="home-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 512 512"
+          aria-hidden="true"
+        >
+          <g fill="currentColor">
+            <path d="M256,319.841c-35.346,0-64,28.654-64,64v128h128v-128C320,348.495,291.346,319.841,256,319.841z"/>
+            <path d="M362.667,383.841v128H448c35.346,0,64-28.654,64-64V253.26c0.005-11.083-4.302-21.733-12.011-29.696l-181.29-195.99
+              c-31.988-34.61-85.976-36.735-120.586-4.747c-1.644,1.52-3.228,3.103-4.747,4.747L12.395,223.5
+              C4.453,231.496-0.003,242.31,0,253.58v194.261c0,35.346,28.654,64,64,64h85.333v-128
+              c0.399-58.172,47.366-105.676,104.073-107.044
+              C312.01,275.383,362.22,323.696,362.667,383.841z"/>
+          </g>
+        </svg>
+        <span class="home-text">Home</span>
+      </a>
+    )}
   </div>
 
   <div class="header-right">
-    <button class="lang-button">
-      Idiomas
-      <span class="arrow">▾</span>
-    </button>
+    <div class="lang-dropdown">      
+      <button
+        class="lang-button"
+        id="langToggle"
+        onclick="toggleLangMenu()"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+      >
+        <svg
+          viewBox="0 0 512 512"
+          xmlns="http://www.w3.org/2000/svg"
+          class="lang-icon"
+          aria-hidden="true"
+        >
+          <g fill="currentColor">
+            <path d="M377.683,269.154c-1.317,35.549-7.812,71.064-19.091,103.964h125.239c16.254-31.584,26.185-66.635,28.082-103.964H377.683z"/>
+            <path d="M28.169,138.869C11.915,170.453,1.985,205.504,0.087,242.833h134.208c1.274-35.511,7.826-71.064,19.253-103.964H28.169z"/>
+            <path d="M134.308,269.154H0.088c1.898,37.33,11.828,72.38,28.082,103.964h125.051C142.109,340.218,135.607,305.406,134.308,269.154z"/>
+            <path d="M483.83,138.869H358.997c11.048,32.9,17.49,67.74,18.722,103.964h134.193C510.014,205.504,500.084,170.453,483.83,138.869z"/>
+            <path d="M43.82,112.549h119.996c0.562-1.316,1.103-2.612,1.681-3.886C185.133,65.355,213.122,27.839,246.48,0
+              C162.256,3.093,88.278,46.748,43.82,112.549z"/>
+            <path d="M163.401,399.438H43.82C88.428,465.238,162.756,509.175,247.334,512
+              C211.431,482.961,182.868,444.182,163.401,399.438z"/>
+            <path d="M348.445,399.438c-0.494,1.316-0.967,2.331-1.473,3.465
+              c-19.491,43.664-47.325,81.312-80.537,109.049
+              c83.845-3.377,157.448-46.714,201.745-112.515H348.445z"/>
+            <path d="M265.573,0.021c35.645,29.1,63.996,67.784,83.31,112.528h119.299
+              C423.732,46.748,349.776,3.131,265.573,0.021z"/>
+            <path d="M160.641,269.154c1.403,36.519,8.463,72.38,20.476,103.964H330.54
+              c12.124-32.9,19.354-67.911,20.809-103.964H160.641z"/>
+            <path d="M256.113,26.487c-25.742,23.305-47.172,53.161-63.191,86.062h127.109
+              C304.062,79.649,282.446,49.774,256.113,26.487z"/>
+            <path d="M331.125,138.869H181.675c-12.313,32.9-19.628,67.995-21.04,103.964h190.751
+              C350.055,206.347,343.066,171.769,331.125,138.869z"/>
+            <path d="M192.282,399.439c16.107,32.899,37.896,62.847,64.436,86.092
+              c25.559-23.183,46.831-53.192,62.718-86.092H192.282z"/>
+          </g>
+        </svg>
+        
+        <span id="currentLang">ES</span>
+        <span class="lang-arrow">▾</span>
+      </button>
+
+      <ul class="lang-menu" id="langMenu">
+        <li data-lang="es" onclick="selectLang('es')">Español</li>
+        <li data-lang="en" onclick="selectLang('en')">English</li>
+        <li data-lang="de" onclick="selectLang('de')">Deutsch</li>
+        <li data-lang="it" onclick="selectLang('it')">Italiano</li>
+        <li data-lang="ru" onclick="selectLang('ru')">Русский</li>
+        <li data-lang="uk" onclick="selectLang('uk')">Українська</li>
+        <li data-lang="pl" onclick="selectLang('pl')">Polski</li>
+        <li data-lang="zh" onclick="selectLang('zh')">中文</li>
+      </ul>
+    </div>
   </div>
 </header>

@@ -14,8 +14,160 @@ const { title = "MyPerol" } = Astro.props;
     <link rel="stylesheet" href="/styles/global.css" />
   </head>
 
+<script>
+  const DEFAULT_LANG = "es";
+
+  function getLang() {
+    return localStorage.getItem("lang") || DEFAULT_LANG;
+  }
+
+  function setLang(lang) {
+    localStorage.setItem("lang", lang);
+  }
+
+  function updateLangLabel() {
+    const lang = getLang().toUpperCase();
+    const label = document.getElementById("currentLang");
+    if (label) label.textContent = lang;
+  }
+
+  function toggleLangMenu() {
+    const menu = document.getElementById("langMenu");
+    if (menu) menu.classList.toggle("open");
+  }
+
+  function closeLangMenu() {
+    const menu = document.getElementById("langMenu");
+    if (menu) menu.classList.remove("open");
+  }
+
+  function selectLang(lang) {
+    setLang(lang);
+    updateLangLabel();
+    updateBrochure(lang);
+    markActiveLang(lang);
+    closeLangMenu();
+
+    window.dispatchEvent(new Event("language-change"));
+  }
+
+  function markActiveLang(lang) {
+    const items = document.querySelectorAll(".lang-menu li");
+
+    items.forEach((item) => {
+      if (item.dataset.lang === lang) {
+        item.classList.add("active");
+      } else {
+        item.classList.remove("active");
+      }
+    });
+  }
+
+  function updateBrochure(lang) {
+    const img = document.querySelector(".brochure-image");
+    if (img) {
+      img.src = `/assets/brochures/brochure-${lang}.jpg`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const lang = getLang();
+    updateLangLabel();
+    updateBrochure(lang);
+    markActiveLang(lang);
+  });
+
+  // Cerrar menú al hacer click fuera
+  document.addEventListener("click", (e) => {
+    const dropdown = document.querySelector(".lang-dropdown");
+    if (dropdown && !dropdown.contains(e.target)) {
+      closeLangMenu();
+    }
+  });
+
+  // Inicializar idioma al cargar
+  document.addEventListener("DOMContentLoaded", updateLangLabel);
+
+  // Exponer funciones
+  window.toggleLangMenu = toggleLangMenu;
+  window.selectLang = selectLang;
+
+  let zoomLevel = 1;
+  const ZOOM_STEP = 0.1;
+  const ZOOM_MIN = 0.7;
+  const ZOOM_MAX = 1.5;
+
+  function applyZoom() {
+    const img = document.getElementById("brochureImage");
+    if (img) {
+      img.style.transform = `scale(${zoomLevel})`;
+    }
+  }
+
+  function zoomIn() {
+    zoomLevel = Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX);
+    applyZoom();
+  }
+
+  function zoomOut() {
+    zoomLevel = Math.max(zoomLevel - ZOOM_STEP, ZOOM_MIN);
+    applyZoom();
+  }
+
+  function resetZoom() {
+    zoomLevel = 1;
+    applyZoom();
+  }
+
+  function handleResize() {
+    if (window.innerWidth < 1280) {
+      resetZoom();
+    }
+  }
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.innerWidth < 1280) {
+      resetZoom();
+    }
+  });
+
+  window.addEventListener("resize", handleResize);
+
+  window.zoomIn = zoomIn;
+  window.zoomOut = zoomOut;
+
+  window.I18N_MESSAGES = {
+    es: {
+      home_under_construction: "🚧 Esta página está en construcción"
+    },
+    en: {
+      home_under_construction: "🚧 This page is under construction"
+    },
+    de: {
+      home_under_construction: "🚧 Diese Seite befindet sich im Aufbau"
+    },
+    it: {
+      home_under_construction: "🚧 Questa pagina è in costruzione"
+    },
+    ru: {
+      home_under_construction: "🚧 Эта страница находится в разработке"
+    },
+    uk: {
+      home_under_construction: "🚧 Ця сторінка знаходиться в розробці"
+    },
+    pl: {
+      home_under_construction: "🚧 Ta strona jest w budowie"
+    },
+    zh: {
+      home_under_construction: "🚧 此页面正在建设中"
+    }
+  }; 
+
+</script>
+
+
   <body>
-    <Header />
-    <slot />
+      <Header currentPath={Astro.url.pathname} />
+      <slot />
   </body>
 </html>

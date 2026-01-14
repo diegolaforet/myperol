@@ -1,7 +1,24 @@
-<section class="brochure">
-  <img
-    src="/assets/brochure-es.jpg"
-    alt="Folleto MyPerol"
-    class="brochure-image"
-  />
+---
+const { lang = "es" } = Astro.props;
+
+const brochureSrc = `/assets/brochure-${lang}.jpg`;
+---
+
+<section class="brochure-wrapper">
+  <div class="brochure">
+    <img
+      src="/assets/brochures/brochure-es.jpg"
+      alt="Folleto MyPerol"
+      class="brochure-image"
+      id="brochureImage"
+    />
+  </div>
+
+  <!-- Controles de zoom (desktop) -->
+  <div class="zoom-controls">
+    <button onclick="zoomOut()">−</button>
+    <button onclick="zoomIn()">+</button>
+  </div>
 </section>
+
+
