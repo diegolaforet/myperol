@@ -18,16 +18,20 @@
 }
 
 /* =========================
-   RESET
+   GLOBAL STYLES
 ========================= */
-* {
-  box-sizing: border-box;
+html {
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   background: #f5f5f5;
   font-family: system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 /* SOCIAL FLOAT */
@@ -70,6 +74,19 @@ body {
     0 0 14px rgba(255, 255, 255, 0.45),
     0 6px 18px rgba(0, 0, 0, 0.25);
 }
+
+/* Ocultar scrollbar en móvil */
+@media (max-width: 767px) {
+  body {
+    -ms-overflow-style: none;   /* IE y Edge */
+    scrollbar-width: none;      /* Firefox */
+  }
+
+  body::-webkit-scrollbar {
+    display: none;              /* Chrome, Safari, iOS */
+  }
+}
+
 
 
 
@@ -221,7 +238,6 @@ body {
 ========================= */
 main {
   background: #f5f5f5;
-  min-height: calc(100vh - 64px);
   padding: 24px 16px;
 }
 
@@ -230,24 +246,28 @@ main {
 ========================= */
 .brochure-wrapper {
   position: relative;
+  padding-bottom: 50px;
 }
 
 .brochure {
   max-width: 820px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  transform: scale(1);
+  transform-origin: center top;
+  transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 .brochure-image {
   width: 100%;
   height: auto;
-  display: block;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-
-  transform: scale(1);
-  transform-origin: center top;
-  transition: transform 0.2s ease;
 }
 
 /* =========================

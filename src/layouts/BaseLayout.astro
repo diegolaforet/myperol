@@ -64,10 +64,11 @@ const { title = "MyPerol" } = Astro.props;
   }
 
   function updateBrochure(lang) {
-    const img = document.querySelector(".brochure-image");
-    if (img) {
-      img.src = `/assets/brochures/brochure-${lang}.jpg`;
-    }
+    const img1 = document.getElementById("brochureImage1");
+    const img2 = document.getElementById("brochureImage2");
+
+    if (img1) img1.src = `/assets/brochures/brochure-${lang}1.jpg`;
+    if (img2) img2.src = `/assets/brochures/brochure-${lang}2.jpg`;
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -98,9 +99,9 @@ const { title = "MyPerol" } = Astro.props;
   const ZOOM_MAX = 1.5;
 
   function applyZoom() {
-    const img = document.getElementById("brochureImage");
-    if (img) {
-      img.style.transform = `scale(${zoomLevel})`;
+    const brochure = document.querySelector(".brochure");
+    if (brochure) {
+      brochure.style.transform = `scale(${zoomLevel})`;
     }
   }
 
