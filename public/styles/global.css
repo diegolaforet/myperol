@@ -20,17 +20,15 @@
 /* =========================
    GLOBAL STYLES
 ========================= */
-html,
-body {
-  background-color: #ffffff; 
 
 html {
   overflow-x: hidden;
+  background: #ffffff;
 }
 
 body {
   margin: 0;
-  background: #f5f5f5;
+  background: #ffffff;
   font-family: system-ui, sans-serif;
 
   overscroll-behavior-y: none;
