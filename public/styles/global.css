@@ -20,6 +20,10 @@
 /* =========================
    GLOBAL STYLES
 ========================= */
+html,
+body {
+  background-color: #ffffff; 
+
 html {
   overflow-x: hidden;
 }
