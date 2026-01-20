@@ -1,7 +1,8 @@
 ---
 import Header from "../components/Header.astro";
 
-const { title = "MyPerol" } = Astro.props;
+const { title = "MyPerol", isHome = false } = Astro.props;
+
 ---
 
 <!DOCTYPE html>
@@ -139,33 +140,55 @@ const { title = "MyPerol" } = Astro.props;
 
   window.I18N_MESSAGES = {
     es: {
-      home_under_construction: "🚧 Esta página está en construcción"
+      home_under_construction: "🚧 Esta página está en construcción",
+      whatsapp_cta: "¿Dudas?"
     },
     en: {
-      home_under_construction: "🚧 This page is under construction"
+      home_under_construction: "🚧 This page is under construction",
+      whatsapp_cta: "Questions?"
     },
     de: {
-      home_under_construction: "🚧 Diese Seite befindet sich im Aufbau"
+      home_under_construction: "🚧 Diese Seite befindet sich im Aufbau",
+      whatsapp_cta: "Fragen?"
     },
     it: {
-      home_under_construction: "🚧 Questa pagina è in costruzione"
+      home_under_construction: "🚧 Questa pagina è in costruzione",
+      whatsapp_cta: "Dubbi?"
     },
     ru: {
-      home_under_construction: "🚧 Эта страница находится в разработке"
+      home_under_construction: "🚧 Эта страница находится в разработке",
+      whatsapp_cta: "Вопросы?"
     },
     uk: {
-      home_under_construction: "🚧 Ця сторінка знаходиться в розробці"
+      home_under_construction: "🚧 Ця сторінка знаходиться в розробці",
+      whatsapp_cta: "Питання?"
     },
     pl: {
-      home_under_construction: "🚧 Ta strona jest w budowie"
+      home_under_construction: "🚧 Ta strona jest w budowie",
+      whatsapp_cta: "Pytania?"
     },
     zh: {
-      home_under_construction: "🚧 此页面正在建设中"
+      home_under_construction: "🚧 此页面正在建设中",
+      whatsapp_cta: "有疑问？"
     }
-  }; 
+  };
+
+  function updateWhatsappText() {
+    const lang = localStorage.getItem("lang") || "es";
+    const messages = window.I18N_MESSAGES;
+
+    const el = document.getElementById("whatsappText");
+    if (!el || !messages) return;
+
+    el.textContent =
+      messages[lang]?.whatsapp_cta ||
+      messages.es.whatsapp_cta;
+  }
+
+  updateWhatsappText();
+  window.addEventListener("language-change", updateWhatsappText);
 
 </script>
-
 
   <body>
     <Header currentPath={Astro.url.pathname} />
@@ -185,17 +208,33 @@ const { title = "MyPerol" } = Astro.props;
         </svg>
       </a>
 
-      <a
-        href="https://wa.me/34663108027"
-        target="_blank"
-        rel="noopener"
-        aria-label="WhatsApp"
-        class="social-btn"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12.04 2C6.53 2 2 6.53 2 12c0 1.96.57 3.86 1.65 5.48L2 22l4.67-1.62A9.96 9.96 0 0012.04 22C17.55 22 22 17.47 22 12S17.55 2 12.04 2zm0 18a8 8 0 01-4.08-1.12l-.29-.17-2.77.96.94-2.69-.18-.3A8 8 0 1112.04 20zm4.65-5.35c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.3.18-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.1-.5.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.37-.78-1.88-.2-.48-.4-.41-.57-.42h-.49c-.17 0-.45.06-.68.32-.23.25-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.12.17 1.81 2.76 4.39 3.87.61.26 1.09.42 1.46.54.61.19 1.17.16 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/>
-        </svg>
-      </a>
+      {isHome ? (
+        <a
+          href="https://wa.me/34663108027"
+          target="_blank"
+          rel="noopener"
+          aria-label="WhatsApp"
+          class="whatsapp-cta"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12.04 2C6.53 2 2 6.53 2 12c0 1.96.57 3.86 1.65 5.48L2 22l4.67-1.62A9.96 9.96 0 0012.04 22C17.55 22 22 17.47 22 12S17.55 2 12.04 2zm0 18a8 8 0 01-4.08-1.12l-.29-.17-2.77.96.94-2.69-.18-.3A8 8 0 1112.04 20zm4.65-5.35c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.3.18-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.1-.5.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.37-.78-1.88-.2-.48-.4-.41-.57-.42h-.49c-.17 0-.45.06-.68.32-.23.25-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.12.17 1.81 2.76 4.39 3.87.61.26 1.09.42 1.46.54.61.19 1.17.16 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/>
+          </svg>
+          <span id="whatsappText"></span>
+        </a>
+      ) : (
+        <a
+          href="https://wa.me/34663108027"
+          target="_blank"
+          rel="noopener"
+          aria-label="WhatsApp"
+          class="social-btn"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12.04 2C6.53 2 2 6.53 2 12c0 1.96.57 3.86 1.65 5.48L2 22l4.67-1.62A9.96 9.96 0 0012.04 22C17.55 22 22 17.47 22 12S17.55 2 12.04 2zm0 18a8 8 0 01-4.08-1.12l-.29-.17-2.77.96.94-2.69-.18-.3A8 8 0 1112.04 20zm4.65-5.35c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.3.18-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.1-.5.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.37-.78-1.88-.2-.48-.4-.41-.57-.42h-.49c-.17 0-.45.06-.68.32-.23.25-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.12.17 1.81 2.76 4.39 3.87.61.26 1.09.42 1.46.54.61.19 1.17.16 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/>
+          </svg>
+        </a>
+      )}
+
     </div>
   </body>
 </html>
