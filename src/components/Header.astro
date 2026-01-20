@@ -1,6 +1,6 @@
 ---
 const { currentPath = "/" } = Astro.props;
-const isHome = currentPath === "/home";
+const isHome = currentPath.startsWith("/home");
 ---
 
 <header class="header">
