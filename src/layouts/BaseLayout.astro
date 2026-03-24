@@ -1,7 +1,32 @@
 ---
 import Header from "../components/Header.astro";
+import deMessages from "../i18n/json/de.json";
+import enMessages from "../i18n/json/en.json";
+import esMessages from "../i18n/json/es.json";
+import itMessages from "../i18n/json/it.json";
+import plMessages from "../i18n/json/pl.json";
+import roMessages from "../i18n/json/ro.json";
+import ruMessages from "../i18n/json/ru.json";
+import ukMessages from "../i18n/json/uk.json";
+import zhMessages from "../i18n/json/zh.json";
 
-const { title = "MyPerol", isHome = false } = Astro.props;
+const {
+  title = "MyPerol",
+  description = "Landing page multilingual de MyPerol con acceso a folletos y página informativa.",
+  isHome = false,
+} = Astro.props;
+const i18nMessages = {
+  es: esMessages,
+  en: enMessages,
+  de: deMessages,
+  it: itMessages,
+  ro: roMessages,
+  ru: ruMessages,
+  uk: ukMessages,
+  pl: plMessages,
+  zh: zhMessages,
+};
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.es");
 
 ---
 
@@ -11,6 +36,17 @@ const { title = "MyPerol", isHome = false } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="MyPerol" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
 
     <!-- Favicon básico -->
     <link rel="icon" href="/favicon.ico" />
@@ -28,15 +64,26 @@ const { title = "MyPerol", isHome = false } = Astro.props;
     <link rel="stylesheet" href="/styles/global.css" />
   </head>
 
-<script>
+<script define:vars={{ i18nMessages }}>
   const DEFAULT_LANG = "es";
+  const SUPPORTED_LANGS = ["es", "en", "de", "it", "ro", "ru", "uk", "pl", "zh"];
+
+  function normalizeLang(lang) {
+    return SUPPORTED_LANGS.includes(lang) ? lang : DEFAULT_LANG;
+  }
 
   function getLang() {
-    return localStorage.getItem("lang") || DEFAULT_LANG;
+    const lang = normalizeLang(localStorage.getItem("lang"));
+
+    if (lang !== localStorage.getItem("lang")) {
+      localStorage.setItem("lang", lang);
+    }
+
+    return lang;
   }
 
   function setLang(lang) {
-    localStorage.setItem("lang", lang);
+    localStorage.setItem("lang", normalizeLang(lang));
   }
 
   function updateLangLabel() {
@@ -45,34 +92,54 @@ const { title = "MyPerol", isHome = false } = Astro.props;
     if (label) label.textContent = lang;
   }
 
+  function updateDocumentLang(lang) {
+    document.documentElement.lang = normalizeLang(lang);
+  }
+
+  function setLangMenuOpen(isOpen) {
+    const menu = document.getElementById("langMenu");
+    const toggle = document.getElementById("langToggle");
+
+    if (menu) {
+      menu.classList.toggle("open", isOpen);
+      menu.hidden = !isOpen;
+    }
+
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", String(isOpen));
+    }
+  }
+
   function toggleLangMenu() {
     const menu = document.getElementById("langMenu");
-    if (menu) menu.classList.toggle("open");
+    const isOpen = menu ? !menu.classList.contains("open") : false;
+
+    setLangMenuOpen(isOpen);
   }
 
   function closeLangMenu() {
-    const menu = document.getElementById("langMenu");
-    if (menu) menu.classList.remove("open");
+    setLangMenuOpen(false);
   }
 
   function selectLang(lang) {
-    setLang(lang);
-    updateLangLabel();
-    updateBrochure(lang);
-    markActiveLang(lang);
+    const normalizedLang = normalizeLang(lang);
+
+    setLang(normalizedLang);
     closeLangMenu();
 
     window.dispatchEvent(new Event("language-change"));
   }
 
   function markActiveLang(lang) {
-    const items = document.querySelectorAll(".lang-menu li");
+    const items = document.querySelectorAll(".lang-option");
 
     items.forEach((item) => {
       if (item.dataset.lang === lang) {
         item.classList.add("active");
+        item.setAttribute("aria-pressed", "true");
       } else {
         item.classList.remove("active");
+        item.setAttribute("aria-pressed", "false");
       }
     });
   }
@@ -85,13 +152,6 @@ const { title = "MyPerol", isHome = false } = Astro.props;
     if (img2) img2.src = `/assets/brochures/brochure-${lang}2.jpg`;
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const lang = getLang();
-    updateLangLabel();
-    updateBrochure(lang);
-    markActiveLang(lang);
-  });
-
   // Cerrar menú al hacer click fuera
   document.addEventListener("click", (e) => {
     const dropdown = document.querySelector(".lang-dropdown");
@@ -100,8 +160,11 @@ const { title = "MyPerol", isHome = false } = Astro.props;
     }
   });
 
-  // Inicializar idioma al cargar
-  document.addEventListener("DOMContentLoaded", updateLangLabel);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeLangMenu();
+    }
+  });
 
   // Exponer funciones
   window.toggleLangMenu = toggleLangMenu;
@@ -140,54 +203,14 @@ const { title = "MyPerol", isHome = false } = Astro.props;
     }
   }
   
-  document.addEventListener("DOMContentLoaded", () => {
-    if (window.innerWidth < 1280) {
-      resetZoom();
-    }
-  });
-
   window.addEventListener("resize", handleResize);
 
   window.zoomIn = zoomIn;
   window.zoomOut = zoomOut;
 
-  window.I18N_MESSAGES = {
-    es: {
-      home_under_construction: "🚧 Esta página está en construcción",
-      whatsapp_cta: "¿Dudas?"
-    },
-    en: {
-      home_under_construction: "🚧 This page is under construction",
-      whatsapp_cta: "Questions?"
-    },
-    de: {
-      home_under_construction: "🚧 Diese Seite befindet sich im Aufbau",
-      whatsapp_cta: "Fragen?"
-    },
-    it: {
-      home_under_construction: "🚧 Questa pagina è in costruzione",
-      whatsapp_cta: "Dubbi?"
-    },
-    ru: {
-      home_under_construction: "🚧 Эта страница находится в разработке",
-      whatsapp_cta: "Вопросы?"
-    },
-    uk: {
-      home_under_construction: "🚧 Ця сторінка знаходиться в розробці",
-      whatsapp_cta: "Питання?"
-    },
-    pl: {
-      home_under_construction: "🚧 Ta strona jest w budowie",
-      whatsapp_cta: "Pytania?"
-    },
-    zh: {
-      home_under_construction: "🚧 此页面正在建设中",
-      whatsapp_cta: "有疑问？"
-    }
-  };
+  window.I18N_MESSAGES = i18nMessages;
 
-  function updateWhatsappText() {
-    const lang = localStorage.getItem("lang") || "es";
+  function updateWhatsappText(lang = getLang()) {
     const messages = window.I18N_MESSAGES;
 
     const el = document.getElementById("whatsappText");
@@ -198,8 +221,60 @@ const { title = "MyPerol", isHome = false } = Astro.props;
       messages.es.whatsapp_cta;
   }
 
-  updateWhatsappText();
-  window.addEventListener("language-change", updateWhatsappText);
+  function updateNavigationText(lang = getLang()) {
+    const messages = window.I18N_MESSAGES;
+    const homeLink = document.getElementById("homeLink");
+    const homeLinkText = document.getElementById("homeLinkText");
+    const backToBrochureLink = document.getElementById("backToBrochureLink");
+
+    if (!messages) return;
+
+    const homeText =
+      messages[lang]?.nav_home ||
+      messages.es.nav_home;
+
+    const backToBrochureText =
+      messages[lang]?.back_to_brochure ||
+      messages.es.back_to_brochure;
+
+    if (homeLink) {
+      homeLink.setAttribute("aria-label", homeText);
+    }
+
+    if (homeLinkText) {
+      homeLinkText.textContent = homeText;
+    }
+
+    if (backToBrochureLink) {
+      backToBrochureLink.setAttribute("aria-label", backToBrochureText);
+    }
+  }
+
+  function syncLanguageUI(lang) {
+    updateDocumentLang(lang);
+    updateLangLabel();
+    updateBrochure(lang);
+    markActiveLang(lang);
+    updateWhatsappText(lang);
+    updateNavigationText(lang);
+  }
+
+  function initializePage() {
+    const lang = getLang();
+
+    syncLanguageUI(lang);
+
+    if (window.innerWidth < 1280) {
+      resetZoom();
+    }
+  }
+
+  function handleLanguageChange() {
+    syncLanguageUI(getLang());
+  }
+
+  document.addEventListener("DOMContentLoaded", initializePage);
+  window.addEventListener("language-change", handleLanguageChange);
 
 </script>
 

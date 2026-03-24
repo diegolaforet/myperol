@@ -10,7 +10,7 @@ const isHome = currentPath.startsWith("/home");
         <img src="/assets/logo/logo.JPG" alt="MyPerol" />
       </a>
     ) : (
-      <a href="/home" class="home-link" aria-label="Home">
+      <a href="/home" class="home-link" id="homeLink" aria-label="Inicio">
         <svg
           class="home-icon"
           xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +26,7 @@ const isHome = currentPath.startsWith("/home");
               C312.01,275.383,362.22,323.696,362.667,383.841z"/>
           </g>
         </svg>
-        <span class="home-text">Home</span>
+        <span class="home-text" id="homeLinkText">Inicio</span>
       </a>
     )}
   </div>
@@ -36,9 +36,11 @@ const isHome = currentPath.startsWith("/home");
       <button
         class="lang-button"
         id="langToggle"
+        type="button"
         onclick="toggleLangMenu()"
-        aria-haspopup="listbox"
+        aria-haspopup="true"
         aria-expanded="false"
+        aria-controls="langMenu"
       >
         <svg
           viewBox="0 0 512 512"
@@ -75,15 +77,34 @@ const isHome = currentPath.startsWith("/home");
         <span class="lang-arrow">▾</span>
       </button>
 
-      <ul class="lang-menu" id="langMenu">
-        <li data-lang="es" onclick="selectLang('es')">Español</li>
-        <li data-lang="en" onclick="selectLang('en')">English</li>
-        <li data-lang="de" onclick="selectLang('de')">Deutsch</li>
-        <li data-lang="it" onclick="selectLang('it')">Italiano</li>
-        <li data-lang="ru" onclick="selectLang('ru')">Русский</li>
-        <li data-lang="uk" onclick="selectLang('uk')">Українська</li>
-        <li data-lang="pl" onclick="selectLang('pl')">Polski</li>
-        <li data-lang="zh" onclick="selectLang('zh')">中文</li>
+      <ul class="lang-menu" id="langMenu" hidden>
+        <li>
+          <button type="button" class="lang-option" data-lang="es" onclick="selectLang('es')">Español</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="en" onclick="selectLang('en')">English</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="de" onclick="selectLang('de')">Deutsch</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="it" onclick="selectLang('it')">Italiano</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="ro" onclick="selectLang('ro')">Română</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="ru" onclick="selectLang('ru')">Русский</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="uk" onclick="selectLang('uk')">Українська</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="pl" onclick="selectLang('pl')">Polski</button>
+        </li>
+        <li>
+          <button type="button" class="lang-option" data-lang="zh" onclick="selectLang('zh')">中文</button>
+        </li>
       </ul>
     </div>
   </div>
