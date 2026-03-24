@@ -339,7 +339,7 @@ main {
 }
 
 .home-centered h1 {
-  font-family: "Cocomat", system-ui, sans-serif;
+  font-family: system-ui, sans-serif;
   font-weight: 300;
   font-size: clamp(24px, 4vw, 40px);
   color: #1b1b1b;
