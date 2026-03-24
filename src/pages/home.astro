@@ -2,13 +2,22 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<BaseLayout title="MyPerol - EPOXI | Home" isHome>
+<BaseLayout
+  title="MyPerol - EPOXI | Home"
+  description="Página informativa de MyPerol, actualmente en construcción, con acceso directo al folleto multilingüe."
+  isHome
+>
   <main class="home-centered">
     <h1 id="homeText"></h1>
   </main>
   
   <!-- BOTÓN BACK FLOTANTE -->
-  <a href="/" class="back-button-float" aria-label="Volver al folleto">
+  <a
+    href="/"
+    class="back-button-float"
+    id="backToBrochureLink"
+    aria-label="Volver al folleto"
+  >
     <svg
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
