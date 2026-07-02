@@ -77,8 +77,7 @@ body {
   opacity: 0.85;
 }
 
-.social-btn,
-.back-button-float {
+.social-btn {
   box-shadow:
     0 0 14px rgba(255, 255, 255, 0.45),
     0 6px 18px rgba(0, 0, 0, 0.25);
@@ -264,70 +263,6 @@ main {
 }
 
 /* =========================
-   FOLLETO
-========================= */
-.brochure-wrapper {
-  position: relative;
-  padding-bottom: 50px;
-}
-
-.brochure {
-  max-width: 820px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-
-  transform: scale(1);
-  transform-origin: center top;
-  transition: transform 0.2s ease;
-  will-change: transform;
-}
-
-.brochure-image {
-  width: 100%;
-  height: auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-}
-
-/* =========================
-   ZOOM CONTROLS
-========================= */
-.zoom-controls {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  display: none;
-  gap: 8px;
-}
-
-.zoom-controls button {
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  border: none;
-  background: #111;
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
-  opacity: 0.70;
-  transition: opacity 0.2s ease;
-}
-
-.zoom-controls button:hover {
-  opacity: 0.90;
-}
-
-/* Solo desktop grande */
-@media (min-width: 1280px) {
-  .zoom-controls {
-    display: flex;
-  }
-}
-
-/* =========================
    HOME – EN CONSTRUCCIÓN
 ========================= */
 .home-centered {
@@ -360,37 +295,6 @@ main {
 /* =========================
    BACK BUTTON FLOAT (HOME)
 ========================= */
-.back-button-float {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
-
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  text-decoration: none;
-  z-index: 200;
-}
-
-.back-button-float svg {
-  width: 26px;
-  height: 26px;
-  fill: #fff;
-}
-
-.back-button-float:hover {
-  opacity: 0.85;
-}
-
-.back-button-float:active {
-  transform: scale(0.95);
-}
 
 /* =========================
    WHATSAPP CTA (HOME)

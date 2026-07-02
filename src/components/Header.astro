@@ -1,6 +1,6 @@
 ---
 const { currentPath = "/" } = Astro.props;
-const isHome = currentPath.startsWith("/home");
+const isHome = currentPath === "/";
 ---
 
 <header class="header">
@@ -10,7 +10,7 @@ const isHome = currentPath.startsWith("/home");
         <img src="/assets/logo/logo.JPG" alt="MyPerol" />
       </a>
     ) : (
-      <a href="/home" class="home-link" id="homeLink" aria-label="Inicio">
+      <a href="/" class="home-link" id="homeLink" aria-label="Inicio">
         <svg
           class="home-icon"
           xmlns="http://www.w3.org/2000/svg"

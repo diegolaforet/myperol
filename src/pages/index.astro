@@ -1,16 +1,30 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Brochure from "../components/Brochure.astro";
 ---
 
 <BaseLayout
   title="MyPerol - EPOXI"
-  description="Landing page de MyPerol con folletos multilingües para conocer soluciones de superficies en resina y epoxi."
+  description="Pagina informativa de MyPerol, actualmente en construccion."
+  isHome
 >
-  <main>
-    <Brochure />
+  <main class="home-centered">
+    <h1 id="homeText"></h1>
   </main>
 
+  <script>
+    function updateHomeText() {
+      const lang = localStorage.getItem("lang") || "es";
+      const messages = window.I18N_MESSAGES;
+
+      const el = document.getElementById("homeText");
+      if (!el || !messages) return;
+
+      el.textContent =
+        messages[lang]?.home_under_construction ||
+        messages.es.home_under_construction;
+    }
+
+    updateHomeText();
+    window.addEventListener("language-change", updateHomeText);
+  </script>
 </BaseLayout>
-
-

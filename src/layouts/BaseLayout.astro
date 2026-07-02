@@ -12,9 +12,10 @@ import zhMessages from "../i18n/json/zh.json";
 
 const {
   title = "MyPerol",
-  description = "Landing page multilingual de MyPerol con acceso a folletos y página informativa.",
+  description = "Pagina informativa de MyPerol.",
   isHome = false,
 } = Astro.props;
+
 const i18nMessages = {
   es: esMessages,
   en: enMessages,
@@ -26,8 +27,8 @@ const i18nMessages = {
   pl: plMessages,
   zh: zhMessages,
 };
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.es");
 
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.es");
 ---
 
 <!DOCTYPE html>
@@ -48,241 +49,154 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
 
-    <!-- Favicon básico -->
     <link rel="icon" href="/favicon.ico" />
-
-    <!-- PNGs -->
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-
-    <!-- Apple -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
-    <!-- PWA / Android -->
     <link rel="manifest" href="/site.webmanifest" />
-
     <link rel="stylesheet" href="/styles/global.css" />
-  </head>
 
-<script define:vars={{ i18nMessages }}>
-  const DEFAULT_LANG = "es";
-  const SUPPORTED_LANGS = ["es", "en", "de", "it", "ro", "ru", "uk", "pl", "zh"];
+    <script define:vars={{ i18nMessages }}>
+      const DEFAULT_LANG = "es";
+      const SUPPORTED_LANGS = ["es", "en", "de", "it", "ro", "ru", "uk", "pl", "zh"];
 
-  function normalizeLang(lang) {
-    return SUPPORTED_LANGS.includes(lang) ? lang : DEFAULT_LANG;
-  }
-
-  function getLang() {
-    const lang = normalizeLang(localStorage.getItem("lang"));
-
-    if (lang !== localStorage.getItem("lang")) {
-      localStorage.setItem("lang", lang);
-    }
-
-    return lang;
-  }
-
-  function setLang(lang) {
-    localStorage.setItem("lang", normalizeLang(lang));
-  }
-
-  function updateLangLabel() {
-    const lang = getLang().toUpperCase();
-    const label = document.getElementById("currentLang");
-    if (label) label.textContent = lang;
-  }
-
-  function updateDocumentLang(lang) {
-    document.documentElement.lang = normalizeLang(lang);
-  }
-
-  function setLangMenuOpen(isOpen) {
-    const menu = document.getElementById("langMenu");
-    const toggle = document.getElementById("langToggle");
-
-    if (menu) {
-      menu.classList.toggle("open", isOpen);
-      menu.hidden = !isOpen;
-    }
-
-    if (toggle) {
-      toggle.setAttribute("aria-expanded", String(isOpen));
-    }
-  }
-
-  function toggleLangMenu() {
-    const menu = document.getElementById("langMenu");
-    const isOpen = menu ? !menu.classList.contains("open") : false;
-
-    setLangMenuOpen(isOpen);
-  }
-
-  function closeLangMenu() {
-    setLangMenuOpen(false);
-  }
-
-  function selectLang(lang) {
-    const normalizedLang = normalizeLang(lang);
-
-    setLang(normalizedLang);
-    closeLangMenu();
-
-    window.dispatchEvent(new Event("language-change"));
-  }
-
-  function markActiveLang(lang) {
-    const items = document.querySelectorAll(".lang-option");
-
-    items.forEach((item) => {
-      if (item.dataset.lang === lang) {
-        item.classList.add("active");
-        item.setAttribute("aria-pressed", "true");
-      } else {
-        item.classList.remove("active");
-        item.setAttribute("aria-pressed", "false");
+      function normalizeLang(lang) {
+        return SUPPORTED_LANGS.includes(lang) ? lang : DEFAULT_LANG;
       }
-    });
-  }
 
-  function updateBrochure(lang) {
-    const img1 = document.getElementById("brochureImage1");
-    const img2 = document.getElementById("brochureImage2");
+      function getLang() {
+        const lang = normalizeLang(localStorage.getItem("lang"));
 
-    if (img1) img1.src = `/assets/brochures/brochure-${lang}1.jpg`;
-    if (img2) img2.src = `/assets/brochures/brochure-${lang}2.jpg`;
-  }
+        if (lang !== localStorage.getItem("lang")) {
+          localStorage.setItem("lang", lang);
+        }
 
-  // Cerrar menú al hacer click fuera
-  document.addEventListener("click", (e) => {
-    const dropdown = document.querySelector(".lang-dropdown");
-    if (dropdown && !dropdown.contains(e.target)) {
-      closeLangMenu();
-    }
-  });
+        return lang;
+      }
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeLangMenu();
-    }
-  });
+      function setLang(lang) {
+        localStorage.setItem("lang", normalizeLang(lang));
+      }
 
-  // Exponer funciones
-  window.toggleLangMenu = toggleLangMenu;
-  window.selectLang = selectLang;
+      function updateLangLabel() {
+        const label = document.getElementById("currentLang");
+        if (label) label.textContent = getLang().toUpperCase();
+      }
 
-  let zoomLevel = 1;
-  const ZOOM_STEP = 0.1;
-  const ZOOM_MIN = 0.7;
-  const ZOOM_MAX = 1.5;
+      function updateDocumentLang(lang) {
+        document.documentElement.lang = normalizeLang(lang);
+      }
 
-  function applyZoom() {
-    const brochure = document.querySelector(".brochure");
-    if (brochure) {
-      brochure.style.transform = `scale(${zoomLevel})`;
-    }
-  }
+      function setLangMenuOpen(isOpen) {
+        const menu = document.getElementById("langMenu");
+        const toggle = document.getElementById("langToggle");
 
-  function zoomIn() {
-    zoomLevel = Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX);
-    applyZoom();
-  }
+        if (menu) {
+          menu.classList.toggle("open", isOpen);
+          menu.hidden = !isOpen;
+        }
 
-  function zoomOut() {
-    zoomLevel = Math.max(zoomLevel - ZOOM_STEP, ZOOM_MIN);
-    applyZoom();
-  }
+        if (toggle) {
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        }
+      }
 
-  function resetZoom() {
-    zoomLevel = 1;
-    applyZoom();
-  }
+      function toggleLangMenu() {
+        const menu = document.getElementById("langMenu");
+        setLangMenuOpen(menu ? !menu.classList.contains("open") : false);
+      }
 
-  function handleResize() {
-    if (window.innerWidth < 1280) {
-      resetZoom();
-    }
-  }
-  
-  window.addEventListener("resize", handleResize);
+      function closeLangMenu() {
+        setLangMenuOpen(false);
+      }
 
-  window.zoomIn = zoomIn;
-  window.zoomOut = zoomOut;
+      function selectLang(lang) {
+        setLang(normalizeLang(lang));
+        closeLangMenu();
+        window.dispatchEvent(new Event("language-change"));
+      }
 
-  window.I18N_MESSAGES = i18nMessages;
+      function markActiveLang(lang) {
+        const items = document.querySelectorAll(".lang-option");
 
-  function updateWhatsappText(lang = getLang()) {
-    const messages = window.I18N_MESSAGES;
+        items.forEach((item) => {
+          if (item.dataset.lang === lang) {
+            item.classList.add("active");
+            item.setAttribute("aria-pressed", "true");
+          } else {
+            item.classList.remove("active");
+            item.setAttribute("aria-pressed", "false");
+          }
+        });
+      }
 
-    const el = document.getElementById("whatsappText");
-    if (!el || !messages) return;
+      function updateWhatsappText(lang = getLang()) {
+        const el = document.getElementById("whatsappText");
+        if (!el) return;
 
-    el.textContent =
-      messages[lang]?.whatsapp_cta ||
-      messages.es.whatsapp_cta;
-  }
+        el.textContent =
+          i18nMessages[lang]?.whatsapp_cta ||
+          i18nMessages.es.whatsapp_cta;
+      }
 
-  function updateNavigationText(lang = getLang()) {
-    const messages = window.I18N_MESSAGES;
-    const homeLink = document.getElementById("homeLink");
-    const homeLinkText = document.getElementById("homeLinkText");
-    const backToBrochureLink = document.getElementById("backToBrochureLink");
+      function updateNavigationText(lang = getLang()) {
+        const homeLink = document.getElementById("homeLink");
+        const homeLinkText = document.getElementById("homeLinkText");
+        const homeText =
+          i18nMessages[lang]?.nav_home ||
+          i18nMessages.es.nav_home;
 
-    if (!messages) return;
+        if (homeLink) {
+          homeLink.setAttribute("aria-label", homeText);
+        }
 
-    const homeText =
-      messages[lang]?.nav_home ||
-      messages.es.nav_home;
+        if (homeLinkText) {
+          homeLinkText.textContent = homeText;
+        }
+      }
 
-    const backToBrochureText =
-      messages[lang]?.back_to_brochure ||
-      messages.es.back_to_brochure;
+      function syncLanguageUI(lang) {
+        updateDocumentLang(lang);
+        updateLangLabel();
+        markActiveLang(lang);
+        updateWhatsappText(lang);
+        updateNavigationText(lang);
+      }
 
-    if (homeLink) {
-      homeLink.setAttribute("aria-label", homeText);
-    }
+      function initializePage() {
+        syncLanguageUI(getLang());
+      }
 
-    if (homeLinkText) {
-      homeLinkText.textContent = homeText;
-    }
+      function handleLanguageChange() {
+        syncLanguageUI(getLang());
+      }
 
-    if (backToBrochureLink) {
-      backToBrochureLink.setAttribute("aria-label", backToBrochureText);
-    }
-  }
+      document.addEventListener("click", (event) => {
+        const dropdown = document.querySelector(".lang-dropdown");
+        if (dropdown && !dropdown.contains(event.target)) {
+          closeLangMenu();
+        }
+      });
 
-  function syncLanguageUI(lang) {
-    updateDocumentLang(lang);
-    updateLangLabel();
-    updateBrochure(lang);
-    markActiveLang(lang);
-    updateWhatsappText(lang);
-    updateNavigationText(lang);
-  }
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeLangMenu();
+        }
+      });
 
-  function initializePage() {
-    const lang = getLang();
+      window.toggleLangMenu = toggleLangMenu;
+      window.selectLang = selectLang;
+      window.I18N_MESSAGES = i18nMessages;
 
-    syncLanguageUI(lang);
-
-    if (window.innerWidth < 1280) {
-      resetZoom();
-    }
-  }
-
-  function handleLanguageChange() {
-    syncLanguageUI(getLang());
-  }
-
-  document.addEventListener("DOMContentLoaded", initializePage);
-  window.addEventListener("language-change", handleLanguageChange);
-
-</script>
+      document.addEventListener("DOMContentLoaded", initializePage);
+      window.addEventListener("language-change", handleLanguageChange);
+    </script>
+  </head>
 
   <body>
     <Header currentPath={Astro.url.pathname} />
     <slot />
 
-      <!-- SOCIAL FLOAT BUTTONS -->
     <div class="social-float">
       <a
         href="https://www.instagram.com/myperol/"
@@ -322,7 +236,6 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
           </svg>
         </a>
       )}
-
     </div>
   </body>
 </html>
