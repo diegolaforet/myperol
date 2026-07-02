@@ -4,27 +4,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="MyPerol - EPOXI"
-  description="Pagina informativa de MyPerol, actualmente en construccion."
+  description="Pagina informativa de MyPerol."
   isHome
 >
-  <main class="home-centered">
-    <h1 id="homeText"></h1>
+  <main class="home-page">
+    <section class="hero-placeholder" aria-label="MyPerol">
+      <img
+        src="/assets/placeholder/placeholder-index.jpg"
+        alt=""
+        aria-hidden="true"
+      />
+    </section>
   </main>
-
-  <script>
-    function updateHomeText() {
-      const lang = localStorage.getItem("lang") || "es";
-      const messages = window.I18N_MESSAGES;
-
-      const el = document.getElementById("homeText");
-      if (!el || !messages) return;
-
-      el.textContent =
-        messages[lang]?.home_under_construction ||
-        messages.es.home_under_construction;
-    }
-
-    updateHomeText();
-    window.addEventListener("language-change", updateHomeText);
-  </script>
 </BaseLayout>

@@ -1,6 +1,6 @@
-/* =========================
-   FUENTES
-========================= */
+/* ==========================================================================
+   Fonts
+   ========================================================================== */
 @font-face {
   font-family: "Cocomat";
   src: url("/assets/fonts/cocomat/Cocomat-Light.ttf") format("truetype");
@@ -17,161 +17,172 @@
   font-display: swap;
 }
 
-/* =========================
-   GLOBAL STYLES
-========================= */
-
-html {
-  overflow-x: hidden;
-  background: #ffffff;
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+:root {
+  --color-page: #ffffff;
+  --color-text: #1b1b1b;
+  --color-dark: #000000;
+  --color-muted-hover: rgba(27, 27, 27, 0.06);
+  --color-border-soft: rgba(27, 27, 27, 0.08);
+  --color-border-strong: rgba(27, 27, 27, 0.16);
+  --opacity-controls: 0.62;
+  --shadow-nav: 0 10px 35px rgba(0, 0, 0, 0.10);
+  --font-ui: system-ui, sans-serif;
+  --font-brand: "Cocomat", system-ui, sans-serif;
 }
 
-body {
-  margin: 0; 
-  background: #ffffff;
-  font-family: system-ui, sans-serif;
-
-  overscroll-behavior-y: auto;
-}
-
-.page {
-  min-height: 100vh;
-  background: #f5f5f5;
-}
-
+/* ==========================================================================
+   Base
+   ========================================================================== */
 * {
   box-sizing: border-box;
 }
 
-/* SOCIAL FLOAT */
-.social-float {
-  position: fixed;
-  left: 24px;
-  bottom: 24px;
-  display: flex;
-  gap: 12px;
-  z-index: 200;
+html {
+  overflow-x: hidden;
+  background: var(--color-page);
 }
 
-.social-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--color-page);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
 
-  background: #000;
+/* ==========================================================================
+   Page layout
+   ========================================================================== */
+main {
+  min-height: 100vh;
+  padding: 112px 16px 24px;
+  background: var(--color-page);
+}
 
+.home-centered {
+  min-height: calc(100vh - 136px);
   display: flex;
   align-items: center;
   justify-content: center;
-
-  text-decoration: none;
+  text-align: center;
 }
 
-.social-btn svg {
-  width: 26px;
-  height: 26px;
-  fill: #fff;
+.home-page {
+  min-height: 100vh;
+  padding: 0;
 }
 
-.social-btn:hover {
-  opacity: 0.85;
+.hero-placeholder {
+  width: 100%;
+  height: 86vh;
+  min-height: 520px;
+  overflow: hidden;
 }
 
-.social-btn {
-  box-shadow:
-    0 0 14px rgba(255, 255, 255, 0.45),
-    0 6px 18px rgba(0, 0, 0, 0.25);
-}
-
-/* Ocultar scrollbar en móvil */
-@media (max-width: 767px) {
-  body {
-    -ms-overflow-style: none;   /* IE y Edge */
-    scrollbar-width: none;      /* Firefox */
-  }
-
-  body::-webkit-scrollbar {
-    display: none;              /* Chrome, Safari, iOS */
-  }
-}
-
-
-
-
-/* =========================
-   HEADER
-========================= */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  height: 64px;
-  padding: 0 16px;
-
-  background: #ffffff;
-  border-bottom: 1px solid #eee;
-
-  font-family: "Cocomat", system-ui, sans-serif;
-  color: #1b1b1b;
-}
-
-/* Todos los SVG heredan color */
-.header svg {
-  fill: currentColor;
-  stroke: currentColor;
-}
-
-/* ---------- HOME ---------- */
-.home-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  text-decoration: none;
-  color: inherit;
-  font-family: system-ui, sans-serif;
-}
-
-.home-link:hover {
-  opacity: 0.8;
-}
-
-.home-icon {
-  width: 20px;
-  height: 20px;
+.hero-placeholder img {
   display: block;
-  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
-.home-text {
+/* ==========================================================================
+   Header shell
+   ========================================================================== */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000;
+  height: 0;
+  color: var(--color-text);
+  font-family: var(--font-brand);
+}
+
+.mobile-header-bar,
+.mobile-header-actions {
+  display: contents;
+}
+
+.mobile-logo,
+.mobile-menu-button,
+.mobile-nav-dropdown {
   display: none;
-
-  font-family: inherit;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1;
 }
 
-/* Desktop: mostrar texto */
-@media (min-width: 768px) {
-  .home-text {
-    display: inline;
-  }
+/* ==========================================================================
+   Desktop floating navigation
+   ========================================================================== */
+.desktop-nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  align-items: center;
+  width: min(68vw, 960px);
+  min-height: 58px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, var(--opacity-controls));
+  box-shadow: var(--shadow-nav);
+  backdrop-filter: blur(16px);
 }
 
-.brand-logo {
-  cursor: pointer;
+.floating-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  padding: 0 22px;
+  color: inherit;
+  font: 600 15px/1 var(--font-ui);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
 }
 
-/* ---------- IDIOMA ---------- */
+.floating-nav-link + .floating-nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 34px;
+  background: var(--color-border-strong);
+  transform: translateY(-50%);
+}
+
+.floating-nav-link:hover,
+.floating-nav-link:focus-visible {
+  background: var(--color-muted-hover);
+  outline: none;
+}
+
+.floating-nav-link[aria-current="page"] {
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Language selector
+   ========================================================================== */
+.language-control {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 1001;
+  color: rgba(255, 255, 255, var(--opacity-controls));
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.38);
+}
+
 .lang-dropdown {
   position: relative;
 }
@@ -179,50 +190,54 @@ body {
 .lang-button {
   display: flex;
   align-items: center;
-  gap: 1px;
-
-  background: none;
-  border: none;
-  padding: 0;
-
-  font-family: system-ui, sans-serif;
-  font-size: 18px;
-  font-weight: 500;
+  justify-content: center;
+  gap: 4px;
+  width: 48px;
+  min-width: 48px;
+  height: 28px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
   color: inherit;
-
+  font: 600 18px/1 var(--font-ui);
   cursor: pointer;
 }
 
-.lang-button:hover {
+.lang-button span:first-child {
+  display: inline-block;
+  width: 22px;
+  text-align: center;
+}
+
+.lang-arrow {
+  display: inline-block;
+  width: 10px;
+  text-align: center;
+}
+
+.lang-button:hover,
+.lang-button:focus-visible {
   opacity: 0.8;
+  outline: none;
 }
 
-.lang-icon {
-  margin-right: 5px;
-  width: 18px;
-  height: 18px;
-  display: block;
-  flex-shrink: 0;
-}
-
-/* -- Menú -- */
+/* Shared dropdown visual style for language menu. */
 .lang-menu {
-  display: none;
   position: absolute;
   top: 100%;
   right: 0;
-
-  margin-top: 8px;
-  padding: 8px 0;
-
-  list-style: none;
-
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  font-family: system-ui, sans-serif;
-
   z-index: 100;
+  display: none;
+  min-width: 140px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, var(--opacity-controls));
+  color: var(--color-text);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  font-family: var(--font-ui);
+  text-shadow: none;
 }
 
 .lang-menu.open {
@@ -235,8 +250,8 @@ body {
 
 .lang-option {
   width: 100%;
-  padding: 8px 16px;
-  border: none;
+  padding: 12px 16px;
+  border: 0;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -250,85 +265,279 @@ body {
   outline: none;
 }
 
+.lang-menu li:first-child .lang-option:hover,
+.lang-menu li:first-child .lang-option:focus-visible {
+  border-radius: 8px 8px 0 0;
+}
+
+.lang-menu li:last-child .lang-option:hover,
+.lang-menu li:last-child .lang-option:focus-visible {
+  border-radius: 0 0 8px 8px;
+}
+
 .lang-option.active {
   font-weight: 700;
 }
 
-/* =========================
-   MAIN
-========================= */
-main {
-  background: #f5f5f5;
-  padding: 24px 16px;
-}
-
-/* =========================
-   HOME – EN CONSTRUCCIÓN
-========================= */
-.home-centered {
-  min-height: calc(100vh - 64px);
+/* ==========================================================================
+   Social actions
+   ========================================================================== */
+.social-float {
+  position: fixed;
+  top: 10px;
+  left: 12px;
+  z-index: 1001;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  gap: 16px;
 }
 
-.home-centered h1 {
-  font-family: system-ui, sans-serif;
-  font-weight: 300;
-  font-size: clamp(24px, 4vw, 40px);
-  color: #1b1b1b;
-}
-
-/* ---------- BRAND LOGO (HOME) ---------- */
-.brand-logo {
+.social-link {
   display: flex;
   align-items: center;
-}
-
-.brand-logo img {
-  height: 30px;          
-  display: block;
-  object-fit: contain;
-}
-
-/* =========================
-   BACK BUTTON FLOAT (HOME)
-========================= */
-
-/* =========================
-   WHATSAPP CTA (HOME)
-========================= */
-.whatsapp-cta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  height: 56px;
-  padding: 0 18px;
-
-  background: #000;
-  color: #fff;
+  gap: 6px;
+  padding: 4px 0;
+  color: rgba(255, 255, 255, var(--opacity-controls));
+  font: 700 14px/1 var(--font-ui);
   text-decoration: none;
-
-  border-radius: 999px;
-
-  font-family: system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-
-  box-shadow:
-    0 0 14px rgba(255, 255, 255, 0.45),
-    0 6px 18px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.38);
 }
 
-.whatsapp-cta svg {
-  width: 26px;
-  height: 26px;
-  fill: #fff;
+.social-link svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
 }
 
-.whatsapp-cta:hover {
-  opacity: 0.85;
+.social-link:hover,
+.social-link:focus-visible {
+  opacity: 0.8;
+  outline: none;
 }
 
+/* ==========================================================================
+   Responsive: tablet and mobile header
+   ========================================================================== */
+@media (max-width: 902px) {
+  main {
+    padding-top: 88px;
+  }
+
+  .home-centered {
+    min-height: calc(100vh - 112px);
+  }
+
+  .hero-placeholder {
+    height: 84vh;
+    min-height: 460px;
+  }
+
+  .site-header {
+    height: 64px;
+    border-bottom: 1px solid var(--color-border-soft);
+    background: rgba(255, 255, 255, var(--opacity-controls));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .mobile-logo {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    text-decoration: none;
+  }
+
+  .mobile-logo img {
+    display: block;
+    width: auto;
+    height: 28px;
+    object-fit: contain;
+  }
+
+  .mobile-header-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-nav-dropdown {
+    position: relative;
+    display: block;
+  }
+
+  .language-control {
+    position: static;
+    z-index: auto;
+    color: var(--color-text);
+    text-shadow: none;
+  }
+
+  .mobile-menu-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .mobile-menu-button span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
+  /* Mobile nav dropdown mirrors the language dropdown style. */
+  #primaryNav {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    display: none;
+    min-width: 140px;
+    min-height: 0;
+    margin-top: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, var(--opacity-controls));
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: none;
+    font-family: var(--font-ui);
+  }
+
+  #primaryNav.open,
+  .mobile-menu-button[aria-expanded="true"] + #primaryNav {
+    display: block;
+  }
+
+  #primaryNav .floating-nav-link {
+    justify-content: flex-start;
+    width: 100%;
+    height: auto;
+    padding: 12px 16px;
+    font: inherit;
+    text-align: left;
+  }
+
+  #primaryNav .floating-nav-link:hover,
+  #primaryNav .floating-nav-link:focus-visible {
+    background: #f0f0f0;
+  }
+
+  #primaryNav .floating-nav-link[aria-current="page"] {
+    font-weight: 700;
+  }
+
+  #primaryNav .floating-nav-link:first-child:hover,
+  #primaryNav .floating-nav-link:first-child:focus-visible {
+    border-radius: 8px 8px 0 0;
+  }
+
+  #primaryNav .floating-nav-link:last-child:hover,
+  #primaryNav .floating-nav-link:last-child:focus-visible {
+    border-radius: 0 0 8px 8px;
+  }
+
+  .floating-nav-link + .floating-nav-link::before {
+    display: none;
+  }
+
+  /* Social links become circular icon-only actions below 902px. */
+  .social-float {
+    top: auto;
+    left: 24px;
+    bottom: 24px;
+    gap: 16px;
+  }
+
+  .social-link {
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, var(--opacity-controls));
+    color: #ffffff;
+    box-shadow:
+      0 10px 24px rgba(0, 0, 0, 0.18),
+      0 0 18px rgba(0, 0, 0, 0.08);
+    text-shadow: none;
+  }
+
+  .social-link span {
+    display: none;
+  }
+
+  .social-link svg {
+    width: 27px;
+    height: 27px;
+  }
+}
+
+/* ==========================================================================
+   Responsive: narrow mobile refinements
+   ========================================================================== */
+@media (max-width: 560px) {
+  main {
+    padding-top: 82px;
+  }
+
+  .home-centered {
+    min-height: calc(100vh - 106px);
+  }
+
+  .hero-placeholder {
+    height: 82vh;
+    min-height: 420px;
+  }
+
+  .mobile-header-bar {
+    padding: 0 12px;
+  }
+
+  .mobile-logo img {
+    height: 24px;
+  }
+
+  .mobile-header-actions {
+    gap: 10px;
+  }
+
+  .social-float {
+    left: 20px;
+    bottom: 20px;
+    gap: 14px;
+  }
+
+  .social-link {
+    width: 52px;
+    height: 52px;
+  }
+
+  .social-link svg {
+    width: 25px;
+    height: 25px;
+  }
+}
