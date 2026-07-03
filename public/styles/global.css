@@ -1,36 +1,52 @@
 /* ==========================================================================
-   Fonts
-   ========================================================================== */
-@font-face {
-  font-family: "Cocomat";
-  src: url("/assets/fonts/cocomat/Cocomat-Light.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Cocomat";
-  src: url("/assets/fonts/cocomat/Cocomat-Ultralight.ttf") format("truetype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* ==========================================================================
    Design tokens
    ========================================================================== */
 :root {
-  --color-page: #ffffff;
-  --color-text: #1b1b1b;
-  --color-dark: #000000;
-  --color-muted-hover: rgba(27, 27, 27, 0.06);
-  --color-border-soft: rgba(27, 27, 27, 0.08);
-  --color-border-strong: rgba(27, 27, 27, 0.16);
-  --opacity-controls: 0.62;
-  --shadow-nav: 0 10px 35px rgba(0, 0, 0, 0.10);
-  --font-ui: system-ui, sans-serif;
-  --font-brand: "Cocomat", system-ui, sans-serif;
+  /* Page and text colors. */
+  --color-page: #e3e3e3;
+  --color-text-on-dark: #ffffff;
+  --color-text-on-light: #1b1b1b;
+
+  /* Shared translucent surface color: bars and dropdowns. */
+  --surface-translucent-rgb: 160, 160, 160;
+  --opacity-controls: 0.65;
+
+  /* Shared dark circular action color used on mobile social buttons. */
+  --surface-dark-rgb: 0, 0, 0;
+
+  /* Hover and divider colors. */
+  --color-nav-hover: rgba(27, 27, 27, 0.06);
+  --color-dropdown-hover: #bebebe;
+  --color-divider: rgba(27, 27, 27, 0.16);
+
+  /* Shared shadows for floating surfaces and icon/text contrast. */
+  --shadow-surface: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --shadow-text-control: 0 1px 8px rgba(0, 0, 0, 0.38);
+  --shadow-floating-action:
+    0 10px 24px rgba(0, 0, 0, 0.18),
+    0 0 18px rgba(0, 0, 0, 0.08);
+
+  /* Fonts. */
+  --font-ui: "Montserrat", sans-serif;
+  --font-brand: var(--font-ui);
+
+  /* Content typography levels. Buttons and navigation keep their own sizing. */
+  --font-size-title: 67px;
+  --font-size-subtitle: 40px;
+  --font-size-text: 20px;
+  --line-height-title: 1.02;
+  --line-height-subtitle: 1.20;
+  --line-height-text: 1.45;
+  --hero-caption-space: 86px;
+
+  /* Control typography. Navigation, language and social controls are separate from content text. */
+  --font-size-nav: 18px;
+  --font-size-language-button: 18px;
+  --font-size-social-link: 14px;
+  --font-weight-nav: 500;
+  --font-weight-control: 500;
+  --font-weight-social: 500;
+  --line-height-control: 1;
 }
 
 /* ==========================================================================
@@ -49,7 +65,7 @@ body {
   margin: 0;
   overflow-x: hidden;
   background: var(--color-page);
-  color: var(--color-text);
+  color: var(--color-text-on-dark);
   font-family: var(--font-ui);
 }
 
@@ -76,9 +92,10 @@ main {
 }
 
 .hero-placeholder {
+  position: relative;
   width: 100%;
-  height: 89vh;
-  min-height: 560px;
+  height: calc(100vh - var(--hero-caption-space));
+  min-height: 520px;
   overflow: hidden;
 }
 
@@ -90,18 +107,47 @@ main {
   object-position: center;
 }
 
-.home-intro {
-  display: flex;
-  justify-content: flex-start;
-  padding: 18px 28px 56px;
+.hero-caption {
+  min-height: var(--hero-caption-space);
+  padding: 18px 28px;
   background: var(--color-page);
 }
 
-.home-intro p {
+.hero-caption p {
+  margin: 0;
+  color: var(--color-text-on-light);
+  font: 400 var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
+}
+
+.home-intro {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 34px;
+  padding: 18px 28px 72px;
+  background: var(--color-page);
+}
+
+.home-intro-subtitle,
+.home-intro-statement p {
   max-width: none;
   margin: 0;
-  color: var(--color-text);
-  font: 400 clamp(54px, 5.2vw, 69px)/1.05 var(--font-ui);
+  color: var(--color-text-on-light);
+  text-align: left;
+}
+
+.home-intro-subtitle {
+  font: 400 var(--font-size-title)/var(--line-height-title) var(--font-ui);
+}
+
+.home-intro-statement {
+  display: grid;
+  gap: 22px;
+  max-width: 1220px;
+}
+
+.home-intro-statement p {
+  font: 400 var(--font-size-text)/var(--line-height-text) var(--font-ui);
   text-align: left;
 }
 
@@ -113,7 +159,7 @@ main {
   inset: 0 0 auto;
   z-index: 1000;
   height: 0;
-  color: var(--color-text);
+  color: var(--color-text-on-dark);
   font-family: var(--font-brand);
 }
 
@@ -142,11 +188,10 @@ main {
   width: min(68vw, 960px);
   min-height: 58px;
   overflow: hidden;
-  border: 1px solid var(--color-border-soft);
+  border: 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, var(--opacity-controls));
-  box-shadow: var(--shadow-nav);
-  backdrop-filter: blur(16px);
+  background: rgba(var(--surface-translucent-rgb), var(--opacity-controls));
+  box-shadow: var(--shadow-surface);
 }
 
 .floating-nav-link {
@@ -158,7 +203,7 @@ main {
   height: 100%;
   padding: 0 22px;
   color: inherit;
-  font: 600 15px/1 var(--font-ui);
+  font: var(--font-weight-nav) var(--font-size-nav)/var(--line-height-control) var(--font-ui);
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
@@ -172,18 +217,18 @@ main {
   top: 50%;
   width: 1px;
   height: 34px;
-  background: var(--color-border-strong);
+  background: var(--color-divider);
   transform: translateY(-50%);
 }
 
 .floating-nav-link:hover,
 .floating-nav-link:focus-visible {
-  background: var(--color-muted-hover);
+  background: var(--color-nav-hover);
   outline: none;
 }
 
 .floating-nav-link[aria-current="page"] {
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* ==========================================================================
@@ -194,8 +239,8 @@ main {
   top: 10px;
   right: 12px;
   z-index: 1001;
-  color: rgba(255, 255, 255, var(--opacity-controls));
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.38);
+  color: var(--color-text-on-dark);
+  text-shadow: var(--shadow-text-control);
 }
 
 .lang-dropdown {
@@ -214,7 +259,7 @@ main {
   border: 0;
   background: transparent;
   color: inherit;
-  font: 600 18px/1 var(--font-ui);
+  font: var(--font-weight-control) var(--font-size-language-button)/var(--line-height-control) var(--font-ui);
   cursor: pointer;
 }
 
@@ -248,9 +293,9 @@ main {
   padding: 0;
   list-style: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, var(--opacity-controls));
-  color: var(--color-text);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  background: rgba(var(--surface-translucent-rgb), var(--opacity-controls));
+  color: var(--color-text-on-dark);
+  box-shadow: var(--shadow-surface);
   font-family: var(--font-ui);
   text-shadow: none;
 }
@@ -276,7 +321,7 @@ main {
 
 .lang-option:hover,
 .lang-option:focus-visible {
-  background: #f0f0f0;
+  background: var(--color-dropdown-hover);
   outline: none;
 }
 
@@ -291,7 +336,7 @@ main {
 }
 
 .lang-option.active {
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* ==========================================================================
@@ -312,10 +357,10 @@ main {
   align-items: center;
   gap: 6px;
   padding: 4px 0;
-  color: rgba(255, 255, 255, var(--opacity-controls));
-  font: 700 14px/1 var(--font-ui);
+  color: var(--color-text-on-dark);
+  font: var(--font-weight-social) var(--font-size-social-link)/var(--line-height-control) var(--font-ui);
   text-decoration: none;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.38);
+  text-shadow: var(--shadow-text-control);
 }
 
 .social-link svg {
@@ -334,6 +379,13 @@ main {
    Responsive: tablet and mobile header
    ========================================================================== */
 @media (max-width: 902px) {
+  :root {
+    --font-size-title: 56px;
+    --font-size-subtitle: 44px;
+    --font-size-text: 18px;
+    --hero-caption-space: 92px;
+  }
+
   main {
     padding-top: 88px;
   }
@@ -343,24 +395,24 @@ main {
   }
 
   .hero-placeholder {
-    height: 87vh;
-    min-height: 500px;
+    height: calc(100vh - var(--hero-caption-space));
+    min-height: 460px;
+  }
+
+  .hero-caption {
+    padding: 18px 20px;
   }
 
   .home-intro {
-    padding: 18px 20px 48px;
-  }
-
-  .home-intro p {
-    font-size: 44px;
+    gap: 28px;
+    padding: 18px 20px 56px;
   }
 
   .site-header {
     height: 64px;
-    border-bottom: 1px solid var(--color-border-soft);
-    background: rgba(255, 255, 255, var(--opacity-controls));
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(14px);
+    border-bottom: 0;
+    background: rgba(var(--surface-translucent-rgb), var(--opacity-controls));
+    box-shadow: var(--shadow-surface);
   }
 
   .mobile-header-bar {
@@ -406,7 +458,7 @@ main {
   .language-control {
     position: static;
     z-index: auto;
-    color: var(--color-text);
+    color: var(--color-text-on-dark);
     text-shadow: none;
   }
 
@@ -420,7 +472,7 @@ main {
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--color-text);
+    color: var(--color-text-on-dark);
     cursor: pointer;
   }
 
@@ -444,8 +496,8 @@ main {
     padding: 0;
     border: 0;
     border-radius: 8px;
-    background: rgba(255, 255, 255, var(--opacity-controls));
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: rgba(var(--surface-translucent-rgb), var(--opacity-controls));
+    box-shadow: var(--shadow-surface);
     transform: none;
     font-family: var(--font-ui);
   }
@@ -466,11 +518,11 @@ main {
 
   #primaryNav .floating-nav-link:hover,
   #primaryNav .floating-nav-link:focus-visible {
-    background: #f0f0f0;
+    background: var(--color-dropdown-hover);
   }
 
   #primaryNav .floating-nav-link[aria-current="page"] {
-    font-weight: 700;
+    font-weight: 500;
   }
 
   #primaryNav .floating-nav-link:first-child:hover,
@@ -501,11 +553,9 @@ main {
     height: 56px;
     padding: 0;
     border-radius: 999px;
-    background: rgba(0, 0, 0, var(--opacity-controls));
-    color: #ffffff;
-    box-shadow:
-      0 10px 24px rgba(0, 0, 0, 0.18),
-      0 0 18px rgba(0, 0, 0, 0.08);
+    background: rgba(var(--surface-dark-rgb), var(--opacity-controls));
+    color: var(--color-text-on-dark);
+    box-shadow: var(--shadow-floating-action);
     text-shadow: none;
   }
 
@@ -523,6 +573,13 @@ main {
    Responsive: narrow mobile refinements
    ========================================================================== */
 @media (max-width: 560px) {
+  :root {
+    --font-size-title: 44px;
+    --font-size-subtitle: 34px;
+    --font-size-text: 16px;
+    --hero-caption-space: 76px;
+  }
+
   main {
     padding-top: 82px;
   }
@@ -532,16 +589,17 @@ main {
   }
 
   .hero-placeholder {
-    height: 85vh;
-    min-height: 440px;
+    height: calc(100vh - var(--hero-caption-space));
+    min-height: 420px;
+  }
+
+  .hero-caption {
+    padding: 16px 14px;
   }
 
   .home-intro {
-    padding: 16px 14px 40px;
-  }
-
-  .home-intro p {
-    font-size: 34px;
+    gap: 22px;
+    padding: 16px 14px 44px;
   }
 
   .mobile-header-bar {
