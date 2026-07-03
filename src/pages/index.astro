@@ -16,34 +16,180 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       />
     </section>
 
-    <section class="hero-caption" aria-label="Cambio MyPerol">
-      <p>Lo que cambia con MyPerol...</p>
-    </section>
-
     <section class="home-intro" aria-label="Introduccion">
       <p class="home-intro-subtitle">Un suelo es una inversión para muchos años.</p>
       <div class="home-intro-statement">
         <p>La sensación de un espacio transformado<br>
           Un suelo MyPerol no solo cambia la superficie, cambia la percepción
           COMPLETA del lugar.
-
-
-          La ausencia de juntas, la continuidad visual y el acabado uniforme
-          generan una sensación de amplitud, orden, comodidad y limpieza
-          inexplicable desde el primer momento.
-
-          Al caminar sobre él se percibe una superficie sólida, continua y
-          cuidada, con un acabado pensado para transmitir calidad tanto a la
-          vista como la sensación de caminar por él.
-
-          Los espacios ganan presencia y el suelo deja de ser un elemento
-          funcional para convertirse en la parte protagonista del diseño y
-          ambiente.
-
-          Porque un buen pavimento no solo se mide por cómo resiste con el paso
-          del tiempo, sino por la sensación que transmite.
         </p>
+      </div>
+    </section>
+
+    <section class="feature-cards" aria-label="Novedades MyPerol" data-entry-scroll-target>
+      <div class="feature-cards-header">
+        <p>Explora posibilidades para tu espacio.</p>
+      </div>
+
+      <div class="feature-cards-shell">
+        <div class="feature-cards-track" id="featureCardsTrack">
+          <article class="feature-card">
+            <span>Placeholder</span>
+            <h2>Superficie continua</h2>
+            <p>Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
+          </article>
+          <article class="feature-card">
+            <span>Placeholder</span>
+            <h2>Acabado uniforme</h2>
+            <p>Texto placeholder para explicar una mejora visual del espacio.</p>
+          </article>
+          <article class="feature-card">
+            <span>Placeholder</span>
+            <h2>Sensacion premium</h2>
+            <p>Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
+          </article>
+          <article class="feature-card">
+            <span>Placeholder</span>
+            <h2>Diseno limpio</h2>
+            <p>Texto placeholder para destacar orden, amplitud y continuidad.</p>
+          </article>
+          <article class="feature-card">
+            <span>Placeholder</span>
+            <h2>Alta presencia</h2>
+            <p>Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
+          </article>
+        </div>
+
+        <button
+          class="feature-cards-arrow feature-cards-prev"
+          type="button"
+          aria-label="Ver tarjetas anteriores"
+          data-carousel-prev
+          hidden
+        >
+          <span aria-hidden="true">&lsaquo;</span>
+        </button>
+
+        <button
+          class="feature-cards-arrow feature-cards-next"
+          type="button"
+          aria-label="Ver mas tarjetas"
+          data-carousel-next
+        >
+          <span aria-hidden="true">&rsaquo;</span>
+        </button>
       </div>
     </section>
   </main>
 </BaseLayout>
+
+<script>
+  const track = document.getElementById("featureCardsTrack");
+  const prevButton = document.querySelector("[data-carousel-prev]");
+  const nextButton = document.querySelector("[data-carousel-next]");
+
+  if (track instanceof HTMLElement && prevButton instanceof HTMLButtonElement && nextButton instanceof HTMLButtonElement) {
+    const getScrollStep = () => {
+      const firstCard = track.querySelector(".feature-card");
+      if (!(firstCard instanceof HTMLElement)) return 460;
+
+      const styles = window.getComputedStyle(track);
+      const gap = Number.parseFloat(styles.columnGap || styles.gap || "0");
+      return firstCard.offsetWidth + gap;
+    };
+
+    const updateButtons = () => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      const scrollLeft = Math.ceil(track.scrollLeft);
+
+      prevButton.hidden = scrollLeft <= 1;
+      nextButton.hidden = scrollLeft >= maxScroll - 1;
+    };
+
+    prevButton.addEventListener("click", () => {
+      track.scrollBy({ left: -getScrollStep(), behavior: "smooth" });
+    });
+
+    nextButton.addEventListener("click", () => {
+      track.scrollBy({ left: getScrollStep(), behavior: "smooth" });
+    });
+
+    track.addEventListener("scroll", updateButtons, { passive: true });
+    window.addEventListener("resize", updateButtons);
+    updateButtons();
+  }
+
+  // Entry scroll behavior
+
+
+  
+  const entryScrollTarget = document.querySelector("[data-entry-scroll-target]");
+
+  if (entryScrollTarget instanceof HTMLElement && !window.location.hash) {
+    let hasUsedEntryScroll = false;
+    let touchStartY = 0;
+
+    const isAtPageStart = () => window.scrollY <= 8;
+
+    const getEntryScrollTop = () => {
+      const targetTop = entryScrollTarget.getBoundingClientRect().top + window.scrollY;
+      const viewportOffset = Math.min(window.innerHeight * 0.42, 460);
+
+      return Math.max(0, targetTop - viewportOffset);
+    };
+
+    const scrollToEntryFrame = () => {
+      if (hasUsedEntryScroll || !isAtPageStart()) return false;
+
+      hasUsedEntryScroll = true;
+      window.scrollTo({
+        top: getEntryScrollTop(),
+        behavior: "smooth",
+      });
+
+      return true;
+    };
+
+    window.addEventListener(
+      "wheel",
+      (event) => {
+        if (event.deltaY <= 0) return;
+        if (!scrollToEntryFrame()) return;
+
+        event.preventDefault();
+      },
+      { passive: false }
+    );
+
+    window.addEventListener(
+      "touchstart",
+      (event) => {
+        touchStartY = event.touches[0]?.clientY ?? 0;
+      },
+      { passive: true }
+    );
+
+    window.addEventListener(
+      "touchmove",
+      (event) => {
+        const touchY = event.touches[0]?.clientY ?? touchStartY;
+        const deltaY = touchStartY - touchY;
+
+        if (deltaY <= 12) return;
+        if (!scrollToEntryFrame()) return;
+
+        event.preventDefault();
+      },
+      { passive: false }
+    );
+
+    window.addEventListener("keydown", (event) => {
+      const scrollKeys = ["ArrowDown", "PageDown", " ", "Spacebar"];
+
+      if (!scrollKeys.includes(event.key)) return;
+      if (!scrollToEntryFrame()) return;
+
+      event.preventDefault();
+    });
+  }
+</script>
