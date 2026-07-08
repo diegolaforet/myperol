@@ -11,6 +11,7 @@ const {
   title = "MyPerol",
   description = "Página informativa de MyPerol.",
   isHome = false,
+  bodyClass = "",
 } = Astro.props;
 
 const i18nMessages = {
@@ -259,7 +260,7 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
     </script>
   </head>
 
-  <body>
+  <body class={bodyClass || undefined}>
     <Header currentPath={Astro.url.pathname} />
     <slot />
 

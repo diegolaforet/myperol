@@ -1,0 +1,318 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="MyPerol - Servicios"
+  description="Servicios de MyPerol."
+>
+  <main class="services-page reveal-enabled">
+    <section class="hero-placeholder services-hero" aria-label="MyPerol">
+      <img
+        src="/assets/placeholder/placeholder-index.jpg"
+        alt=""
+        aria-hidden="true"
+      />
+    </section>
+
+    <section class="feature-cards services-feature-cards" aria-label="Servicios MyPerol" data-i18n-aria-label="feature_cards_aria">
+      <div class="feature-cards-header">
+        <p data-i18n="feature_cards_heading">Explora posibilidades para tu espacio.</p>
+      </div>
+
+      <div class="feature-cards-shell">
+        <div class="feature-cards-track">
+          <article class="feature-card">
+            <span data-i18n="feature_card_label">Placeholder</span>
+            <h2 data-i18n="feature_card_1_title">Superficie continua</h2>
+            <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
+          </article>
+
+          <article class="feature-card">
+            <span data-i18n="feature_card_label">Placeholder</span>
+            <h2 data-i18n="feature_card_2_title">Acabado uniforme</h2>
+            <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
+          </article>
+
+          <article class="feature-card">
+            <span data-i18n="feature_card_label">Placeholder</span>
+            <h2 data-i18n="feature_card_3_title">Sensacion premium</h2>
+            <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
+          </article>
+
+          <article class="feature-card">
+            <span data-i18n="feature_card_label">Placeholder</span>
+            <h2 data-i18n="feature_card_4_title">Diseno limpio</h2>
+            <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
+          </article>
+
+          <article class="feature-card">
+            <span data-i18n="feature_card_label">Placeholder</span>
+            <h2 data-i18n="feature_card_5_title">Alta presencia</h2>
+            <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
+          </article>
+        </div>
+
+        <button
+          class="feature-cards-arrow feature-cards-prev"
+          type="button"
+          aria-label="Ver tarjetas anteriores"
+          data-i18n-aria-label="carousel_prev"
+          data-carousel-prev
+          hidden
+        >
+          <span aria-hidden="true">&lsaquo;</span>
+        </button>
+
+        <button
+          class="feature-cards-arrow feature-cards-next"
+          type="button"
+          aria-label="Ver mas tarjetas"
+          data-i18n-aria-label="carousel_next"
+          data-carousel-next
+          hidden
+        >
+          <span aria-hidden="true">&rsaquo;</span>
+        </button>
+
+        <div class="feature-cards-dots" aria-hidden="true" data-carousel-dots></div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  const initializeScrollReveal = () => {
+    const revealItems = Array.from(document.querySelectorAll(".feature-card")).filter(
+      (item) => item instanceof HTMLElement
+    );
+
+    if (!revealItems.length) return;
+
+    revealItems.forEach((item, index) => {
+      item.style.setProperty("--reveal-index", String(index % 5));
+    });
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+      return;
+    }
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        });
+      },
+      {
+        root: null,
+        rootMargin: "0px 0px -10% 0px",
+        threshold: 0.18,
+      }
+    );
+
+    window.requestAnimationFrame(() => {
+      revealItems.forEach((item) => revealObserver.observe(item));
+    });
+  };
+
+  const initializeFeatureCardsCarousel = (shell) => {
+    const track = shell.querySelector(".feature-cards-track");
+    const prevButton = shell.querySelector("[data-carousel-prev]");
+    const nextButton = shell.querySelector("[data-carousel-next]");
+    const dotsContainer = shell.querySelector("[data-carousel-dots]");
+
+    if (
+      !(track instanceof HTMLElement) ||
+      !(prevButton instanceof HTMLButtonElement) ||
+      !(nextButton instanceof HTMLButtonElement) ||
+      !(dotsContainer instanceof HTMLElement)
+    ) return;
+
+    const cards = Array.from(track.querySelectorAll(".feature-card")).filter(
+      (card) => card instanceof HTMLElement
+    );
+
+    const dots = cards.map((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = "feature-cards-dot";
+      dot.dataset.cardIndex = String(index);
+      dotsContainer.append(dot);
+      return dot;
+    });
+    let hoveredCardIndex = null;
+    let hasInitializedArrowVisibility = false;
+
+    const getScrollStep = () => {
+      const firstCard = track.querySelector(".feature-card");
+      if (!(firstCard instanceof HTMLElement)) return 460;
+
+      const styles = window.getComputedStyle(track);
+      const gap = Number.parseFloat(styles.columnGap || styles.gap || "0");
+      return firstCard.offsetWidth + gap;
+    };
+
+    const setArrowVisible = (button, isVisible) => {
+      window.clearTimeout(Number(button.dataset.hideTimeout || 0));
+      const wasVisible = button.dataset.arrowVisible === "true";
+
+      if (isVisible) {
+        button.hidden = false;
+        button.classList.remove("is-hiding");
+        button.dataset.arrowVisible = "true";
+        return;
+      }
+
+      delete button.dataset.arrowVisible;
+
+      if (button.hidden || button.classList.contains("is-hiding")) return;
+
+      if (!hasInitializedArrowVisibility || !wasVisible) {
+        button.hidden = true;
+        button.classList.remove("is-hiding");
+        delete button.dataset.hideTimeout;
+        return;
+      }
+
+      button.classList.add("is-hiding");
+      button.dataset.hideTimeout = String(
+        window.setTimeout(() => {
+          if (!button.classList.contains("is-hiding")) return;
+
+          button.hidden = true;
+          button.classList.remove("is-hiding");
+          delete button.dataset.hideTimeout;
+        }, 220)
+      );
+    };
+
+    const updateButtons = () => {
+      const maxScroll = track.scrollWidth - track.clientWidth;
+      const scrollLeft = Math.max(0, track.scrollLeft);
+      const previousArrowThreshold = 24;
+
+      setArrowVisible(prevButton, scrollLeft > previousArrowThreshold);
+      setArrowVisible(nextButton, scrollLeft < maxScroll - 1);
+    };
+
+    const setActiveDot = (index) => {
+      const activeIndex = Math.max(0, Math.min(index, dots.length - 1));
+
+      dots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("is-active", dotIndex === activeIndex);
+      });
+    };
+
+    const updateActiveDotFromScroll = () => {
+      if (!cards.length) return;
+      if (hoveredCardIndex !== null) {
+        setActiveDot(hoveredCardIndex);
+        return;
+      }
+
+      const trackRect = track.getBoundingClientRect();
+      let mostVisibleIndex = 0;
+      let mostVisibleWidth = 0;
+
+      cards.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const visibleLeft = Math.max(cardRect.left, trackRect.left);
+        const visibleRight = Math.min(cardRect.right, trackRect.right);
+        const visibleWidth = Math.max(0, visibleRight - visibleLeft);
+
+        if (visibleWidth > mostVisibleWidth) {
+          mostVisibleWidth = visibleWidth;
+          mostVisibleIndex = index;
+        }
+      });
+
+      setActiveDot(mostVisibleIndex);
+    };
+
+    prevButton.addEventListener("click", () => {
+      track.scrollBy({ left: -getScrollStep(), behavior: "smooth" });
+    });
+
+    nextButton.addEventListener("click", () => {
+      track.scrollBy({ left: getScrollStep(), behavior: "smooth" });
+    });
+
+    cards.forEach((card, index) => {
+      card.addEventListener("mouseenter", () => {
+        hoveredCardIndex = index;
+        setActiveDot(index);
+      });
+
+      card.addEventListener("mouseleave", () => {
+        hoveredCardIndex = null;
+        updateActiveDotFromScroll();
+      });
+
+      card.addEventListener("focusin", () => {
+        hoveredCardIndex = index;
+        setActiveDot(index);
+      });
+
+      card.addEventListener("focusout", () => {
+        hoveredCardIndex = null;
+        updateActiveDotFromScroll();
+      });
+    });
+
+    track.addEventListener(
+      "scroll",
+      () => {
+        updateButtons();
+        updateActiveDotFromScroll();
+      },
+      { passive: true }
+    );
+
+    window.addEventListener("resize", () => {
+      updateButtons();
+      updateActiveDotFromScroll();
+    });
+
+    updateButtons();
+    hasInitializedArrowVisibility = true;
+    shell.classList.add("is-carousel-ready");
+    updateActiveDotFromScroll();
+  };
+
+  document.querySelectorAll(".feature-cards-shell").forEach((shell) => {
+    if (shell instanceof HTMLElement) initializeFeatureCardsCarousel(shell);
+  });
+
+  initializeScrollReveal();
+
+  const servicesHero = document.querySelector(".services-hero");
+
+  if (servicesHero instanceof HTMLElement) {
+    let hasPendingToneUpdate = false;
+    const lightToneThreshold = 65;
+
+    const updateFixedControlsTone = () => {
+      const heroBottom = servicesHero.getBoundingClientRect().bottom;
+      const isOverLightSurface = heroBottom <= lightToneThreshold;
+
+      document.body.classList.toggle("controls-over-light", isOverLightSurface);
+      hasPendingToneUpdate = false;
+    };
+
+    const requestFixedControlsToneUpdate = () => {
+      if (hasPendingToneUpdate) return;
+
+      hasPendingToneUpdate = true;
+      window.requestAnimationFrame(updateFixedControlsTone);
+    };
+
+    window.addEventListener("scroll", requestFixedControlsToneUpdate, { passive: true });
+    window.addEventListener("resize", requestFixedControlsToneUpdate);
+    updateFixedControlsTone();
+  }
+</script>

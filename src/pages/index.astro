@@ -182,7 +182,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       }
     );
 
-    revealItems.forEach((item) => revealObserver.observe(item));
+    window.requestAnimationFrame(() => {
+      revealItems.forEach((item) => revealObserver.observe(item));
+    });
   };
 
   const initializeFeatureCardsCarousel = (shell) => {

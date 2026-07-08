@@ -261,6 +261,30 @@ main {
 }
 
 /* ==========================================================================
+   Services page
+   ========================================================================== */
+.services-page {
+  min-height: 100vh;
+  padding: 0 0 0px;
+  background: var(--color-page);
+  color: var(--color-text-on-light);
+}
+
+.services-hero {
+  height: 200px;
+  min-height: 180px;
+}
+
+.services-feature-cards {
+  --surface-glass-rgb: var(--surface-glass-on-light-rgb);
+  --surface-glass-opacity: var(--surface-glass-on-light-opacity);
+  --glass-border: var(--glass-border-on-light);
+  --color-fixed-control: var(--color-fixed-control-on-light);
+  padding-top: 50px;
+  padding-bottom: 0;
+}
+
+/* ==========================================================================
    Feature cards carousel
    ========================================================================== */
 .feature-cards {
@@ -812,6 +836,18 @@ main {
     padding: 18px 20px 56px;
   }
 
+  .services-page {
+    padding: 112px 0 64px;
+  }
+
+  .services-hero {
+    display: none;
+  }
+
+  .services-feature-cards {
+    padding-top: 0;
+  }
+
   .feature-cards {
     padding-bottom: 64px;
   }
@@ -1066,6 +1102,14 @@ main {
   .home-intro {
     gap: 22px;
     padding: 16px 14px 44px;
+  }
+
+  .services-page {
+    padding: 100px 0 52px;
+  }
+
+  .services-hero {
+    display: none;
   }
 
   .feature-cards {
