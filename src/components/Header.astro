@@ -64,7 +64,7 @@ const isServices = currentPath === "/servicios";
           <span></span>
         </button>
 
-        <nav class="floating-nav floating-dropdown" id="primaryNav" aria-label="Secciones principales" data-i18n-aria-label="nav_sections_aria">
+        <nav class="floating-nav floating-dropdown" id="primaryNav" aria-label="Secciones principales" data-i18n-aria-label="nav_sections_aria" hidden>
           <a href="/" class="floating-nav-link" aria-current={isHome ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_home">Home</a>
           <a href="/servicios" class="floating-nav-link" aria-current={isServices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_services">Servicios</a>
           <a href="/#precios" class="floating-nav-link" onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>

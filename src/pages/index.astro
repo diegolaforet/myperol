@@ -393,7 +393,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     let touchStartY = 0;
     let entryAnimationFrame = 0;
     const entryScrollDuration = 1200;
-    const entryScrollExtraOffset = 72;
+    const entryScrollExtraOffset = window.innerWidth <= 902 ? -80 : 72;
     const entryScrollStartLimit = 32;
 
     const easeInOutCubic = (progress) =>

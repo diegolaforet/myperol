@@ -21,11 +21,16 @@
   --surface-glass-on-dark-opacity: 0.16;
   --surface-glass-on-light-rgb: var(--color-page-rgb);
   --surface-glass-on-light-opacity: 0.78;
+  --surface-dropdown-on-light-opacity: 0.94;
   --surface-glass-rgb: var(--surface-glass-on-dark-rgb);
   --surface-glass-opacity: var(--surface-glass-on-dark-opacity);
   --surface-glass-background: rgba(var(--surface-glass-rgb), var(--surface-glass-opacity));
+  --surface-services-dropdown: rgba(42, 42, 42, 0.92);
+  --surface-dropdown-background: var(--surface-services-dropdown);
   --glass-border-on-dark: rgba(255, 255, 255, 0.22);
   --glass-border-on-light: rgba(0, 0, 0, 0.12);
+  --glass-border-services-dropdown: rgba(255, 255, 255, 0.20);
+  --glass-border-dropdown: var(--glass-border-services-dropdown);
   --glass-border: var(--glass-border-on-dark);
   --glass-blur: 18px;
 
@@ -39,6 +44,9 @@
   --color-nav-hover-on-light: rgba(0, 0, 0, 0.08);
   --color-dropdown-hover-on-dark: rgba(255, 255, 255, 0.20);
   --color-dropdown-hover-on-light: rgba(0, 0, 0, 0.10);
+  --color-dropdown-control: var(--color-fixed-control-on-dark);
+  --color-dropdown-control-hover: var(--color-fixed-control-on-dark-hover);
+  --color-dropdown-hover-shared: var(--color-dropdown-hover-on-dark);
   --color-divider-on-dark: rgba(255, 255, 255, 0.24);
   --color-divider-on-light: rgba(0, 0, 0, 0.14);
   --color-nav-hover: var(--color-nav-hover-on-dark);
@@ -135,6 +143,11 @@ body.controls-over-light {
   --surface-glass-rgb: var(--surface-glass-on-light-rgb);
   --surface-glass-opacity: var(--surface-glass-on-light-opacity);
   --glass-border: var(--glass-border-on-light);
+  --surface-dropdown-background: rgba(var(--surface-glass-on-light-rgb), var(--surface-dropdown-on-light-opacity));
+  --glass-border-dropdown: var(--glass-border-on-light);
+  --color-dropdown-control: var(--color-fixed-control-on-light);
+  --color-dropdown-control-hover: var(--color-fixed-control-on-light-hover);
+  --color-dropdown-hover-shared: var(--color-dropdown-hover-on-light);
   --color-nav-hover: var(--color-nav-hover-on-light);
   --color-dropdown-hover: var(--color-dropdown-hover-on-light);
   --color-divider: var(--color-divider-on-light);
@@ -690,9 +703,9 @@ main {
   min-width: 140px;
   padding: 0;
   border-radius: 8px;
-  background: var(--surface-glass-background);
-  border: 1px solid var(--glass-border);
-  color: var(--color-fixed-control);
+  background: var(--surface-dropdown-background);
+  border: 1px solid var(--glass-border-dropdown);
+  color: var(--color-dropdown-control);
   box-shadow: var(--shadow-surface);
   backdrop-filter: blur(var(--glass-blur)) saturate(155%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(155%);
@@ -704,18 +717,53 @@ main {
     color 0.32s ease;
 }
 
-.lang-menu {
+body.services-route:not(.controls-over-light) .lang-menu {
+  background: var(--surface-dropdown-background);
+  border-color: var(--glass-border-dropdown);
+  color: var(--color-dropdown-control);
+  backdrop-filter: blur(var(--glass-blur)) saturate(155%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(155%);
+}
+
+.lang-menu,
+#primaryNav {
   position: absolute;
   top: 100%;
   right: 0;
   z-index: 100;
   display: none;
   margin: 8px 0 0;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top right;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.lang-menu {
   list-style: none;
 }
 
-.lang-menu.open {
+.lang-menu.is-opening,
+.lang-menu.open,
+#primaryNav.is-opening,
+#primaryNav.open,
+.lang-menu.is-closing,
+#primaryNav.is-closing {
   display: block;
+}
+
+.lang-menu.open,
+#primaryNav.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.lang-menu.is-closing,
+#primaryNav.is-closing {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
 }
 
 .lang-menu li {
@@ -736,7 +784,7 @@ main {
 
 .lang-option:hover,
 .lang-option:focus-visible {
-  background: var(--color-dropdown-hover);
+  background: var(--color-dropdown-hover-shared);
   outline: none;
 }
 
@@ -805,13 +853,6 @@ main {
     --font-size-text: 18px;
     --hero-caption-space: 66px;
     --hero-next-peek-space: 0px;
-    --card-width: 360px;
-    --card-height: 460px;
-    --card-padding: 28px;
-    --font-size-card-title: 30px;
-    --font-size-card-text: 17px;
-    --carousel-arrow-size: 52px;
-    --font-size-carousel-arrow: 48px;
   }
 
   main {
@@ -837,7 +878,7 @@ main {
   }
 
   .services-page {
-    padding: 112px 0 64px;
+    padding: 80px 0 0px;
   }
 
   .services-hero {
@@ -849,7 +890,7 @@ main {
   }
 
   .feature-cards {
-    padding-bottom: 64px;
+    padding-bottom: 5px;
   }
 
   .feature-cards-header {
@@ -857,16 +898,20 @@ main {
   }
 
   .feature-cards-track {
-    scroll-padding-inline: 20px;
-    padding: 12px 20px 10px;
+    scroll-padding-inline: 28px;
+    padding: 12px 28px 48px;
   }
 
   .feature-cards-prev {
-    left: 18px;
+    left: 24px;
   }
 
   .feature-cards-next {
-    right: 18px;
+    right: 24px;
+  }
+
+  .feature-cards-arrow {
+    display: none;
   }
 
   .site-header {
@@ -931,15 +976,17 @@ main {
     min-width: 140px;
     padding: 0;
     border-radius: 8px;
-    background: var(--surface-glass-background);
-    border: 1px solid var(--glass-border);
-    color: var(--color-fixed-control);
+    background: var(--surface-dropdown-background);
+    border: 1px solid var(--glass-border-dropdown);
+    color: var(--color-dropdown-control);
     box-shadow: var(--shadow-surface);
     backdrop-filter: blur(var(--glass-blur)) saturate(155%);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(155%);
     font-family: var(--font-ui);
     text-shadow: none;
     transition:
+      opacity 0.18s ease,
+      transform 0.18s ease,
       background-color 0.32s ease,
       border-color 0.32s ease,
       color 0.32s ease;
@@ -977,18 +1024,7 @@ main {
   }
 
   #primaryNav {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    display: none;
     min-height: 0;
-    margin-top: 8px;
-    transform: none;
-  }
-
-  #primaryNav.open,
-  .mobile-menu-button[aria-expanded="true"] + #primaryNav {
-    display: block;
   }
 
   #primaryNav .floating-nav-link {
@@ -1002,8 +1038,8 @@ main {
 
   #primaryNav .floating-nav-link:hover,
   #primaryNav .floating-nav-link:focus-visible {
-    background: var(--color-dropdown-hover);
-    color: var(--color-fixed-control-hover);
+    background: var(--color-dropdown-hover-shared);
+    color: var(--color-dropdown-control-hover);
   }
 
   #primaryNav .floating-nav-link[aria-current="page"] {
@@ -1072,14 +1108,7 @@ main {
     --font-size-text: 16px;
     --hero-caption-space: 62px;
     --hero-next-peek-space: 0px;
-    --card-width: 286px;
-    --card-height: 390px;
-    --card-padding: 24px;
-    --card-gap: 16px;
-    --font-size-card-title: 26px;
-    --font-size-card-text: 16px;
-    --carousel-arrow-size: 46px;
-    --font-size-carousel-arrow: 42px;
+    --carousel-arrow-size: 52px;
   }
 
   main {
@@ -1105,7 +1134,7 @@ main {
   }
 
   .services-page {
-    padding: 100px 0 52px;
+    padding: 100px 0 0px;
   }
 
   .services-hero {
@@ -1113,7 +1142,7 @@ main {
   }
 
   .feature-cards {
-    padding-bottom: 52px;
+    padding-bottom: 5px;
   }
 
   .feature-cards-header {
@@ -1121,16 +1150,16 @@ main {
   }
 
   .feature-cards-track {
-    scroll-padding-inline: 14px;
-    padding: 12px 14px 10px;
+    scroll-padding-inline: 28px;
+    padding: 12px 28px 48px;
   }
 
   .feature-cards-prev {
-    left: 12px;
+    left: 24px;
   }
 
   .feature-cards-next {
-    right: 12px;
+    right: 24px;
   }
 
   .mobile-header-bar {

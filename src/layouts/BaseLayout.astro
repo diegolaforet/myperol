@@ -82,18 +82,46 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
         document.documentElement.lang = normalizeLang(lang);
       }
 
-      function setLangMenuOpen(isOpen) {
-        const menu = document.getElementById("langMenu");
-        const toggle = document.getElementById("langToggle");
+      function setFloatingMenuOpen(menu, toggle, isOpen) {
+        if (!menu) return;
 
-        if (menu) {
-          menu.classList.toggle("open", isOpen);
-          menu.hidden = !isOpen;
+        window.clearTimeout(Number(menu.dataset.closeTimeout || 0));
+
+        if (isOpen) {
+          menu.hidden = false;
+          menu.classList.remove("is-closing");
+          menu.classList.add("is-opening");
+          window.requestAnimationFrame(() => {
+            menu.classList.add("open");
+            menu.classList.remove("is-opening");
+          });
+        } else if (!menu.classList.contains("open")) {
+          menu.hidden = true;
+        } else {
+          menu.classList.remove("open");
+          menu.classList.add("is-closing");
+          menu.dataset.closeTimeout = String(
+            window.setTimeout(() => {
+              if (menu.classList.contains("open")) return;
+
+              menu.hidden = true;
+              menu.classList.remove("is-closing");
+              delete menu.dataset.closeTimeout;
+            }, 180)
+          );
         }
 
         if (toggle) {
           toggle.setAttribute("aria-expanded", String(isOpen));
         }
+      }
+
+      function setLangMenuOpen(isOpen) {
+        setFloatingMenuOpen(
+          document.getElementById("langMenu"),
+          document.getElementById("langToggle"),
+          isOpen
+        );
       }
 
       function toggleLangMenu() {
@@ -108,16 +136,11 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
       }
 
       function setMobileMenuOpen(isOpen) {
-        const menu = document.getElementById("primaryNav");
-        const toggle = document.getElementById("mobileMenuToggle");
-
-        if (menu) {
-          menu.classList.toggle("open", isOpen);
-        }
-
-        if (toggle) {
-          toggle.setAttribute("aria-expanded", String(isOpen));
-        }
+        setFloatingMenuOpen(
+          document.getElementById("primaryNav"),
+          document.getElementById("mobileMenuToggle"),
+          isOpen
+        );
       }
 
       function toggleMobileMenu() {
@@ -248,6 +271,15 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
           closeMobileMenu();
         }
       });
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          closeLangMenu();
+          closeMobileMenu();
+        },
+        { passive: true }
+      );
 
       window.toggleLangMenu = toggleLangMenu;
       window.selectLang = selectLang;
