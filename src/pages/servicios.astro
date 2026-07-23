@@ -23,35 +23,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       <div class="feature-cards-shell">
         <div class="feature-cards-track">
-          <article class="feature-card">
+          <article class="feature-card service-card-expandable" tabindex="0">
             <span>MyPerol</span>
             <h2>HOME</h2>
             <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card">
+          <article class="feature-card service-card-expandable" tabindex="0">
             <span>MyPerol</span>
             <h2>GARAGE</h2>
             <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card">
+          <article class="feature-card service-card-expandable" tabindex="0">
             <span>MyPerol</span>
             <h2>BUSSINES</h2>
             <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card">
+          <article class="feature-card service-card-expandable" tabindex="0">
             <span>MyPerol</span>
             <h2>INDUSTRY</h2>
             <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card">
+          <article class="feature-card service-card-expandable" tabindex="0">
             <span>MyPerol</span>
             <h2>OUTDOOR</h2>
             <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
@@ -293,6 +293,108 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   document.querySelectorAll(".feature-cards-shell").forEach((shell) => {
     if (shell instanceof HTMLElement) initializeFeatureCardsCarousel(shell);
   });
+
+  const initializeServiceCardExpansion = () => {
+    const cards = Array.from(document.querySelectorAll(".services-feature-cards .service-card-expandable")).filter(
+      (card) => card instanceof HTMLElement
+    );
+
+    if (!cards.length) return;
+
+    let activeOverlay = null;
+    let isClosing = false;
+
+    const closeExpandedCard = () => {
+      if (!activeOverlay || isClosing) return;
+
+      isClosing = true;
+      activeOverlay.classList.add("is-closing");
+      activeOverlay.classList.remove("is-open");
+
+      activeOverlay.addEventListener(
+        "transitionend",
+        (event) => {
+          if (event.target !== activeOverlay) return;
+
+          activeOverlay?.remove();
+          activeOverlay = null;
+          isClosing = false;
+        },
+        { once: true }
+      );
+    };
+
+    const openExpandedCard = (card) => {
+      if (activeOverlay || isClosing) return;
+
+      const label = card.querySelector("span")?.textContent?.trim() || "MyPerol";
+      const title = card.querySelector("h2")?.textContent?.trim() || "";
+      const text = card.querySelector("p")?.textContent?.trim() || "";
+      const image = card.querySelector(".service-card-image");
+      const imageSrc = image instanceof HTMLImageElement ? image.currentSrc || image.src : "";
+
+      activeOverlay = document.createElement("div");
+      activeOverlay.className = "service-expanded-overlay";
+      activeOverlay.innerHTML = `
+        <article class="service-expanded-card" role="dialog" aria-modal="true" aria-label="${label} ${title}">
+          <div class="service-expanded-media">
+            <div class="service-expanded-media-frame">
+              <img src="${imageSrc}" alt="" aria-hidden="true" />
+            </div>
+            <p class="service-expanded-summary">${text}</p>
+          </div>
+          <div class="service-expanded-content">
+            <p class="service-expanded-label">${label}</p>
+            <h2 class="service-expanded-title">${title}</h2>
+            <p class="service-expanded-copy">${text}</p>
+            <button class="service-expanded-action" type="button">Solicitar informacion</button>
+            <button class="service-expanded-composition" type="button">Conoce la composicion <span aria-hidden="true">→</span></button>
+          </div>
+        </article>
+      `;
+
+      document.body.append(activeOverlay);
+      const expandedCard = activeOverlay.querySelector(".service-expanded-card");
+      const expandedImage = activeOverlay.querySelector(".service-expanded-media-frame img");
+
+      if (!(expandedCard instanceof HTMLElement)) return;
+
+      activeOverlay.addEventListener("click", (event) => {
+        if (event.target === activeOverlay) closeExpandedCard();
+      });
+
+      const openOverlay = () => {
+        window.requestAnimationFrame(() => {
+          activeOverlay?.classList.add("is-open");
+        });
+      };
+
+      if (expandedImage instanceof HTMLImageElement && "decode" in expandedImage) {
+        expandedImage.decode().then(openOverlay).catch(openOverlay);
+      } else {
+        openOverlay();
+      }
+    };
+
+    cards.forEach((card) => {
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-label", `Abrir ${card.querySelector("h2")?.textContent?.trim() || "servicio"}`);
+
+      card.addEventListener("click", () => openExpandedCard(card));
+      card.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+
+        event.preventDefault();
+        openExpandedCard(card);
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeExpandedCard();
+    });
+  };
+
+  initializeServiceCardExpansion();
 
   initializeScrollReveal();
 
