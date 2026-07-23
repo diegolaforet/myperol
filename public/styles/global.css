@@ -422,6 +422,16 @@ main {
   font: 400 var(--font-size-card-text)/var(--line-height-card-text) var(--font-ui);
 }
 
+.services-feature-cards .service-card-image {
+  display: block;
+  position: absolute;
+  right: 50px;
+  bottom: 28px;
+  width: min(78%, 310px);
+  max-height: 600px;
+  object-fit: contain;
+}
+
 .feature-cards-dots {
   position: absolute;
   bottom: 10px;
