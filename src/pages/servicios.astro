@@ -347,8 +347,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <p class="service-expanded-label">${label}</p>
             <h2 class="service-expanded-title">${title}</h2>
             <p class="service-expanded-copy">${text}</p>
-            <button class="service-expanded-action" type="button">Solicitar informacion</button>
-            <button class="service-expanded-composition" type="button">Conoce la composicion <span aria-hidden="true">→</span></button>
+            <button class="service-expanded-action" type="button" onclick="window.location.href='/precios'">Solicitar precio</button>
+            <button class="service-expanded-composition" type="button"><span class="composition-shift-label">Conoce la composicion</span><span class="composition-shift-arrow" aria-hidden="true">&rarr;</span></button>
           </div>
         </article>
       `;

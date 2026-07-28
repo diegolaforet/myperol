@@ -2,6 +2,7 @@
 const { currentPath = "/" } = Astro.props;
 const isHome = currentPath === "/";
 const isServices = currentPath === "/servicios";
+const isPrices = currentPath === "/precios";
 ---
 
 <header class="site-header" aria-label="Navegación principal" data-i18n-aria-label="nav_main_aria">
@@ -67,7 +68,7 @@ const isServices = currentPath === "/servicios";
         <nav class="floating-nav floating-dropdown" id="primaryNav" aria-label="Secciones principales" data-i18n-aria-label="nav_sections_aria" hidden>
           <a href="/" class="floating-nav-link" aria-current={isHome ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_home">Home</a>
           <a href="/servicios" class="floating-nav-link" aria-current={isServices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_services">Servicios</a>
-          <a href="/#precios" class="floating-nav-link" onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>
+          <a href="/precios" class="floating-nav-link" aria-current={isPrices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>
           <a href="/#mp-systems" class="floating-nav-link" onclick="closeMobileMenu()" data-i18n="nav_mp_systems">MP Systems</a>
         </nav>
       </div>
@@ -77,7 +78,7 @@ const isServices = currentPath === "/servicios";
   <nav class="floating-nav desktop-nav" aria-label="Secciones principales" data-i18n-aria-label="nav_sections_aria">
     <a href="/" class="floating-nav-link" aria-current={isHome ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_home">Home</a>
     <a href="/servicios" class="floating-nav-link" aria-current={isServices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_services">Servicios</a>
-    <a href="/#precios" class="floating-nav-link" onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>
+    <a href="/precios" class="floating-nav-link" aria-current={isPrices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>
     <a href="/#mp-systems" class="floating-nav-link" onclick="closeMobileMenu()" data-i18n="nav_mp_systems">MP Systems</a>
   </nav>
 </header>

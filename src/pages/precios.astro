@@ -1,0 +1,400 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="MyPerol - Precios"
+  description="Precios de MyPerol."
+  bodyClass="prices-route"
+>
+  <main class="prices-page">
+    <section class="prices-hero" aria-label="Precios MyPerol">
+      <img
+        src="/assets/placeholder/placeholder-index.jpg"
+        alt=""
+        aria-hidden="true"
+      />
+    </section>
+
+    <section class="prices-card service-expanded-card" aria-label="Aproximacion de precio MyPerol" data-price-card data-step="1">
+      <button class="price-back-button" type="button" aria-label="Atras" data-price-back hidden>
+        <span aria-hidden="true">&larr;</span>
+        <span class="price-back-label">Atras</span>
+      </button>
+
+      <div class="service-expanded-media">
+        <div class="service-expanded-media-frame">
+          <img src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+        </div>
+        <p class="service-expanded-summary">Calcula un rango aproximado para orientar el coste de tu proyecto MyPerol.</p>
+      </div>
+
+      <div class="service-expanded-content prices-step-content">
+        <p class="service-expanded-label">MyPerol</p>
+        <h1 class="service-expanded-title" data-price-title>APROXIMACION DE PRECIO</h1>
+        <p class="service-expanded-copy" data-price-copy>Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.</p>
+
+        <div class="price-space-options" data-price-options hidden>
+          <button class="price-space-option" type="button" data-space="vivienda">&#127968; Vivienda</button>
+          <button class="price-space-option" type="button" data-space="garaje">&#128663; Garaje</button>
+          <button class="price-space-option" type="button" data-space="local-comercial">&#127970; Local comercial</button>
+          <button class="price-space-option" type="button" data-space="industria">&#127981; Industria</button>
+          <button class="price-space-option" type="button" data-space="exterior">&#127807; Exterior</button>
+        </div>
+
+        <div class="price-surface-step" data-price-surface-step hidden>
+          <p class="price-step-question">Cuantos metros cuadrados tiene la superficie?</p>
+          <label class="price-surface-field">
+            <span class="visually-hidden">Metros cuadrados</span>
+            <input
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              placeholder="m2"
+              data-price-surface-input
+            />
+          </label>
+          <p class="price-surface-error" data-price-surface-error hidden>Fuera de limites</p>
+        </div>
+
+        <div class="price-support-options" data-price-support-options hidden>
+          <button class="price-space-option" type="button" data-support="hormigon">Hormigon</button>
+          <button class="price-space-option" type="button" data-support="mortero-autonivelante">Mortero autonivelante</button>
+          <button class="price-space-option" type="button" data-support="ceramica-baldosa">Ceramica/Baldosa</button>
+          <button class="price-space-option" type="button" data-support="otro">Otro</button>
+        </div>
+
+        <div class="prices-card-footer">
+          <button class="service-expanded-composition prices-step-action" type="button" data-price-action>
+            <span class="composition-shift-label" data-price-action-label>Comenzar</span>
+            <span class="composition-shift-arrow" aria-hidden="true">&rarr;</span>
+          </button>
+          <div class="prices-progress-dots" aria-label="Paso 1 de 5" data-price-progress>
+            <span class="feature-cards-dot is-active" aria-hidden="true" data-price-dot></span>
+            <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
+            <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
+            <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
+            <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
+            <span class="feature-cards-dot price-extra-dot" aria-hidden="true" data-price-extra-dot hidden></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const priceCard = document.querySelector("[data-price-card]");
+
+    if (priceCard instanceof HTMLElement) {
+      const title = priceCard.querySelector("[data-price-title]");
+      const copy = priceCard.querySelector("[data-price-copy]");
+      const options = priceCard.querySelector("[data-price-options]");
+      const surfaceStep = priceCard.querySelector("[data-price-surface-step]");
+      const surfaceInput = priceCard.querySelector("[data-price-surface-input]");
+      const surfaceError = priceCard.querySelector("[data-price-surface-error]");
+      const supportOptions = priceCard.querySelector("[data-price-support-options]");
+      const action = priceCard.querySelector("[data-price-action]");
+      const actionLabel = priceCard.querySelector("[data-price-action-label]");
+      const backButton = priceCard.querySelector("[data-price-back]");
+      const progress = priceCard.querySelector("[data-price-progress]");
+      const dots = priceCard.querySelectorAll("[data-price-dot]");
+      const extraDot = priceCard.querySelector("[data-price-extra-dot]");
+      const storageKey = "myperol-price-calculator";
+      const whatsappUrl = "https://wa.me/34663108027";
+      let surfaceErrorTimeout = 0;
+      let actionLabelTimeout = 0;
+
+      const getState = () => ({
+        step: Number(priceCard.dataset.step || "1"),
+        selectedSpace: priceCard.dataset.selectedSpace || "",
+        surface: surfaceInput instanceof HTMLInputElement ? surfaceInput.value : "",
+        selectedSupport: priceCard.dataset.selectedSupport || "",
+      });
+
+      const saveState = () => {
+        sessionStorage.setItem(storageKey, JSON.stringify(getState()));
+      };
+
+      const updateBackButton = () => {
+        if (backButton instanceof HTMLButtonElement) {
+          backButton.hidden = Number(priceCard.dataset.step || "1") <= 1;
+        }
+      };
+
+      const setActiveDots = (step) => {
+        updateExtraProgressDot();
+
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("is-active", index < step);
+        });
+
+        if (progress) {
+          const totalSteps = priceCard.dataset.selectedSupport === "ceramica-baldosa" ? 6 : 5;
+          progress.setAttribute("aria-label", `Paso ${step} de ${totalSteps}`);
+        }
+      };
+
+      const updateExtraProgressDot = () => {
+        if (!(extraDot instanceof HTMLElement)) return;
+
+        const shouldShowExtraDot = priceCard.dataset.selectedSupport === "ceramica-baldosa";
+        extraDot.hidden = !shouldShowExtraDot;
+        extraDot.classList.toggle("is-visible", shouldShowExtraDot);
+      };
+
+      const setActionEnabled = (enabled) => {
+        if (action instanceof HTMLButtonElement) action.disabled = !enabled;
+      };
+
+      const setActionLabel = (text) => {
+        if (!actionLabel) return;
+
+        window.clearTimeout(actionLabelTimeout);
+
+        if (actionLabel.textContent === text) return;
+
+        actionLabel.classList.add("is-changing");
+
+        actionLabelTimeout = window.setTimeout(() => {
+          actionLabel.textContent = text;
+          actionLabel.classList.remove("is-changing");
+        }, 120);
+      };
+
+      const updateSupportActionLabel = () => {
+        setActionLabel(priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "otro"
+          ? "Consultar en chat"
+          : "Continuar");
+      };
+
+      const updateSelectedOption = (container, selectedValue, dataName) => {
+        if (!(container instanceof HTMLElement)) return;
+
+        container.querySelectorAll(".price-space-option").forEach((item) => {
+          if (!(item instanceof HTMLButtonElement)) return;
+
+          item.classList.toggle("is-selected", item.dataset[dataName] === selectedValue);
+        });
+      };
+
+      const setStepOne = () => {
+        priceCard.dataset.step = "1";
+
+        if (title) title.textContent = "APROXIMACION DE PRECIO";
+        if (copy) copy.textContent = "Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.";
+        if (options instanceof HTMLElement) options.hidden = true;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        setActionLabel("Comenzar");
+
+        setActiveDots(1);
+        setActionEnabled(true);
+        updateBackButton();
+        saveState();
+      };
+
+      const setStepTwo = () => {
+        priceCard.dataset.step = "2";
+
+        if (title) title.textContent = "TIPO DE ESPACIO";
+        if (copy) copy.textContent = "";
+        if (options instanceof HTMLElement) options.hidden = false;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        setActionLabel("Continuar");
+
+        setActiveDots(2);
+        setActionEnabled(Boolean(priceCard.dataset.selectedSpace));
+        updateBackButton();
+        saveState();
+      };
+
+      const setStepThree = () => {
+        priceCard.dataset.step = "3";
+
+        if (title) title.textContent = "SUPERFICIE";
+        if (copy) copy.textContent = "";
+        if (options instanceof HTMLElement) options.hidden = true;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = false;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        if (surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
+        setActionLabel("Continuar");
+
+        setActiveDots(3);
+        setActionEnabled(isValidSurfaceValue());
+        updateBackButton();
+        saveState();
+      };
+
+      const setStepFour = () => {
+        priceCard.dataset.step = "4";
+
+        if (title) title.textContent = "SOPORTE EXISTENTE";
+        if (copy) copy.textContent = "";
+        if (options instanceof HTMLElement) options.hidden = true;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = false;
+
+        setActiveDots(4);
+        updateSupportActionLabel();
+        setActionEnabled(Boolean(priceCard.dataset.selectedSupport));
+        updateBackButton();
+        saveState();
+      };
+
+      const isValidSurfaceValue = () => {
+        if (!(surfaceInput instanceof HTMLInputElement)) return false;
+
+        const value = Number(surfaceInput.value);
+        return Number.isInteger(value) && value > 0 && value <= 9999999999;
+      };
+
+      const setSurfaceLimitError = (hasError) => {
+        window.clearTimeout(surfaceErrorTimeout);
+
+        if (surfaceInput instanceof HTMLInputElement) {
+          surfaceInput.classList.toggle("is-out-of-range", hasError);
+        }
+
+        if (surfaceError instanceof HTMLElement) {
+          surfaceError.hidden = !hasError;
+        }
+
+        if (hasError) {
+          surfaceErrorTimeout = window.setTimeout(() => {
+            if (surfaceInput instanceof HTMLInputElement) {
+              surfaceInput.classList.remove("is-out-of-range");
+            }
+
+            if (surfaceError instanceof HTMLElement) {
+              surfaceError.hidden = true;
+            }
+          }, 2000);
+        }
+      };
+
+      action?.addEventListener("click", () => {
+        if (priceCard.dataset.step === "1") {
+          setStepTwo();
+          return;
+        }
+
+        if (priceCard.dataset.step === "2") {
+          setStepThree();
+          return;
+        }
+
+        if (priceCard.dataset.step === "3" && isValidSurfaceValue()) {
+          setStepFour();
+          return;
+        }
+
+        if (priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "otro") {
+          window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+        }
+      });
+
+      backButton?.addEventListener("click", () => {
+        const currentStep = Number(priceCard.dataset.step || "1");
+
+        if (currentStep === 4) {
+          setStepThree();
+          return;
+        }
+
+        if (currentStep === 3) {
+          setStepTwo();
+          return;
+        }
+
+        if (currentStep === 2) {
+          setStepOne();
+        }
+      });
+
+      options?.querySelectorAll(".price-space-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          if (!(option instanceof HTMLButtonElement)) return;
+
+          priceCard.dataset.selectedSpace = option.dataset.space || "";
+          updateSelectedOption(options, priceCard.dataset.selectedSpace, "space");
+
+          setActionEnabled(true);
+          saveState();
+        });
+      });
+
+      supportOptions?.querySelectorAll(".price-space-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          if (!(option instanceof HTMLButtonElement)) return;
+
+          priceCard.dataset.selectedSupport = option.dataset.support || "";
+          updateSelectedOption(supportOptions, priceCard.dataset.selectedSupport, "support");
+
+          updateExtraProgressDot();
+          setActiveDots(Number(priceCard.dataset.step || "4"));
+          updateSupportActionLabel();
+          setActionEnabled(true);
+          saveState();
+        });
+      });
+
+      surfaceInput?.addEventListener("input", () => {
+        if (!(surfaceInput instanceof HTMLInputElement)) return;
+
+        const numericValue = surfaceInput.value.replace(/\D/g, "");
+        const isOutOfRange = numericValue.length > 10 || Number(numericValue) > 9999999999;
+
+        surfaceInput.value = numericValue.slice(0, 10);
+        setSurfaceLimitError(isOutOfRange);
+        setActionEnabled(isValidSurfaceValue());
+        saveState();
+      });
+
+      const restoreState = () => {
+        try {
+          const storedState = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+
+          if (typeof storedState.selectedSpace === "string") {
+            priceCard.dataset.selectedSpace = storedState.selectedSpace;
+            updateSelectedOption(options, storedState.selectedSpace, "space");
+          }
+
+          if (surfaceInput instanceof HTMLInputElement && typeof storedState.surface === "string") {
+            surfaceInput.value = storedState.surface.replace(/\D/g, "").slice(0, 10);
+          }
+
+          if (typeof storedState.selectedSupport === "string") {
+            priceCard.dataset.selectedSupport = storedState.selectedSupport;
+            updateSelectedOption(supportOptions, storedState.selectedSupport, "support");
+            updateExtraProgressDot();
+          }
+
+          const restoredStep = Number(storedState.step || 1);
+
+          if (restoredStep >= 4) {
+            setStepFour();
+            return;
+          }
+
+          if (restoredStep === 3) {
+            setStepThree();
+            return;
+          }
+
+          if (restoredStep === 2) {
+            setStepTwo();
+            return;
+          }
+        } catch {
+          sessionStorage.removeItem(storageKey);
+        }
+
+        setStepOne();
+      };
+
+      sessionStorage.removeItem(storageKey);
+      setStepOne();
+    }
+  </script>
+</BaseLayout>
