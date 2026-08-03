@@ -528,16 +528,55 @@ main {
 
 .services-feature-cards .service-card-image {
   display: block;
-  position: absolute;
-  right: 50px;
-  bottom: 28px;
-  width: min(78%, 310px);
-  max-height: 600px;
+  width: min(88%, 300px);
+  max-height: 300px;
   object-fit: contain;
+  align-self: center;
+  margin-top: auto;
 }
 
 .services-feature-cards .service-card-expandable {
   cursor: pointer;
+}
+
+.services-feature-cards .feature-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: auto;
+  min-height: var(--card-height);
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.services-feature-cards .feature-card:hover,
+.services-feature-cards .feature-card:focus-within,
+.reveal-enabled .services-feature-cards .feature-card.is-visible:hover,
+.reveal-enabled .services-feature-cards .feature-card.is-visible:focus-within {
+  box-shadow: none;
+}
+
+.service-card-media {
+  position: relative;
+  display: flex;
+  flex: 0 0 360px;
+  flex-direction: column;
+  min-height: 360px;
+  padding: var(--card-padding);
+  border-radius: var(--card-radius);
+  background: var(--color-card-bg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.services-feature-cards .feature-card h2,
+.services-feature-cards .feature-card p {
+  padding: 0 8px;
+}
+
+.feature-card-services-text {
+  transform: translateY(-20px);
 }
 
 .services-feature-cards .service-card-expandable:focus-visible {
@@ -554,13 +593,24 @@ main {
   justify-content: center;
   padding: 34px;
   background: rgba(20, 20, 20, 0.48);
+  backdrop-filter: blur(0) saturate(100%);
+  -webkit-backdrop-filter: blur(0) saturate(100%);
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transform: translateZ(0);
+  transition:
+    opacity 0.1s ease,
+    backdrop-filter 0.14s cubic-bezier(0.2, 0.8, 0.2, 1),
+    -webkit-backdrop-filter 0.14s cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: opacity;
 }
 
 .service-expanded-overlay.is-open {
   opacity: 1;
+}
+
+.service-expanded-overlay.is-blurred {
+  backdrop-filter: blur(10px) saturate(108%);
+  -webkit-backdrop-filter: blur(10px) saturate(108%);
 }
 
 .service-expanded-card {

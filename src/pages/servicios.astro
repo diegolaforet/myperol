@@ -30,38 +30,48 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div class="feature-cards-shell">
         <div class="feature-cards-track">
           <article class="feature-card service-card-expandable" tabindex="0" data-price-space="vivienda">
-            <span>MyPerol</span>
+            <div class="service-card-media">
+              <span>MyPerol</span>
+              <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            </div>
             <h2>HOME</h2>
-            <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
-            <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            <p class="feature-card-services-text" data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
           </article>
 
           <article class="feature-card service-card-expandable" tabindex="0" data-price-space="garaje">
-            <span>MyPerol</span>
+            <div class="service-card-media">
+              <span>MyPerol</span>
+              <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            </div>
             <h2>GARAGE</h2>
-            <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
-            <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            <p class="feature-card-services-text" data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
           </article>
 
           <article class="feature-card service-card-expandable" tabindex="0" data-price-space="local-comercial">
-            <span>MyPerol</span>
+            <div class="service-card-media">
+              <span>MyPerol</span>
+              <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            </div>
             <h2>BUSSINES</h2>
-            <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
-            <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            <p class="feature-card-services-text" data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
           </article>
 
           <article class="feature-card service-card-expandable" tabindex="0" data-price-space="industria">
-            <span>MyPerol</span>
+            <div class="service-card-media">
+              <span>MyPerol</span>
+              <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            </div>
             <h2>INDUSTRY</h2>
-            <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
-            <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            <p class="feature-card-services-text" data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
           </article>
 
           <article class="feature-card service-card-expandable" tabindex="0" data-price-space="exterior">
-            <span>MyPerol</span>
+            <div class="service-card-media">
+              <span>MyPerol</span>
+              <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            </div>
             <h2>OUTDOOR</h2>
-            <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
-            <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
+            <p class="feature-card-services-text" data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
           </article>
         </div>
 
@@ -315,6 +325,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       isClosing = true;
       activeOverlay.classList.add("is-closing");
+      activeOverlay.classList.remove("is-blurred");
       activeOverlay.classList.remove("is-open");
 
       activeOverlay.addEventListener(
@@ -383,6 +394,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const openOverlay = () => {
         window.requestAnimationFrame(() => {
           activeOverlay?.classList.add("is-open");
+          activeOverlay?.classList.add("is-blurred");
         });
       };
 
