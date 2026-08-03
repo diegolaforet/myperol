@@ -99,6 +99,7 @@
 
   /* Content typography levels. Buttons and navigation keep their own sizing. */
   --font-size-title: 67px;
+  --font-size-home-intro-subtitle: 60px;
   --font-size-subtitle: 40px;
   --font-size-text: 20px;
   --line-height-title: 1.02;
@@ -313,7 +314,7 @@ main {
 
 .home-intro-subtitle {
   color: var(--color-card-muted);
-  font: var(--font-weight-title) var(--font-size-title)/var(--line-height-title) var(--font-ui);
+  font: var(--font-weight-title) var(--font-size-home-intro-subtitle)/var(--line-height-title) var(--font-ui);
 }
 
 .home-intro-statement {
@@ -2023,6 +2024,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
 @media (max-width: 902px) {
   :root {
     --font-size-title: 56px;
+    --font-size-home-intro-subtitle: 52px;
     --font-size-subtitle: 44px;
     --font-size-text: 18px;
     --hero-caption-space: 66px;
@@ -2403,6 +2405,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
 @media (max-width: 560px) {
   :root {
     --font-size-title: 44px;
+    --font-size-home-intro-subtitle: 40px;
     --font-size-subtitle: 34px;
     --font-size-text: 16px;
     --hero-caption-space: 62px;
