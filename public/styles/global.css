@@ -383,6 +383,24 @@ main {
 .home-secondary-cards-dots {
 }
 
+.home-carousel-dots-on-light {
+  --surface-glass-rgb: var(--surface-glass-on-light-rgb);
+  --surface-glass-opacity: var(--surface-glass-on-light-opacity);
+  --surface-glass-background: rgba(var(--surface-glass-on-light-rgb), var(--surface-glass-on-light-opacity));
+  --glass-border: var(--glass-border-on-light);
+  background: rgba(var(--surface-glass-on-light-rgb), var(--surface-glass-on-light-opacity));
+}
+
+.home-carousel-dots-on-light .feature-cards-dot {
+  border-color: rgba(27, 27, 27, 0.18);
+  background: rgba(27, 27, 27, 0.12);
+}
+
+.home-carousel-dots-on-light .feature-cards-dot.is-active {
+  border-color: var(--color-fixed-control-on-light-hover);
+  background: var(--color-fixed-control-on-light);
+}
+
 .feature-cards-header {
   padding: 0 28px 26px;
 }
@@ -535,6 +553,16 @@ main {
   margin-top: auto;
 }
 
+.services-feature-cards .service-card-image-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  margin: 0;
+}
+
 .services-feature-cards .service-card-expandable {
   cursor: pointer;
 }
@@ -568,6 +596,11 @@ main {
   background: var(--color-card-bg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
+}
+
+.service-card-media span {
+  position: relative;
+  z-index: 1;
 }
 
 .services-feature-cards .feature-card h2,
@@ -667,6 +700,13 @@ main {
   width: min(88%, 520px);
   max-height: 100%;
   object-fit: contain;
+}
+
+.service-expanded-media-frame .service-expanded-image-cover {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
 }
 
 .service-expanded-summary {
