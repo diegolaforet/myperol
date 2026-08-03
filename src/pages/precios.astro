@@ -124,7 +124,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           <form class="price-result-form">
             <label>
               <span>Nombre completo</span>
-              <input type="text" name="full-name" autocomplete="name" />
+              <input type="text" name="full-name" autocomplete="name" data-price-result-name />
             </label>
             <label>
               <span>Telefono</span>
@@ -137,7 +137,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
                   </button>
                   <span class="phone-prefix-menu" role="listbox" data-phone-prefix-menu hidden></span>
                 </span>
-                <input type="tel" name="phone" autocomplete="tel" />
+                <input type="tel" name="phone" autocomplete="tel" data-price-result-phone />
               </span>
             </label>
           </form>
@@ -152,9 +152,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <p>En MyPerol no ofrecemos presupuestos genericos. Cada proyecto comienza con un estudio tecnico para garantizar una solucion adaptada a las caracteristicas reales de cada superficie.</p>
           </section>
 
-          <button class="service-expanded-action price-result-action" type="button">
+          <button class="service-expanded-action price-result-action" type="button" data-price-result-submit disabled>
             <span>Solicitar estudio tecnico</span>
           </button>
+          <p class="price-result-submit-status" data-price-result-status aria-live="polite"></p>
         </div>
         <div class="prices-card-footer">
           <button class="service-expanded-composition prices-step-action" type="button" data-price-action>
@@ -178,7 +179,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <div class="price-estimate-model" aria-label="Modelo 3D pendiente">
         <span></span>
       </div>
-      <div class="price-estimate-amount" data-price-estimate-amount>130 Euros</div>
+      <div class="price-estimate-amount" data-price-estimate-amount>130 €</div>
     </section>
 
     <div class="price-help-overlay" data-price-help-overlay hidden>
@@ -239,13 +240,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const extraDot = priceCard.querySelector("[data-price-extra-dot]");
       const estimateCard = document.querySelector("[data-price-estimate]");
       const estimateAmount = document.querySelector("[data-price-estimate-amount]");
+      const resultNameInput = priceCard.querySelector("[data-price-result-name]");
+      const resultPhoneInput = priceCard.querySelector("[data-price-result-phone]");
+      const resultSubmit = priceCard.querySelector("[data-price-result-submit]");
+      const resultStatus = priceCard.querySelector("[data-price-result-status]");
       const storageKey = "myperol-price-calculator";
       const whatsappUrl = "https://wa.me/34663108027";
       let surfaceErrorTimeout = 0;
       let actionLabelTimeout = 0;
       let estimateTimeout = 0;
       let stepAnimationFrame = 0;
-      const formatEuros = (value) => `${value} Euros`;
+      const formatEuros = (value) => `${value} €`;
       const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
       const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
       const phonePrefixMenu = priceCard.querySelector("[data-phone-prefix-menu]");
@@ -414,6 +419,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         if (action instanceof HTMLButtonElement) action.disabled = !enabled;
       };
 
+      const updateResultSubmitState = () => {
+        if (!(resultSubmit instanceof HTMLButtonElement)) return;
+
+        const hasName = resultNameInput instanceof HTMLInputElement && resultNameInput.value.trim().length > 0;
+        const hasPhone = resultPhoneInput instanceof HTMLInputElement && resultPhoneInput.value.trim().length > 0;
+        resultSubmit.disabled = !(hasName && hasPhone);
+      };
+
       const setActionLabel = (text) => {
         if (!actionLabel) return;
 
@@ -463,13 +476,46 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         return labels[priceCard.dataset.selectedSpace || "vivienda"] || "Vivienda";
       };
 
+      const getSupportLabel = () => {
+        const labels = {
+          "hormigon": "Hormigon",
+          "mortero-autonivelante": "Mortero autonivelante",
+          "ceramica-baldosa": "Ceramica/Baldosa",
+          "otro": "Otro",
+        };
+
+        return labels[priceCard.dataset.selectedSupport || ""] || "Sin seleccionar";
+      };
+
+      const getCeramicRemovalLabel = () => {
+        if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") return "No aplica";
+
+        const labels = {
+          "no": "No, instalar sobre la ceramica existente",
+          "si": "Si, retirar la ceramica antes de la instalacion",
+        };
+
+        return labels[priceCard.dataset.selectedCeramicRemoval || ""] || "Sin seleccionar";
+      };
+
+      const getConditionLabel = () => {
+        const labels = {
+          "excelente": "Excelente",
+          "buen-estado": "Buen estado",
+          "pequenas-reparaciones": "Necesita pequenas reparaciones",
+          "reparacion-importante": "Necesita una reparacion importante",
+        };
+
+        return labels[priceCard.dataset.selectedCondition || ""] || "Sin seleccionar";
+      };
+
       const priceMultipliers = {
         space: {
           "vivienda": 1,
-          "garaje": 1.1,
-          "local-comercial": 1.2,
-          "industria": 1.3,
-          "exterior": 1.4,
+          "garaje": 1.06,
+          "local-comercial": 1.10,
+          "industria": 1.20,
+          "exterior": 1.15,
         },
         condition: {
           "excelente": 1,
@@ -506,7 +552,77 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         priceCard.dataset.estimatedPrice = String(estimate);
 
         if (resultAmount) {
-          resultAmount.textContent = `${lowerEstimate} a ${formatEuros(upperEstimate)}`;
+          resultAmount.textContent = `${formatEuros(lowerEstimate)} a ${formatEuros(upperEstimate)}`;
+        }
+      };
+
+      const getResultRange = () => {
+        const estimate = calculateEstimatedPrice();
+        const lowerEstimate = Math.round(estimate * 0.9);
+        const upperEstimate = Math.round(estimate * 1.1);
+
+        return `${formatEuros(lowerEstimate)} a ${formatEuros(upperEstimate)}`;
+      };
+
+      const getPriceRequestPayload = () => {
+        const fullName = resultNameInput instanceof HTMLInputElement ? resultNameInput.value.trim() : "";
+        const phone = resultPhoneInput instanceof HTMLInputElement ? resultPhoneInput.value.trim() : "";
+        const prefix = phonePrefixValue instanceof HTMLInputElement ? phonePrefixValue.value : "";
+        const squareMeters = surfaceInput instanceof HTMLInputElement ? surfaceInput.value.trim() : "";
+
+        return {
+          fullName,
+          phone,
+          phonePrefix: prefix,
+          priceRange: getResultRange(),
+          space: getSpaceLabel(),
+          squareMeters,
+          support: getSupportLabel(),
+          ceramicRemoval: getCeramicRemovalLabel(),
+          condition: getConditionLabel(),
+        };
+      };
+
+      const setResultStatus = (message, type = "") => {
+        if (!(resultStatus instanceof HTMLElement)) return;
+
+        resultStatus.textContent = message;
+        resultStatus.dataset.status = type;
+      };
+
+      const submitPriceRequest = async () => {
+        if (!(resultSubmit instanceof HTMLButtonElement) || resultSubmit.disabled) return;
+
+        const payload = getPriceRequestPayload();
+        if (!payload.fullName || !payload.phone) {
+          updateResultSubmitState();
+          return;
+        }
+
+        resultSubmit.disabled = true;
+        resultSubmit.classList.add("is-loading");
+        setResultStatus("Enviando solicitud...", "loading");
+
+        try {
+          const response = await fetch("/.netlify/functions/price-request", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(result.error || "No se pudo enviar la solicitud.");
+          }
+
+          setResultStatus("Solicitud enviada. Te contactaremos lo antes posible.", "success");
+        } catch (error) {
+          setResultStatus(error instanceof Error ? error.message : "No se pudo enviar la solicitud.", "error");
+          updateResultSubmitState();
+        } finally {
+          resultSubmit.classList.remove("is-loading");
         }
       };
 
@@ -700,6 +816,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         if (resultStep instanceof HTMLElement) resultStep.hidden = false;
         if (resultSpace) resultSpace.textContent = getSpaceLabel();
         updateResultAmount();
+        updateResultSubmitState();
         closeHelpModal();
 
         updateBackButton();
@@ -972,6 +1089,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         setSurfaceLimitError(isOutOfRange);
         setActionEnabled(isValidSurfaceValue());
         saveState();
+      });
+
+      resultNameInput?.addEventListener("input", updateResultSubmitState);
+      resultPhoneInput?.addEventListener("input", updateResultSubmitState);
+
+      resultSubmit?.addEventListener("click", () => {
+        submitPriceRequest();
       });
 
       const restoreState = () => {
