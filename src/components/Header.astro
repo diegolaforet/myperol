@@ -68,8 +68,8 @@ const isPrices = currentPath === "/precios";
         <nav class="floating-nav floating-dropdown" id="primaryNav" aria-label="Secciones principales" data-i18n-aria-label="nav_sections_aria" hidden>
           <a href="/" class="floating-nav-link" aria-current={isHome ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_home">Home</a>
           <a href="/servicios" class="floating-nav-link" aria-current={isServices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_services">Servicios</a>
-          <a href="/precios" class="floating-nav-link" aria-current={isPrices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>
           <a href="/#mp-systems" class="floating-nav-link" onclick="closeMobileMenu()" data-i18n="nav_mp_systems">MP Systems</a>
+          <a href="/precios" class="floating-nav-link" aria-current={isPrices ? "page" : undefined} onclick="closeMobileMenu()" data-i18n="nav_prices">Precios</a>
         </nav>
       </div>
     </div>
@@ -80,7 +80,7 @@ const isPrices = currentPath === "/precios";
       <img class="floating-nav-home-logo" src="/assets/logo/logo-myperol-gota.png" alt="" aria-hidden="true" />
     </a>
     <a href="/servicios" class="floating-nav-link" aria-current={isServices ? "page" : undefined} onclick="closeMobileMenu()"><span class="floating-nav-label" data-i18n="nav_services">Servicios</span></a>
-    <a href="/precios" class="floating-nav-link" aria-current={isPrices ? "page" : undefined} onclick="closeMobileMenu()"><span class="floating-nav-label" data-i18n="nav_prices">Precios</span></a>
     <a href="/#mp-systems" class="floating-nav-link" onclick="closeMobileMenu()"><span class="floating-nav-label" data-i18n="nav_mp_systems">MP Systems</span></a>
+    <a href="/precios" class="floating-nav-link" aria-current={isPrices ? "page" : undefined} onclick="closeMobileMenu()"><span class="floating-nav-label" data-i18n="nav_prices">Precios</span></a>
   </nav>
 </header>
