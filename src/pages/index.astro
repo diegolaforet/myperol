@@ -17,39 +17,39 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </section>
 
     <section class="home-intro" aria-label="Introducción" data-i18n-aria-label="home_intro_aria">
-      <p class="home-intro-subtitle" data-i18n="home_intro_subtitle">Un suelo es una inversión para muchos años.</p>
+      <p class="home-intro-subtitle" data-i18n="home_intro_subtitle">Un suelo es una inversión para muchos años...</p>
       <div class="home-intro-statement">
       </div>
     </section>
 
-    <section class="feature-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
-      <div class="feature-cards-header">
-        <p data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
+    <section class="feature-cards home-primary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
+      <div class="feature-cards-header home-primary-cards-header">
+        <p class="home-primary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
       </div>
 
-      <div class="feature-cards-shell">
-        <div class="feature-cards-track" id="featureCardsTrack">
-          <article class="feature-card">
+      <div class="feature-cards-shell home-primary-cards-shell">
+        <div class="feature-cards-track home-primary-cards-track" id="featureCardsTrack">
+          <article class="feature-card home-primary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_1_title">Superficie continua</h2>
             <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-primary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_2_title">Acabado uniforme</h2>
             <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-primary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_3_title">Sensación premium</h2>
             <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-primary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_4_title">Diseño limpio</h2>
             <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-primary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_5_title">Alta presencia</h2>
             <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
@@ -57,7 +57,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </div>
 
         <button
-          class="feature-cards-arrow feature-cards-prev"
+          class="feature-cards-arrow feature-cards-prev home-primary-cards-prev"
           type="button"
           aria-label="Ver tarjetas anteriores"
           data-i18n-aria-label="carousel_prev"
@@ -68,7 +68,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </button>
 
         <button
-          class="feature-cards-arrow feature-cards-next"
+          class="feature-cards-arrow feature-cards-next home-primary-cards-next"
           type="button"
           aria-label="Ver más tarjetas"
           data-i18n-aria-label="carousel_next"
@@ -78,38 +78,38 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           <span aria-hidden="true">&rsaquo;</span>
         </button>
 
-        <div class="feature-cards-dots" aria-hidden="true" data-carousel-dots></div>
+        <div class="feature-cards-dots home-primary-cards-dots" aria-hidden="true" data-carousel-dots></div>
       </div>
     </section>
 
-    <section class="feature-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria">
-      <div class="feature-cards-header">
-        <p data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
+    <section class="feature-cards home-secondary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria">
+      <div class="feature-cards-header home-secondary-cards-header">
+        <p class="home-secondary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
       </div>
 
-      <div class="feature-cards-shell">
-        <div class="feature-cards-track">
-          <article class="feature-card">
+      <div class="feature-cards-shell home-secondary-cards-shell">
+        <div class="feature-cards-track home-secondary-cards-track">
+          <article class="feature-card home-secondary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_1_title">Superficie continua</h2>
             <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-secondary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_2_title">Acabado uniforme</h2>
             <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-secondary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_3_title">Sensación premium</h2>
             <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-secondary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_4_title">Diseño limpio</h2>
             <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
           </article>
-          <article class="feature-card">
+          <article class="feature-card home-secondary-card">
             <span data-i18n="feature_card_label">Placeholder</span>
             <h2 data-i18n="feature_card_5_title">Alta presencia</h2>
             <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
@@ -117,7 +117,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </div>
 
         <button
-          class="feature-cards-arrow feature-cards-prev"
+          class="feature-cards-arrow feature-cards-prev home-secondary-cards-prev"
           type="button"
           aria-label="Ver tarjetas anteriores"
           data-i18n-aria-label="carousel_prev"
@@ -128,7 +128,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </button>
 
         <button
-          class="feature-cards-arrow feature-cards-next"
+          class="feature-cards-arrow feature-cards-next home-secondary-cards-next"
           type="button"
           aria-label="Ver más tarjetas"
           data-i18n-aria-label="carousel_next"
@@ -138,7 +138,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           <span aria-hidden="true">&rsaquo;</span>
         </button>
 
-        <div class="feature-cards-dots" aria-hidden="true" data-carousel-dots></div>
+        <div class="feature-cards-dots home-secondary-cards-dots" aria-hidden="true" data-carousel-dots></div>
       </div>
     </section>
   </main>
@@ -392,7 +392,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     let touchStartY = 0;
     let entryAnimationFrame = 0;
     const entryScrollDuration = 1200;
-    const entryScrollExtraOffset = window.innerWidth <= 902 ? -80 : 72;
+    const entryScrollExtraOffset = window.innerWidth <= 902 ? -80 : 150;
     const entryScrollStartLimit = 32;
 
     const easeInOutCubic = (progress) =>
