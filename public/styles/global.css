@@ -94,7 +94,7 @@
   --reveal-stagger: 90ms;
 
   /* Fonts. */
-  --font-ui: "Montserrat", sans-serif;
+  --font-ui: "Lexend", sans-serif;
   --font-brand: var(--font-ui);
 
   /* Content typography levels. Buttons and navigation keep their own sizing. */
@@ -104,6 +104,9 @@
   --line-height-title: 1.02;
   --line-height-subtitle: 1.20;
   --line-height-text: 1.45;
+  --font-weight-title: 300;
+  --font-weight-subtitle: 300;
+  --font-weight-text: 300;
   --hero-caption-space: 100px;
   --hero-next-peek-space: 0px;
 
@@ -111,9 +114,9 @@
   --font-size-nav: 18px;
   --font-size-language-button: 18px;
   --font-size-social-link: 14px;
-  --font-weight-nav: 500;
-  --font-weight-control: 500;
-  --font-weight-social: 500;
+  --font-weight-nav: 400;
+  --font-weight-control: 400;
+  --font-weight-social: 400;
   --line-height-control: 1;
 }
 
@@ -288,7 +291,7 @@ main {
 .hero-caption p {
   margin: 0;
   color: var(--color-text-on-light);
-  font: 400 var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
+  font: var(--font-weight-subtitle) var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
 }
 
 .home-intro {
@@ -310,7 +313,7 @@ main {
 
 .home-intro-subtitle {
   color: var(--color-card-muted);
-  font: 400 var(--font-size-title)/var(--line-height-title) var(--font-ui);
+  font: var(--font-weight-title) var(--font-size-title)/var(--line-height-title) var(--font-ui);
 }
 
 .home-intro-statement {
@@ -320,7 +323,7 @@ main {
 }
 
 .home-intro-statement p {
-  font: 400 var(--font-size-text)/var(--line-height-text) var(--font-ui);
+  font: var(--font-weight-text) var(--font-size-text)/var(--line-height-text) var(--font-ui);
   text-align: left;
 }
 
@@ -369,7 +372,7 @@ main {
   max-width: 980px;
   margin: 0;
   color: var(--color-card-muted);
-  font: 400 var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
+  font: var(--font-weight-subtitle) var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
 }
 
 .feature-cards-shell {
@@ -464,13 +467,13 @@ main {
 .feature-card h2 {
   margin: 0 0 12px;
   color: var(--color-text-on-light);
-  font: 500 var(--font-size-card-title)/var(--line-height-card-title) var(--font-ui);
+  font: var(--font-weight-title) var(--font-size-card-title)/var(--line-height-card-title) var(--font-ui);
 }
 
 .feature-card p {
   margin: 0;
   color: var(--color-text-on-light);
-  font: 400 var(--font-size-card-text)/var(--line-height-card-text) var(--font-ui);
+  font: var(--font-weight-text) var(--font-size-card-text)/var(--line-height-card-text) var(--font-ui);
 }
 
 .services-feature-cards .service-card-image {
@@ -570,7 +573,7 @@ main {
   max-width: 520px;
   margin: 0;
   color: var(--color-text-on-light);
-  font: 400 var(--font-size-text)/var(--line-height-text) var(--font-ui);
+  font: var(--font-weight-text) var(--font-size-text)/var(--line-height-text) var(--font-ui);
 }
 
 .service-expanded-content {
@@ -593,7 +596,7 @@ main {
 .service-expanded-title {
   margin: 0 0 clamp(14px, 2.4vh, 28px);
   color: var(--color-text-on-light);
-  font: 500 clamp(42px, 5.3vw, 80px)/0.94 var(--font-ui);
+  font: var(--font-weight-title) clamp(42px, 5.3vw, 80px)/0.94 var(--font-ui);
   overflow-wrap: anywhere;
 }
 
@@ -601,7 +604,7 @@ main {
   max-width: 440px;
   margin: 0;
   color: var(--color-card-muted);
-  font: 400 clamp(16px, 1.25vw, var(--font-size-text))/1.34 var(--font-ui);
+  font: var(--font-weight-text) clamp(16px, 1.25vw, var(--font-size-text))/1.34 var(--font-ui);
 }
 
 .service-expanded-action {
@@ -780,7 +783,7 @@ main {
 .price-estimate-card p {
   margin: 0;
   color: var(--color-text-on-light);
-  font: 500 var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
+  font: var(--font-weight-subtitle) var(--font-size-subtitle)/var(--line-height-subtitle) var(--font-ui);
 }
 
 .price-estimate-model {
@@ -820,7 +823,7 @@ main {
   background: rgba(0, 0, 0, 0.06);
   color: var(--color-card-muted);
   text-align: center;
-  font: 500 24px/1 var(--font-ui);
+  font: var(--font-weight-subtitle) 24px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
 }
 
@@ -948,19 +951,19 @@ main {
 
 .price-result-step h1 {
   max-width: 760px;
-  font: 500 clamp(36px, 4.6vw, 60px)/1 var(--font-ui);
+  font: var(--font-weight-title) clamp(36px, 4.6vw, 60px)/1 var(--font-ui);
   text-wrap: balance;
 }
 
 .price-result-step h2 {
   color: var(--color-text-on-light);
-  font: 500 22px/1.18 var(--font-ui);
+  font: var(--font-weight-subtitle) 22px/1.18 var(--font-ui);
 }
 
 .price-result-step p,
 .price-result-step li {
   color: var(--color-card-muted);
-  font: 400 17px/1.42 var(--font-ui);
+  font: var(--font-weight-text) 17px/1.42 var(--font-ui);
 }
 
 .price-result-kicker {
@@ -1030,7 +1033,7 @@ main {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.68),
     0 14px 34px rgba(0, 0, 0, 0.08);
-  font: 500 34px/1 var(--font-ui);
+  font: var(--font-weight-subtitle) 34px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1044,7 +1047,7 @@ main {
   display: grid;
   gap: 8px;
   color: var(--color-card-muted);
-  font: 400 14px/1.2 var(--font-ui);
+  font: var(--font-weight-text) 14px/1.2 var(--font-ui);
 }
 
 .price-result-form input,
@@ -1123,7 +1126,7 @@ main {
   border-radius: 12px;
   background: transparent;
   color: var(--color-text-on-light);
-  font: 500 15px/1.1 var(--font-ui);
+  font: var(--font-weight-text) 15px/1.1 var(--font-ui);
   text-align: left;
   cursor: pointer;
 }
@@ -1195,7 +1198,7 @@ main {
   margin: -2px 0 0;
   color: var(--color-card-muted);
   text-align: center;
-  font: 400 14px/1.3 var(--font-ui);
+  font: var(--font-weight-text) 14px/1.3 var(--font-ui);
 }
 
 .price-result-submit-status[data-status="success"] {
@@ -1248,7 +1251,7 @@ main {
 
 .price-long-option small {
   color: var(--color-card-muted);
-  font: 400 13px/1.35 var(--font-ui);
+  font: var(--font-weight-text) 13px/1.35 var(--font-ui);
 }
 
 .price-condition-label {
@@ -1445,7 +1448,7 @@ main {
 .price-help-modal p {
   margin: 0;
   color: var(--color-card-muted);
-  font: 400 15px/1.5 var(--font-ui);
+  font: var(--font-weight-text) 15px/1.5 var(--font-ui);
 }
 
 .price-surface-step {
@@ -1462,7 +1465,7 @@ main {
 .price-step-question {
   margin: 0;
   color: var(--color-card-muted);
-  font: 400 20px/1.35 var(--font-ui);
+  font: var(--font-weight-text) 20px/1.35 var(--font-ui);
 }
 
 .price-surface-field {
@@ -1499,7 +1502,7 @@ main {
 .price-surface-error {
   margin: -10px 0 0;
   color: #c73333;
-  font: 400 12px/1.2 var(--font-ui);
+  font: var(--font-weight-text) 12px/1.2 var(--font-ui);
 }
 
 .price-surface-error[hidden] {
@@ -1810,7 +1813,7 @@ main {
 }
 
 .floating-nav-link[aria-current="page"] {
-  font-weight: 500;
+  font-weight: var(--font-weight-control);
 }
 
 /* ==========================================================================
@@ -1970,7 +1973,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
 }
 
 .lang-option.active {
-  font-weight: 500;
+  font-weight: var(--font-weight-control);
 }
 
 /* ==========================================================================
@@ -2339,7 +2342,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
   }
 
   #primaryNav .floating-nav-link[aria-current="page"] {
-    font-weight: 500;
+    font-weight: var(--font-weight-control);
   }
 
   #primaryNav .floating-nav-link:first-child:hover,
