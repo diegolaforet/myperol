@@ -23,35 +23,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       <div class="feature-cards-shell">
         <div class="feature-cards-track">
-          <article class="feature-card service-card-expandable" tabindex="0">
+          <article class="feature-card service-card-expandable" tabindex="0" data-price-space="vivienda">
             <span>MyPerol</span>
             <h2>HOME</h2>
             <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card service-card-expandable" tabindex="0">
+          <article class="feature-card service-card-expandable" tabindex="0" data-price-space="garaje">
             <span>MyPerol</span>
             <h2>GARAGE</h2>
             <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card service-card-expandable" tabindex="0">
+          <article class="feature-card service-card-expandable" tabindex="0" data-price-space="local-comercial">
             <span>MyPerol</span>
             <h2>BUSSINES</h2>
             <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card service-card-expandable" tabindex="0">
+          <article class="feature-card service-card-expandable" tabindex="0" data-price-space="industria">
             <span>MyPerol</span>
             <h2>INDUSTRY</h2>
             <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
             <img class="service-card-image" src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
           </article>
 
-          <article class="feature-card service-card-expandable" tabindex="0">
+          <article class="feature-card service-card-expandable" tabindex="0" data-price-space="exterior">
             <span>MyPerol</span>
             <h2>OUTDOOR</h2>
             <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
@@ -332,6 +332,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const text = card.querySelector("p")?.textContent?.trim() || "";
       const image = card.querySelector(".service-card-image");
       const imageSrc = image instanceof HTMLImageElement ? image.currentSrc || image.src : "";
+      const priceSpace = card.dataset.priceSpace || "";
 
       activeOverlay = document.createElement("div");
       activeOverlay.className = "service-expanded-overlay";
@@ -347,7 +348,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <p class="service-expanded-label">${label}</p>
             <h2 class="service-expanded-title">${title}</h2>
             <p class="service-expanded-copy">${text}</p>
-            <button class="service-expanded-action" type="button" onclick="window.location.href='/precios'">Solicitar precio</button>
+            <button class="service-expanded-action" type="button" data-service-price-space="${priceSpace}">Solicitar precio</button>
             <button class="service-expanded-composition" type="button"><span class="composition-shift-label">Conoce la composicion</span><span class="composition-shift-arrow" aria-hidden="true">&rarr;</span></button>
           </div>
         </article>
@@ -358,6 +359,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const expandedImage = activeOverlay.querySelector(".service-expanded-media-frame img");
 
       if (!(expandedCard instanceof HTMLElement)) return;
+
+      const requestPriceButton = activeOverlay.querySelector("[data-service-price-space]");
+
+      requestPriceButton?.addEventListener("click", () => {
+        if (!(requestPriceButton instanceof HTMLElement)) return;
+
+        const selectedSpace = requestPriceButton.dataset.servicePriceSpace || "";
+        sessionStorage.removeItem("myperol-price-calculator");
+        window.location.href = `/precios?reset=1&space=${encodeURIComponent(selectedSpace)}`;
+      });
 
       activeOverlay.addEventListener("click", (event) => {
         if (event.target === activeOverlay) closeExpandedCard();

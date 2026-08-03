@@ -22,7 +22,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <span class="price-back-label">Atras</span>
       </button>
 
-      <div class="service-expanded-media">
+      <div class="service-expanded-media" data-price-media>
         <div class="service-expanded-media-frame">
           <img src="/assets/placeholder/tarjetas-placeholder.png" alt="" aria-hidden="true" />
         </div>
@@ -30,7 +30,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </div>
 
       <div class="service-expanded-content prices-step-content">
-        <p class="service-expanded-label">MyPerol</p>
+        <p class="service-expanded-label" data-price-label>MyPerol</p>
         <h1 class="service-expanded-title" data-price-title>APROXIMACION DE PRECIO</h1>
         <p class="service-expanded-copy" data-price-copy>Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.</p>
 
@@ -64,6 +64,98 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           <button class="price-space-option" type="button" data-support="otro">Otro</button>
         </div>
 
+        <div class="price-ceramic-step" data-price-ceramic-step hidden>
+          <button class="price-space-option price-long-option" type="button" data-ceramic-removal="no">
+            <span>No, instalar el sistema MyPerol sobre la ceramica existente.</span>
+            <small>Opcion mas rapida y economica, siempre que el soporte se encuentre en buen estado.</small>
+          </button>
+          <button class="price-space-option price-long-option" type="button" data-ceramic-removal="si">
+            <span>Si, retirar la ceramica antes de la instalacion.</span>
+            <small>Recomendado cuando el pavimento presenta danos, desprendimientos o se desea comenzar sobre una base completamente nueva.</small>
+          </button>
+          <button class="price-help-trigger" type="button" data-price-help-open>
+            <span>Ayuda</span> <span aria-hidden="true">?</span>
+          </button>
+        </div>
+
+        <div class="price-condition-step" data-price-condition-step hidden>
+          <button class="price-space-option price-long-option" type="button" data-condition="excelente">
+            <span class="price-condition-label price-condition-label-excellent">Excelente</span>
+            <small>Superficie firme, uniforme, nivelada y sin desperfectos.</small>
+          </button>
+          <button class="price-space-option price-long-option" type="button" data-condition="buen-estado">
+            <span class="price-condition-label price-condition-label-good">Buen estado</span>
+            <small>Presenta un desgaste normal, pero no tiene grietas, desniveles importantes ni problemas de adherencia.</small>
+          </button>
+          <button class="price-space-option price-long-option" type="button" data-condition="pequenas-reparaciones">
+            <span class="price-condition-label price-condition-label-minor">Necesita pequenas reparaciones</span>
+            <small>Presenta pequenas grietas, ligeros desniveles, juntas marcadas o imperfecciones que requieren preparacion previa.</small>
+          </button>
+          <button class="price-space-option price-long-option" type="button" data-condition="reparacion-importante">
+            <span class="price-condition-label price-condition-label-major">Necesita una reparacion importante</span>
+            <small>Presenta grietas importantes, desniveles considerables, humedad, zonas desprendidas o danos que requieren una reparacion mas profunda antes de la instalacion.</small>
+          </button>
+          <button class="price-help-trigger" type="button" data-price-condition-help-open>
+            <span>Ayuda</span> <span aria-hidden="true">?</span>
+          </button>
+        </div>
+
+        <div class="price-result-step" data-price-result-step hidden>
+          <p class="price-result-kicker">MyPerol - Estudio tecnico gratuito</p>
+          <h1>Estimacion personalizada completada</h1>
+          <div class="price-result-range">
+            <p>El precio de la instalacion del sistema MP SYSTEM, para tu <span data-price-result-space>Vivienda</span>, oscila entre:</p>
+            <strong class="price-result-amount" data-price-result-amount>1000 Euros</strong>
+          </div>
+
+          <section class="price-result-panel">
+            <h2 class="price-result-panel-title">
+              <span>Que ocurre ahora?</span>
+              <span class="price-result-kicker price-result-free">gratis</span>
+            </h2>
+            <p>Para ofrecerte un presupuesto preciso, uno de nuestros tecnicos certificados realizara un estudio del soporte existente. Esta evaluacion nos permite comprobar el estado real de la superficie, identificar las preparaciones necesarias y definir el alcance de la instalacion con total precision.</p>
+          </section>
+
+          <section class="price-result-panel price-result-panel-plain">
+            <h2>Comienza tu proyecto con MyPerol</h2>
+            <p>Uno de nuestros especialistas se pondra en contacto contigo para resolver cualquier duda y concertar una visita tecnica, totalmente gratuita y sin compromiso.</p>
+          </section>
+
+          <form class="price-result-form">
+            <label>
+              <span>Nombre completo</span>
+              <input type="text" name="full-name" autocomplete="name" />
+            </label>
+            <label>
+              <span>Telefono</span>
+              <span class="price-phone-field">
+                <span class="phone-prefix-select" data-phone-prefix-select>
+                  <input type="hidden" name="phone-prefix" value="+34" data-phone-prefix-value />
+                  <button class="phone-prefix-button" type="button" aria-label="Prefijo telefonico" aria-expanded="false" data-phone-prefix-button>
+                    <span data-phone-prefix-current>&#127466;&#127480; +34</span>
+                    <span aria-hidden="true">&#9662;</span>
+                  </button>
+                  <span class="phone-prefix-menu" role="listbox" data-phone-prefix-menu hidden></span>
+                </span>
+                <input type="tel" name="phone" autocomplete="tel" />
+              </span>
+            </label>
+          </form>
+
+          <section class="price-result-panel">
+            <h2>Que ocurre despues?</h2>
+            <ul>
+              <li>Contactamos contigo para programar la visita.</li>
+              <li>Enviamos a un tecnico certificado para realizar el estudio.</li>
+              <li>Recibes un presupuesto detallado, personalizado.</li>
+            </ul>
+            <p>En MyPerol no ofrecemos presupuestos genericos. Cada proyecto comienza con un estudio tecnico para garantizar una solucion adaptada a las caracteristicas reales de cada superficie.</p>
+          </section>
+
+          <button class="service-expanded-action price-result-action" type="button">
+            <span>Solicitar estudio tecnico</span>
+          </button>
+        </div>
         <div class="prices-card-footer">
           <button class="service-expanded-composition prices-step-action" type="button" data-price-action>
             <span class="composition-shift-label" data-price-action-label>Comenzar</span>
@@ -74,18 +166,53 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
             <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
             <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
-            <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
             <span class="feature-cards-dot price-extra-dot" aria-hidden="true" data-price-extra-dot hidden></span>
+            <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
           </div>
         </div>
       </div>
     </section>
+
+    <section class="price-estimate-card" aria-live="polite" data-price-estimate hidden>
+      <p>Estimando precio</p>
+      <div class="price-estimate-model" aria-label="Modelo 3D pendiente">
+        <span></span>
+      </div>
+      <div class="price-estimate-amount" data-price-estimate-amount>130 Euros</div>
+    </section>
+
+    <div class="price-help-overlay" data-price-help-overlay hidden>
+      <article class="price-help-modal" role="dialog" aria-modal="true" aria-labelledby="priceHelpTitle">
+        <h2 id="priceHelpTitle" data-price-help-title></h2>
+        <div data-price-help-body></div>
+      </article>
+    </div>
   </main>
 
   <script>
-    const priceCard = document.querySelector("[data-price-card]");
+      const priceCard = document.querySelector("[data-price-card]");
 
     if (priceCard instanceof HTMLElement) {
+      const updatePricesControlsTone = () => {
+        document.body.classList.toggle("controls-over-light", window.scrollY > 24);
+      };
+
+      let controlsToneFrame = 0;
+      const requestPricesControlsToneUpdate = () => {
+        if (controlsToneFrame) return;
+
+        controlsToneFrame = window.requestAnimationFrame(() => {
+          controlsToneFrame = 0;
+          updatePricesControlsTone();
+        });
+      };
+
+      updatePricesControlsTone();
+      window.addEventListener("scroll", requestPricesControlsToneUpdate, { passive: true });
+      window.addEventListener("resize", requestPricesControlsToneUpdate);
+
+      const media = priceCard.querySelector("[data-price-media]");
+      const label = priceCard.querySelector("[data-price-label]");
       const title = priceCard.querySelector("[data-price-title]");
       const copy = priceCard.querySelector("[data-price-copy]");
       const options = priceCard.querySelector("[data-price-options]");
@@ -93,43 +220,183 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const surfaceInput = priceCard.querySelector("[data-price-surface-input]");
       const surfaceError = priceCard.querySelector("[data-price-surface-error]");
       const supportOptions = priceCard.querySelector("[data-price-support-options]");
+      const ceramicStep = priceCard.querySelector("[data-price-ceramic-step]");
+      const conditionStep = priceCard.querySelector("[data-price-condition-step]");
+      const resultStep = priceCard.querySelector("[data-price-result-step]");
+      const resultSpace = priceCard.querySelector("[data-price-result-space]");
+      const resultAmount = priceCard.querySelector("[data-price-result-amount]");
+      const helpOpenButton = priceCard.querySelector("[data-price-help-open]");
+      const conditionHelpOpenButton = priceCard.querySelector("[data-price-condition-help-open]");
+      const helpOverlay = document.querySelector("[data-price-help-overlay]");
+      const helpTitle = document.querySelector("[data-price-help-title]");
+      const helpBody = document.querySelector("[data-price-help-body]");
       const action = priceCard.querySelector("[data-price-action]");
       const actionLabel = priceCard.querySelector("[data-price-action-label]");
       const backButton = priceCard.querySelector("[data-price-back]");
+      const backLabel = backButton?.querySelector(".price-back-label");
       const progress = priceCard.querySelector("[data-price-progress]");
       const dots = priceCard.querySelectorAll("[data-price-dot]");
       const extraDot = priceCard.querySelector("[data-price-extra-dot]");
+      const estimateCard = document.querySelector("[data-price-estimate]");
+      const estimateAmount = document.querySelector("[data-price-estimate-amount]");
       const storageKey = "myperol-price-calculator";
       const whatsappUrl = "https://wa.me/34663108027";
       let surfaceErrorTimeout = 0;
       let actionLabelTimeout = 0;
+      let estimateTimeout = 0;
+      let stepAnimationFrame = 0;
+      const formatEuros = (value) => `${value} Euros`;
+      const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
+      const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
+      const phonePrefixMenu = priceCard.querySelector("[data-phone-prefix-menu]");
+      const phonePrefixCurrent = priceCard.querySelector("[data-phone-prefix-current]");
+      const phonePrefixValue = priceCard.querySelector("[data-phone-prefix-value]");
+      const phonePrefixes = [
+        ["ES", "+34"], ["FR", "+33"], ["DE", "+49"], ["GB", "+44"], ["UA", "+380"], ["RU", "+7"],
+        ["AD", "+376"], ["AL", "+355"], ["AM", "+374"], ["AT", "+43"], ["BE", "+32"], ["BG", "+359"],
+        ["CH", "+41"], ["CY", "+357"], ["CZ", "+420"], ["DK", "+45"], ["EE", "+372"], ["FI", "+358"],
+        ["GR", "+30"], ["HR", "+385"], ["HU", "+36"], ["IE", "+353"], ["IS", "+354"], ["IT", "+39"],
+        ["LT", "+370"], ["LU", "+352"], ["LV", "+371"], ["MC", "+377"], ["MD", "+373"], ["MT", "+356"],
+        ["NL", "+31"], ["NO", "+47"], ["PL", "+48"], ["PT", "+351"], ["RO", "+40"], ["RS", "+381"],
+        ["SE", "+46"], ["SI", "+386"], ["SK", "+421"], ["TR", "+90"],
+        ["US", "+1"], ["CA", "+1"], ["MX", "+52"], ["AR", "+54"], ["BR", "+55"], ["CL", "+56"],
+        ["CO", "+57"], ["CR", "+506"], ["CU", "+53"], ["DO", "+1"], ["EC", "+593"], ["PE", "+51"],
+        ["UY", "+598"], ["VE", "+58"], ["PA", "+507"], ["PY", "+595"], ["BO", "+591"],
+        ["AE", "+971"], ["CN", "+86"], ["HK", "+852"], ["ID", "+62"], ["IN", "+91"], ["IL", "+972"],
+        ["JP", "+81"], ["KR", "+82"], ["MY", "+60"], ["PH", "+63"], ["SA", "+966"], ["SG", "+65"],
+        ["TH", "+66"], ["VN", "+84"], ["AU", "+61"], ["NZ", "+64"],
+        ["DZ", "+213"], ["EG", "+20"], ["GH", "+233"], ["KE", "+254"], ["MA", "+212"], ["NG", "+234"],
+        ["SN", "+221"], ["ZA", "+27"], ["TN", "+216"],
+      ];
+      const getCountryFlag = (countryCode) => countryCode
+        .toUpperCase()
+        .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+      const getCountryName = (countryCode) => {
+        try {
+          return new Intl.DisplayNames(["es"], { type: "region" }).of(countryCode) || countryCode;
+        } catch {
+          return countryCode;
+        }
+      };
+
+      const closePhonePrefixMenu = () => {
+        if (phonePrefixMenu instanceof HTMLElement) phonePrefixMenu.hidden = true;
+        if (phonePrefixButton instanceof HTMLButtonElement) phonePrefixButton.setAttribute("aria-expanded", "false");
+      };
+
+      const setPhonePrefix = (countryCode, code) => {
+        const flag = getCountryFlag(countryCode);
+        const country = getCountryName(countryCode);
+
+        if (phonePrefixCurrent) phonePrefixCurrent.textContent = `${flag} ${code}`;
+        if (phonePrefixValue instanceof HTMLInputElement) phonePrefixValue.value = code;
+
+        phonePrefixMenu?.querySelectorAll(".phone-prefix-option").forEach((option) => {
+          if (option instanceof HTMLElement) {
+            option.classList.toggle("is-selected", option.dataset.code === code && option.dataset.country === countryCode);
+          }
+        });
+      };
+
+      const renderPhonePrefixes = () => {
+        if (!(phonePrefixMenu instanceof HTMLElement)) return;
+
+        phonePrefixMenu.textContent = "";
+        phonePrefixes.forEach(([countryCode, code]) => {
+          const flag = getCountryFlag(countryCode);
+          const country = getCountryName(countryCode);
+          const option = document.createElement("button");
+          option.type = "button";
+          option.className = "phone-prefix-option";
+          option.dataset.code = code;
+          option.dataset.country = countryCode;
+          option.setAttribute("role", "option");
+          option.innerHTML = `<span aria-hidden="true">${flag}</span><span class="phone-prefix-option-country">${country}</span><span class="phone-prefix-option-code">${code}</span>`;
+          option.addEventListener("click", () => {
+            setPhonePrefix(countryCode, code);
+            closePhonePrefixMenu();
+          });
+          phonePrefixMenu.append(option);
+        });
+
+        const selectedCode = phonePrefixValue instanceof HTMLInputElement ? phonePrefixValue.value : "+34";
+        const selected = phonePrefixes.find(([, code]) => code === selectedCode) || phonePrefixes[0];
+        setPhonePrefix(selected[0], selected[1]);
+      };
+
+      renderPhonePrefixes();
+
+      phonePrefixButton?.addEventListener("click", () => {
+        if (!(phonePrefixMenu instanceof HTMLElement) || !(phonePrefixButton instanceof HTMLButtonElement)) return;
+
+        const willOpen = phonePrefixMenu.hidden;
+        phonePrefixMenu.hidden = !willOpen;
+        phonePrefixButton.setAttribute("aria-expanded", String(willOpen));
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!(phonePrefixSelect instanceof HTMLElement)) return;
+        if (event.target instanceof Node && !phonePrefixSelect.contains(event.target)) closePhonePrefixMenu();
+      });
 
       const getState = () => ({
-        step: Number(priceCard.dataset.step || "1"),
+        step: priceCard.dataset.step || "1",
         selectedSpace: priceCard.dataset.selectedSpace || "",
         surface: surfaceInput instanceof HTMLInputElement ? surfaceInput.value : "",
         selectedSupport: priceCard.dataset.selectedSupport || "",
+        selectedCeramicRemoval: priceCard.dataset.selectedCeramicRemoval || "",
+        selectedCondition: priceCard.dataset.selectedCondition || "",
+        estimatedPrice: priceCard.dataset.estimatedPrice || "",
       });
 
       const saveState = () => {
         sessionStorage.setItem(storageKey, JSON.stringify(getState()));
       };
 
+      const animatePriceCardStep = () => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        if (priceCard.hidden) return;
+
+        window.cancelAnimationFrame(stepAnimationFrame);
+        priceCard.classList.remove("is-step-entering");
+
+        stepAnimationFrame = window.requestAnimationFrame(() => {
+          priceCard.classList.add("is-step-entering");
+        });
+      };
+
+      priceCard.addEventListener("animationend", (event) => {
+        if (event.animationName === "price-card-enter") {
+          priceCard.classList.remove("is-step-entering");
+        }
+      });
+
       const updateBackButton = () => {
         if (backButton instanceof HTMLButtonElement) {
-          backButton.hidden = Number(priceCard.dataset.step || "1") <= 1;
+          const isResultStep = priceCard.dataset.step === "result";
+          backButton.hidden = !isResultStep && Number(priceCard.dataset.step || "1") <= 1;
+          backButton.setAttribute("aria-label", isResultStep ? "Reiniciar" : "Atras");
+        }
+
+        if (backLabel instanceof HTMLElement) {
+          backLabel.textContent = priceCard.dataset.step === "result" ? "Reiniciar" : "Atras";
         }
       };
 
       const setActiveDots = (step) => {
         updateExtraProgressDot();
 
+        const hasCeramicExtraStep = priceCard.dataset.selectedSupport === "ceramica-baldosa";
+        const baseActiveStep = hasCeramicExtraStep && step >= 5
+          ? (step >= 6 ? 5 : 4)
+          : step;
+
         dots.forEach((dot, index) => {
-          dot.classList.toggle("is-active", index < step);
+          dot.classList.toggle("is-active", index < baseActiveStep);
         });
 
         if (progress) {
-          const totalSteps = priceCard.dataset.selectedSupport === "ceramica-baldosa" ? 6 : 5;
+          const totalSteps = hasCeramicExtraStep ? 6 : 5;
           progress.setAttribute("aria-label", `Paso ${step} de ${totalSteps}`);
         }
       };
@@ -140,6 +407,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         const shouldShowExtraDot = priceCard.dataset.selectedSupport === "ceramica-baldosa";
         extraDot.hidden = !shouldShowExtraDot;
         extraDot.classList.toggle("is-visible", shouldShowExtraDot);
+        extraDot.classList.toggle("is-active", shouldShowExtraDot && Number(priceCard.dataset.step || "1") >= 5);
       };
 
       const setActionEnabled = (enabled) => {
@@ -177,69 +445,335 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         });
       };
 
-      const setStepOne = () => {
-        priceCard.dataset.step = "1";
+      const setBaseStepChromeHidden = (hidden) => {
+        [media, label, title, copy].forEach((element) => {
+          if (element instanceof HTMLElement) element.hidden = hidden;
+        });
+      };
 
+      const getSpaceLabel = () => {
+        const labels = {
+          "vivienda": "Vivienda",
+          "garaje": "Garaje",
+          "local-comercial": "Local comercial",
+          "industria": "Industria",
+          "exterior": "Exterior",
+        };
+
+        return labels[priceCard.dataset.selectedSpace || "vivienda"] || "Vivienda";
+      };
+
+      const priceMultipliers = {
+        space: {
+          "vivienda": 1,
+          "garaje": 1.1,
+          "local-comercial": 1.2,
+          "industria": 1.3,
+          "exterior": 1.4,
+        },
+        condition: {
+          "excelente": 1,
+          "buen-estado": 1.1,
+          "pequenas-reparaciones": 1.2,
+          "reparacion-importante": 1.5,
+        },
+      };
+
+      const getSupportMultiplier = () => {
+        if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") return 1;
+
+        return priceCard.dataset.selectedCeramicRemoval === "si" ? 1.4 : 1;
+      };
+
+      const calculateEstimatedPrice = () => {
+        const squareMeters = Number(surfaceInput instanceof HTMLInputElement ? surfaceInput.value : "0");
+
+        if (!Number.isInteger(squareMeters) || squareMeters <= 0) return 0;
+
+        const selectedSpace = priceCard.dataset.selectedSpace || "vivienda";
+        const selectedCondition = priceCard.dataset.selectedCondition || "excelente";
+        const spaceMultiplier = priceMultipliers.space[selectedSpace] ?? 1;
+        const conditionMultiplier = priceMultipliers.condition[selectedCondition] ?? 1;
+
+        return Math.round(squareMeters * 10 * spaceMultiplier * getSupportMultiplier() * conditionMultiplier);
+      };
+
+      const updateResultAmount = () => {
+        const estimate = calculateEstimatedPrice();
+        const lowerEstimate = Math.round(estimate * 0.9);
+        const upperEstimate = Math.round(estimate * 1.1);
+
+        priceCard.dataset.estimatedPrice = String(estimate);
+
+        if (resultAmount) {
+          resultAmount.textContent = `${lowerEstimate} a ${formatEuros(upperEstimate)}`;
+        }
+      };
+
+      const helpContent = {
+        ceramic: {
+          title: "Que opcion es la mas adecuada?",
+          body: [
+            "En la mayoria de los casos, no es necesario retirar la ceramica. Los sistemas MyPerol pueden aplicarse directamente sobre baldosas correctamente adheridas y un preparado exhaustivo de la superficie, reduciendo los tiempos de ejecucion, los escombros y el coste de la obra.",
+            "La retirada del pavimento solo se recomienda cuando existen problemas estructurales, piezas sueltas, humedades o un soporte que no garantice una correcta adherencia del sistema.",
+          ],
+        },
+        condition: {
+          title: "Como describiria el estado actual de la superficie?",
+          body: [
+            "El estado del soporte es determinante para garantizar una correcta aplicacion y la maxima durabilidad del sistema MyPerol.",
+          ],
+        },
+      };
+
+      const openHelpModal = (contentType = "ceramic") => {
+        const content = helpContent[contentType] || helpContent.ceramic;
+
+        if (helpTitle) helpTitle.textContent = content.title;
+        if (helpBody instanceof HTMLElement) {
+          helpBody.innerHTML = content.body.map((text) => `<p>${text}</p>`).join("");
+        }
+
+        if (helpOverlay instanceof HTMLElement) {
+          helpOverlay.hidden = false;
+          window.requestAnimationFrame(() => helpOverlay.classList.add("is-open"));
+        }
+      };
+
+      const closeHelpModal = () => {
+        if (!(helpOverlay instanceof HTMLElement)) return;
+
+        helpOverlay.classList.remove("is-open");
+        window.setTimeout(() => {
+          if (!helpOverlay.classList.contains("is-open")) helpOverlay.hidden = true;
+        }, 160);
+      };
+
+      const setStepOne = ({ animate = false } = {}) => {
+        priceCard.dataset.step = "1";
+        priceCard.dataset.view = "intro";
+
+        setBaseStepChromeHidden(false);
         if (title) title.textContent = "APROXIMACION DE PRECIO";
         if (copy) copy.textContent = "Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.";
         if (options instanceof HTMLElement) options.hidden = true;
         if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
         if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+        closeHelpModal();
         setActionLabel("Comenzar");
 
         setActiveDots(1);
         setActionEnabled(true);
         updateBackButton();
+        if (animate) animatePriceCardStep();
         saveState();
       };
 
-      const setStepTwo = () => {
+      const setStepTwo = ({ animate = false } = {}) => {
         priceCard.dataset.step = "2";
+        priceCard.dataset.view = "space";
 
+        setBaseStepChromeHidden(false);
         if (title) title.textContent = "TIPO DE ESPACIO";
         if (copy) copy.textContent = "";
         if (options instanceof HTMLElement) options.hidden = false;
         if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
         if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+        closeHelpModal();
         setActionLabel("Continuar");
 
         setActiveDots(2);
         setActionEnabled(Boolean(priceCard.dataset.selectedSpace));
         updateBackButton();
+        if (animate) animatePriceCardStep();
         saveState();
       };
 
-      const setStepThree = () => {
+      const setStepThree = ({ animate = false } = {}) => {
         priceCard.dataset.step = "3";
+        priceCard.dataset.view = "surface";
 
+        setBaseStepChromeHidden(false);
         if (title) title.textContent = "SUPERFICIE";
         if (copy) copy.textContent = "";
         if (options instanceof HTMLElement) options.hidden = true;
         if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = false;
         if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-        if (surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+        closeHelpModal();
+        if (animate && surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
         setActionLabel("Continuar");
 
         setActiveDots(3);
         setActionEnabled(isValidSurfaceValue());
         updateBackButton();
+        if (animate) animatePriceCardStep();
         saveState();
       };
 
-      const setStepFour = () => {
+      const setStepFour = ({ animate = false } = {}) => {
         priceCard.dataset.step = "4";
+        priceCard.dataset.view = "support";
 
+        setBaseStepChromeHidden(false);
         if (title) title.textContent = "SOPORTE EXISTENTE";
         if (copy) copy.textContent = "";
         if (options instanceof HTMLElement) options.hidden = true;
         if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
         if (supportOptions instanceof HTMLElement) supportOptions.hidden = false;
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+        closeHelpModal();
 
         setActiveDots(4);
         updateSupportActionLabel();
         setActionEnabled(Boolean(priceCard.dataset.selectedSupport));
         updateBackButton();
+        if (animate) animatePriceCardStep();
         saveState();
+      };
+
+      const setStepFive = ({ animate = false } = {}) => {
+        priceCard.dataset.step = "5";
+        priceCard.dataset.view = "ceramic-removal";
+
+        setBaseStepChromeHidden(false);
+        if (title) title.textContent = "DESEA RETIRAR LA CERAMICA?";
+        if (copy) copy.textContent = "";
+        if (options instanceof HTMLElement) options.hidden = true;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = false;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+        setActionLabel("Continuar");
+
+        setActiveDots(5);
+        setActionEnabled(Boolean(priceCard.dataset.selectedCeramicRemoval));
+        updateBackButton();
+        if (animate) animatePriceCardStep();
+        saveState();
+      };
+
+      const setConditionStep = ({ animate = false } = {}) => {
+        priceCard.dataset.step = priceCard.dataset.selectedSupport === "ceramica-baldosa" ? "6" : "5";
+        priceCard.dataset.view = "condition";
+
+        setBaseStepChromeHidden(false);
+        if (title) title.textContent = "ESTADO DEL SOPORTE";
+        if (copy) copy.textContent = "";
+        if (options instanceof HTMLElement) options.hidden = true;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = false;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+        closeHelpModal();
+        setActionLabel("Finalizar");
+
+        setActiveDots(Number(priceCard.dataset.step || "5"));
+        setActionEnabled(Boolean(priceCard.dataset.selectedCondition));
+        updateBackButton();
+        if (animate) animatePriceCardStep();
+        saveState();
+      };
+
+      const setResultStep = ({ animate = false } = {}) => {
+        priceCard.dataset.step = "result";
+        priceCard.dataset.view = "result";
+
+        setBaseStepChromeHidden(true);
+        if (options instanceof HTMLElement) options.hidden = true;
+        if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+        if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+        if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+        if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+        if (resultStep instanceof HTMLElement) resultStep.hidden = false;
+        if (resultSpace) resultSpace.textContent = getSpaceLabel();
+        updateResultAmount();
+        closeHelpModal();
+
+        updateBackButton();
+        setActionLabel("Comenzar");
+        setActionEnabled(true);
+        if (animate) animatePriceCardStep();
+        saveState();
+      };
+
+      const resetCalculator = () => {
+        window.clearTimeout(estimateTimeout);
+        sessionStorage.removeItem(storageKey);
+
+        delete priceCard.dataset.selectedSpace;
+        delete priceCard.dataset.selectedSupport;
+        delete priceCard.dataset.selectedCeramicRemoval;
+        delete priceCard.dataset.selectedCondition;
+        delete priceCard.dataset.estimatedPrice;
+
+        if (surfaceInput instanceof HTMLInputElement) {
+          surfaceInput.value = "";
+          surfaceInput.classList.remove("is-out-of-range");
+        }
+
+        if (surfaceError instanceof HTMLElement) surfaceError.hidden = true;
+        updateSelectedOption(options, "", "space");
+        updateSelectedOption(supportOptions, "", "support");
+        updateSelectedOption(ceramicStep, "", "ceramicRemoval");
+        updateSelectedOption(conditionStep, "", "condition");
+
+        if (estimateCard instanceof HTMLElement) {
+          estimateCard.classList.remove("is-visible");
+          estimateCard.hidden = true;
+        }
+
+        priceCard.hidden = false;
+        setStepOne({ animate: true });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      const runEstimateLoading = () => {
+        window.clearTimeout(estimateTimeout);
+
+        priceCard.hidden = true;
+
+        if (estimateCard instanceof HTMLElement) {
+          estimateCard.hidden = false;
+          requestAnimationFrame(() => estimateCard.classList.add("is-visible"));
+        }
+
+        const estimateDuration = 2500;
+        const frames = [130, 280, 420, 690, 930, 1180, 1410, 1600];
+        const frameDuration = estimateDuration / frames.length;
+
+        frames.forEach((value, index) => {
+          window.setTimeout(() => {
+            if (estimateAmount) estimateAmount.textContent = formatEuros(value);
+          }, index * frameDuration);
+        });
+
+        estimateTimeout = window.setTimeout(() => {
+          if (estimateCard instanceof HTMLElement) {
+            estimateCard.classList.remove("is-visible");
+
+            window.setTimeout(() => {
+              estimateCard.hidden = true;
+              priceCard.hidden = false;
+              setResultStep();
+            }, 160);
+          } else {
+            priceCard.hidden = false;
+            setResultStep();
+          }
+        }, estimateDuration);
       };
 
       const isValidSurfaceValue = () => {
@@ -291,11 +825,54 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
         if (priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "otro") {
           window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+          return;
+        }
+
+        if (priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
+          setStepFive();
+          return;
+        }
+
+        if (priceCard.dataset.step === "4" && (
+          priceCard.dataset.selectedSupport === "hormigon" ||
+          priceCard.dataset.selectedSupport === "mortero-autonivelante"
+        )) {
+          setConditionStep();
+          return;
+        }
+
+        if (priceCard.dataset.step === "5" && priceCard.dataset.selectedSupport === "ceramica-baldosa" && priceCard.dataset.selectedCeramicRemoval) {
+          setConditionStep();
+          return;
+        }
+
+        if ((priceCard.dataset.step === "5" || priceCard.dataset.step === "6") && priceCard.dataset.view === "condition" && priceCard.dataset.selectedCondition) {
+          runEstimateLoading();
         }
       });
 
       backButton?.addEventListener("click", () => {
+        if (priceCard.dataset.step === "result") {
+          resetCalculator();
+          return;
+        }
+
         const currentStep = Number(priceCard.dataset.step || "1");
+
+        if (currentStep === 6) {
+          setStepFive();
+          return;
+        }
+
+        if (currentStep === 5) {
+          if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") {
+            setStepFour();
+            return;
+          }
+
+          setStepFour();
+          return;
+        }
 
         if (currentStep === 4) {
           setStepThree();
@@ -331,12 +908,58 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           priceCard.dataset.selectedSupport = option.dataset.support || "";
           updateSelectedOption(supportOptions, priceCard.dataset.selectedSupport, "support");
 
+          if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") {
+            delete priceCard.dataset.selectedCeramicRemoval;
+            updateSelectedOption(ceramicStep, "", "ceramicRemoval");
+          }
+
+          delete priceCard.dataset.selectedCondition;
+          updateSelectedOption(conditionStep, "", "condition");
+
           updateExtraProgressDot();
           setActiveDots(Number(priceCard.dataset.step || "4"));
           updateSupportActionLabel();
           setActionEnabled(true);
           saveState();
         });
+      });
+
+      ceramicStep?.querySelectorAll(".price-space-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          if (!(option instanceof HTMLButtonElement)) return;
+
+          priceCard.dataset.selectedCeramicRemoval = option.dataset.ceramicRemoval || "";
+          updateSelectedOption(ceramicStep, priceCard.dataset.selectedCeramicRemoval, "ceramicRemoval");
+
+          setActionEnabled(true);
+          saveState();
+        });
+      });
+
+      conditionStep?.querySelectorAll(".price-space-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          if (!(option instanceof HTMLButtonElement)) return;
+
+          priceCard.dataset.selectedCondition = option.dataset.condition || "";
+          updateSelectedOption(conditionStep, priceCard.dataset.selectedCondition, "condition");
+
+          setActionEnabled(true);
+          saveState();
+        });
+      });
+
+      helpOpenButton?.addEventListener("click", () => openHelpModal("ceramic"));
+      conditionHelpOpenButton?.addEventListener("click", () => openHelpModal("condition"));
+
+      helpOverlay?.addEventListener("click", (event) => {
+        if (event.target === helpOverlay) closeHelpModal();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeHelpModal();
+          closePhonePrefixMenu();
+        }
       });
 
       surfaceInput?.addEventListener("input", () => {
@@ -353,6 +976,23 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       const restoreState = () => {
         try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const requestedReset = urlParams.get("reset") === "1";
+          const requestedSpace = urlParams.get("space") || "";
+          const validSpaces = ["vivienda", "garaje", "local-comercial", "industria", "exterior"];
+
+          if (requestedReset) {
+            sessionStorage.removeItem(storageKey);
+
+            if (validSpaces.includes(requestedSpace)) {
+              priceCard.dataset.selectedSpace = requestedSpace;
+              updateSelectedOption(options, requestedSpace, "space");
+            }
+
+            setStepOne({ animate: true });
+            return;
+          }
+
           const storedState = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
 
           if (typeof storedState.selectedSpace === "string") {
@@ -370,31 +1010,60 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             updateExtraProgressDot();
           }
 
+          if (typeof storedState.selectedCeramicRemoval === "string") {
+            priceCard.dataset.selectedCeramicRemoval = storedState.selectedCeramicRemoval;
+            updateSelectedOption(ceramicStep, storedState.selectedCeramicRemoval, "ceramicRemoval");
+          }
+
+          if (typeof storedState.selectedCondition === "string") {
+            priceCard.dataset.selectedCondition = storedState.selectedCondition;
+            updateSelectedOption(conditionStep, storedState.selectedCondition, "condition");
+          }
+
+          if (storedState.step === "result") {
+            setResultStep({ animate: true });
+            return;
+          }
+
           const restoredStep = Number(storedState.step || 1);
 
+          if (restoredStep >= 6 && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
+            setConditionStep({ animate: true });
+            return;
+          }
+
+          if (restoredStep >= 5 && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
+            setStepFive({ animate: true });
+            return;
+          }
+
+          if (restoredStep >= 5) {
+            setConditionStep({ animate: true });
+            return;
+          }
+
           if (restoredStep >= 4) {
-            setStepFour();
+            setStepFour({ animate: true });
             return;
           }
 
           if (restoredStep === 3) {
-            setStepThree();
+            setStepThree({ animate: true });
             return;
           }
 
           if (restoredStep === 2) {
-            setStepTwo();
+            setStepTwo({ animate: true });
             return;
           }
         } catch {
           sessionStorage.removeItem(storageKey);
         }
 
-        setStepOne();
+        setStepOne({ animate: true });
       };
 
-      sessionStorage.removeItem(storageKey);
-      setStepOne();
+      restoreState();
     }
   </script>
 </BaseLayout>
