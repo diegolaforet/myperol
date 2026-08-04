@@ -598,9 +598,24 @@ main {
   overflow: hidden;
 }
 
-.service-card-media span {
+.service-card-label-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.service-card-logo {
+  --service-card-logo-offset-y: -10px;
   position: relative;
   z-index: 1;
+  width: clamp(86px, 8vw, 90px);
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translateY(var(--service-card-logo-offset-y));
 }
 
 .services-feature-cards .feature-card h2,
