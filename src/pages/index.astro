@@ -395,7 +395,7 @@ import SplineScroll from "../components/SplineScroll.astro";
     let touchStartY = 0;
     let entryAnimationFrame = 0;
     const entryScrollDuration = 1200;
-    const entryScrollExtraOffset = window.innerWidth <= 902 ? -80 : 150;
+    const entryScrollTargetOffset = 0;
     const entryScrollStartLimit = 32;
 
     const easeInOutCubic = (progress) =>
@@ -405,9 +405,8 @@ import SplineScroll from "../components/SplineScroll.astro";
 
     const getEntryScrollTop = () => {
       const targetTop = entryScrollTarget.getBoundingClientRect().top + window.scrollY;
-      const viewportOffset = Math.min(window.innerHeight * 0.42, 460);
 
-      return Math.max(0, targetTop - viewportOffset + entryScrollExtraOffset);
+      return Math.max(0, targetTop - entryScrollTargetOffset);
     };
 
     const animateEntryScroll = (targetTop) => {

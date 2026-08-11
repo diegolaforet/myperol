@@ -84,6 +84,7 @@
   --card-padding: 34px;
   --card-gap: 24px;
   --carousel-arrow-size: 58px;
+  --home-primary-cards-top-padding: clamp(84px, 11vh, 112px);
   --font-size-card-label: 13px;
   --font-size-card-title: 34px;
   --font-size-card-text: 18px;
@@ -382,7 +383,7 @@ main {
 
 /* Home first carousel. Add overrides here when this carousel needs its own layout. */
 .home-primary-cards {
-  padding-top: 48px;
+  padding-top: var(--home-primary-cards-top-padding);
   border-radius: 0;
 }
 
