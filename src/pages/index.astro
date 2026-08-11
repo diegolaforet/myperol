@@ -9,12 +9,18 @@ import SplineScroll from "../components/SplineScroll.astro";
   isHome
 >
   <main class="home-page">
-    <section class="hero-placeholder" aria-label="MyPerol">
-      <img
-        src="/assets/placeholder/placeholder-index.jpg"
-        alt=""
+    <section class="hero-placeholder home-video-hero" aria-label="MyPerol">
+      <video
+        class="home-video-hero__media"
+        src="/assets/videos/video-intro-index.mov"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
         aria-hidden="true"
-      />
+        tabindex="-1"
+      ></video>
     </section>
 
     <section class="home-intro" aria-label="Introducción" data-i18n-aria-label="home_intro_aria">

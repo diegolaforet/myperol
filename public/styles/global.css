@@ -255,6 +255,19 @@ main {
   object-position: center;
 }
 
+/* Video de portada exclusivo de la pagina principal */
+.home-video-hero {
+  --hero-overlay: transparent;
+}
+
+.home-video-hero__media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
 .hero-placeholder::before {
   content: "";
   position: absolute;
@@ -305,7 +318,7 @@ main {
 }
 
 .home-intro-subtitle {
-  color: var(--color-card-muted);
+  color: var(--color-text-on-light);
   font: var(--font-weight-title) var(--font-size-home-intro-subtitle)/var(--line-height-title) var(--font-ui);
   transform: translateY(-15px);
 }
