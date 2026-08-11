@@ -9,6 +9,7 @@
   --color-home-page-rgb: 246, 245, 242;
   --color-text-on-dark: #ffffff;
   --color-text-on-light: #1b1b1b;
+  --color-text-on-light-rgb: 27, 27, 27;
 
   /* Fixed top controls: navbar text, language trigger, hamburger and desktop social links. */
   --color-fixed-control-on-dark: rgba(255, 255, 255, 0.76);
@@ -131,13 +132,13 @@
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--color-page);
 }
 
 body {
   margin: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--color-page);
   color: var(--color-text-on-dark);
   font-family: var(--font-ui);
@@ -443,6 +444,186 @@ main {
   max-width: none;
   padding-bottom: 20px;
 } 
+
+/* ==========================================================================
+   MP Systems: Spline scroll
+   ========================================================================== */
+.flooring-scroll {
+  --flooring-progress: 0;
+  position: relative;
+  width: 100vw;
+  height: 620vh;
+  margin-left: calc(50% - 50vw);
+  background: var(--color-home-page);
+  color: var(--color-text-on-light);
+}
+
+.flooring-sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  min-height: 520px;
+  overflow: hidden;
+  isolation: isolate;
+  contain: layout paint style;
+  background: var(--color-home-page);
+}
+
+.flooring-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  outline: 0;
+  pointer-events: none;
+}
+
+.flooring-scroll.is-ready .flooring-canvas,
+.flooring-scroll.has-load-error .flooring-canvas {
+  opacity: 1;
+}
+
+.flooring-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(var(--color-home-page-rgb), 0.94) 0%, rgba(var(--color-home-page-rgb), 0.7) 24%, transparent 58%),
+    linear-gradient(0deg, rgba(var(--color-home-page-rgb), 0.42) 0%, transparent 35%);
+}
+
+.flooring-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-card-muted);
+  font: var(--font-weight-control) 13px/1 var(--font-ui);
+  text-transform: uppercase;
+  transition:
+    opacity 300ms ease,
+    visibility 300ms ease;
+}
+
+.flooring-loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: flooring-pulse 1.1s ease-in-out infinite alternate;
+}
+
+.flooring-loader p {
+  margin: 0;
+}
+
+.flooring-loader.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.flooring-loader.has-error {
+  inset: auto 28px 28px auto;
+  max-width: min(360px, calc(100vw - 56px));
+  text-transform: none;
+}
+
+.flooring-copy-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.flooring-copy-panel {
+  position: absolute;
+  left: clamp(20px, 5vw, 76px);
+  bottom: clamp(38px, 8vh, 92px);
+  width: min(470px, calc(100vw - 40px));
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: opacity, transform;
+  transition:
+    opacity 0.28s ease,
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flooring-copy-panel.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.flooring-copy-panel h2 {
+  margin: 0 0 14px;
+  color: var(--color-text-on-light);
+  font: var(--font-weight-title) clamp(38px, 5vw, 72px)/0.98 var(--font-ui);
+}
+
+.flooring-copy-panel > p:last-child {
+  max-width: 430px;
+  margin: 0;
+  color: var(--color-card-muted);
+  font: var(--font-weight-text) clamp(15px, 1.4vw, 19px)/1.5 var(--font-ui);
+}
+
+.flooring-eyebrow,
+.flooring-step {
+  margin: 0 0 12px;
+  color: var(--color-card-label);
+  font: var(--font-weight-control) 12px/1 var(--font-ui);
+  text-transform: uppercase;
+}
+
+.flooring-step {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  color: rgba(var(--color-text-on-light-rgb), 0.38);
+}
+
+.flooring-progress {
+  position: absolute;
+  top: 50%;
+  right: clamp(18px, 3vw, 42px);
+  z-index: 4;
+  width: 2px;
+  height: min(180px, 28vh);
+  overflow: hidden;
+  background: rgba(var(--color-text-on-light-rgb), 0.12);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.flooring-progress-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--color-card-label);
+  transform: scaleY(var(--flooring-progress));
+  transform-origin: top;
+}
+
+@keyframes flooring-pulse {
+  from {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .feature-cards-shell {
   position: relative;
 }
@@ -516,6 +697,15 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .flooring-loading-dot {
+    animation: none;
+  }
+
+  .flooring-copy-panel,
+  .flooring-canvas {
+    transition: none;
+  }
+
   .reveal-enabled .feature-card,
   .reveal-enabled .feature-card.is-visible {
     opacity: 1;
@@ -2280,6 +2470,41 @@ body.services-route:not(.controls-over-light) .lang-menu {
     padding: 12px 28px 48px;
   }
 
+  .flooring-scroll {
+    height: 560vh;
+  }
+
+  .flooring-shade {
+    background: linear-gradient(
+      0deg,
+      rgba(var(--color-home-page-rgb), 0.96) 0%,
+      rgba(var(--color-home-page-rgb), 0.55) 37%,
+      transparent 68%
+    );
+  }
+
+  .flooring-copy-panel {
+    top: auto;
+    left: 20px;
+    right: 20px;
+    bottom: max(96px, calc(env(safe-area-inset-bottom) + 84px));
+    width: auto;
+  }
+
+  .flooring-copy-panel h2 {
+    max-width: 540px;
+    font-size: clamp(34px, 8vw, 58px);
+  }
+
+  .flooring-copy-panel > p:last-child {
+    max-width: 520px;
+  }
+
+  .flooring-progress {
+    right: 14px;
+    height: 130px;
+  }
+
   .feature-cards-prev {
     left: 24px;
   }
@@ -2626,6 +2851,26 @@ body.services-route:not(.controls-over-light) .lang-menu {
   .hero-placeholder {
     height: calc(100vh - var(--hero-caption-space) - var(--hero-next-peek-space));
     min-height: 420px;
+  }
+
+  .flooring-sticky {
+    min-height: 420px;
+  }
+
+  .flooring-copy-panel {
+    left: 14px;
+    right: 30px;
+    bottom: max(96px, calc(env(safe-area-inset-bottom) + 84px));
+  }
+
+  .flooring-copy-panel h2 {
+    margin-bottom: 10px;
+    font-size: clamp(31px, 10vw, 44px);
+  }
+
+  .flooring-copy-panel > p:last-child {
+    font-size: 14px;
+    line-height: 1.45;
   }
 
   .hero-caption {

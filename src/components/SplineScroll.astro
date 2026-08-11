@@ -1,0 +1,428 @@
+<section
+  id="mp-systems"
+  class="flooring-scroll is-loading"
+  data-flooring-scroll
+  data-layer-coverage-ratio="0.9"
+  aria-labelledby="flooring-title"
+>
+  <div class="flooring-sticky">
+    <canvas
+      class="flooring-canvas"
+      data-flooring-canvas
+      aria-label="Modelo tridimensional de un sistema de suelo multicapa"
+      data-i18n-aria-label="mp_systems_canvas_aria"
+    ></canvas>
+
+    <div class="flooring-shade" aria-hidden="true"></div>
+
+    <div class="flooring-loader" data-flooring-loader role="status" aria-live="polite">
+      <span class="flooring-loading-dot" aria-hidden="true"></span>
+      <p data-flooring-loader-message data-i18n="mp_systems_loading">Cargando sistema 3D</p>
+    </div>
+
+    <div class="flooring-copy-stack" aria-live="polite">
+      <article class="flooring-copy-panel is-active" data-flooring-panel="0">
+        <p class="flooring-eyebrow" data-i18n="mp_systems_intro_eyebrow">MP SYSTEM</p>
+        <h2 id="flooring-title" data-i18n="mp_systems_intro_title">Un sistema construido capa a capa.</h2>
+        <p data-i18n="mp_systems_intro_text">Desliza para descubrir qué hay debajo de un acabado MyPerol.</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="1">
+        <p class="flooring-step">01</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_primer_eyebrow">ADHERENCIA</p>
+        <h2 data-i18n="mp_systems_primer_title">Imprimación</h2>
+        <p data-i18n="mp_systems_primer_text">Consolida el soporte y crea una unión fiable con el sistema de resina.</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="2">
+        <p class="flooring-step">02</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_silica_eyebrow">ESTRUCTURA</p>
+        <h2 data-i18n="mp_systems_silica_title">Árido de sílice</h2>
+        <p data-i18n="mp_systems_silica_text">Refuerza el conjunto, regula el espesor y mejora su comportamiento mecánico.</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="3">
+        <p class="flooring-step">03</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_epoxy_eyebrow">CONTINUIDAD</p>
+        <h2 data-i18n="mp_systems_epoxy_title">Resina epoxi</h2>
+        <p data-i18n="mp_systems_epoxy_text">Aporta continuidad, diseño y resistencia a toda la superficie.</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="4">
+        <p class="flooring-step">04</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_sealer_eyebrow">PROTECCIÓN</p>
+        <h2 data-i18n="mp_systems_sealer_title">Sellador transparente</h2>
+        <p data-i18n="mp_systems_sealer_text">La terminación final protege el sistema sin ocultar su acabado.</p>
+      </article>
+
+      <article class="flooring-copy-panel flooring-copy-final" data-flooring-panel="5">
+        <p class="flooring-eyebrow" data-i18n="mp_systems_final_eyebrow">MYPEROL</p>
+        <h2 data-i18n="mp_systems_final_title">La resistencia está en todo el sistema.</h2>
+        <p data-i18n="mp_systems_final_text">Cuatro capas trabajando sobre una base preparada para durar.</p>
+      </article>
+    </div>
+
+    <div class="flooring-progress" aria-hidden="true">
+      <span class="flooring-progress-bar"></span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const SCENE_URL = "/assets/3d/flooring-07d94fcf.splinecode";
+  const LAYER_DEPTHS = {
+    imprimacion: 134.598,
+    silice: 134.267,
+    epoxi: 133.021,
+    sellador: 134.595,
+  };
+  const CONCRETE_DEPTH = 364.706;
+  const INTRO_DURATION = 15;
+  const INTRO_ROTATION = Math.PI / 4;
+  const OBJECT_ALIASES = {
+    hormigon: ["hormigon", "concrete", "base hormigon"],
+    imprimacion: ["imprimacion", "primer", "epoxy primer"],
+    silice: ["silice", "silica", "arido"],
+    epoxi: ["epoxi", "epoxy", "resina epoxi"],
+    sellador: ["sellador", "sealer", "sellado", "transparent sealer"],
+    camera: ["cameraPrincipal", "camera principal", "main camera", "camera"],
+  };
+
+  const flooringWindow = window as Window & {
+    flooring3DReady?: Promise<void>;
+  };
+
+  const normalizeName = (name = "") =>
+    name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+  const getMessage = (key, fallback) => {
+    const language = document.documentElement.lang || "es";
+    const messages = window.I18N_MESSAGES || {};
+
+    return messages[language]?.[key] || messages.es?.[key] || fallback;
+  };
+
+  const buildSplineScroll = async () => {
+    const section = document.querySelector("[data-flooring-scroll]");
+    const canvas = section?.querySelector("[data-flooring-canvas]");
+    const loader = section?.querySelector("[data-flooring-loader]");
+    const loaderMessage = section?.querySelector("[data-flooring-loader-message]");
+    const panels = Array.from(section?.querySelectorAll("[data-flooring-panel]") || []);
+
+    if (
+      !(section instanceof HTMLElement) ||
+      !(canvas instanceof HTMLCanvasElement) ||
+      section.dataset.flooringInitialized
+    ) return;
+
+    section.dataset.flooringInitialized = "loading";
+
+    let isDisposed = false;
+    let activePanelIndex = -1;
+    let spline;
+    let timeline;
+    let ScrollTrigger;
+
+    const showError = (message) => {
+      if (loader instanceof HTMLElement) loader.classList.add("has-error");
+      if (loaderMessage instanceof HTMLElement) loaderMessage.textContent = message;
+      section.classList.remove("is-loading");
+      section.classList.add("has-load-error");
+      section.dataset.flooringInitialized = "error";
+    };
+
+    const setActivePanel = (index) => {
+      if (index === activePanelIndex) return;
+
+      panels.forEach((panel) => {
+        if (!(panel instanceof HTMLElement)) return;
+        panel.classList.toggle("is-active", Number(panel.dataset.flooringPanel) === index);
+      });
+
+      activePanelIndex = index;
+    };
+
+    const getPanelIndex = (progress) => {
+      if (progress < 0.15) return 0;
+      if (progress < 0.35) return 1;
+      if (progress < 0.55) return 2;
+      if (progress < 0.75) return 3;
+      if (progress < 0.9) return 4;
+      return 5;
+    };
+
+    const renderInitialFrames = (application, frameCount = 2) =>
+      new Promise<void>((resolve) => {
+        let renderedFrames = 0;
+
+        const handleRendered = () => {
+          renderedFrames += 1;
+
+          if (renderedFrames >= frameCount) {
+            application.removeEventListener("rendered", handleRendered);
+            resolve();
+            return;
+          }
+
+          window.requestAnimationFrame(() => application.requestRender());
+        };
+
+        application.addEventListener("rendered", handleRendered);
+        application.requestRender();
+      });
+
+    const refreshScrollTrigger = () => ScrollTrigger?.refresh();
+
+    const cleanup = () => {
+      if (isDisposed) return;
+
+      isDisposed = true;
+      timeline?.scrollTrigger?.kill();
+      timeline?.kill();
+      spline?.dispose();
+      window.removeEventListener("resize", refreshScrollTrigger);
+    };
+
+    window.addEventListener("pagehide", cleanup, { once: true });
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
+
+    try {
+      const [runtimeModule, gsapModule, scrollTriggerModule] = await Promise.all([
+        import("@splinetool/runtime"),
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      const { Application } = runtimeModule;
+      const { gsap } = gsapModule;
+
+      ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+      gsap.registerPlugin(ScrollTrigger);
+
+      if (isDisposed) return;
+
+      // Building the Application and loading the scene happen once, immediately
+      // after the first page paint, never when the section enters the viewport.
+      spline = new Application(canvas, { renderMode: "manual" });
+      await spline.load(SCENE_URL, undefined, { cache: "force-cache" });
+
+      if (isDisposed) return;
+
+      const sceneObjects = spline.getAllObjects();
+      const resolveObject = (key) => {
+        const aliases = OBJECT_ALIASES[key].map(normalizeName);
+        const matches = sceneObjects.filter((object) => aliases.includes(normalizeName(object.name)));
+
+        if (matches.length !== 1) {
+          throw new Error(`Se esperaba un único objeto Spline para "${key}" y se encontraron ${matches.length}.`);
+        }
+
+        return matches[0];
+      };
+      const resolveOptionalObject = (key) => {
+        const aliases = OBJECT_ALIASES[key].map(normalizeName);
+        return sceneObjects.find((object) => aliases.includes(normalizeName(object.name)));
+      };
+
+      const objects = {
+        hormigon: resolveObject("hormigon"),
+        imprimacion: resolveObject("imprimacion"),
+        silice: resolveObject("silice"),
+        epoxi: resolveObject("epoxi"),
+        sellador: resolveObject("sellador"),
+        camera: resolveOptionalObject("camera"),
+      };
+      const requestedCoverageRatio = Number(section.dataset.layerCoverageRatio || 0.9);
+      const layerCoverageRatio = Math.min(1, Math.max(0.1, requestedCoverageRatio));
+      const layerSources = [
+        { object: objects.imprimacion, depth: LAYER_DEPTHS.imprimacion },
+        { object: objects.silice, depth: LAYER_DEPTHS.silice },
+        { object: objects.epoxi, depth: LAYER_DEPTHS.epoxi },
+        { object: objects.sellador, depth: LAYER_DEPTHS.sellador },
+      ];
+      let previousLayerDepth = CONCRETE_DEPTH * Math.abs(objects.hormigon.scale.z);
+      const layerConfiguration = layerSources.map(({ object, depth }) => {
+        const initialDepth = depth * Math.abs(object.scale.z);
+        const anchoredRearEdge = object.position.z - initialDepth / 2;
+        const scaleDirection = Math.sign(object.scale.z) || 1;
+        const targetLayerDepth = previousLayerDepth * layerCoverageRatio;
+
+        previousLayerDepth = targetLayerDepth;
+
+        return {
+          object,
+          targetScaleZ: scaleDirection * (targetLayerDepth / depth),
+          targetPositionZ: anchoredRearEdge + targetLayerDepth / 2,
+        };
+      });
+      const initialCameraRotation = objects.camera
+        ? {
+            x: objects.camera.rotation.x,
+            y: objects.camera.rotation.y,
+            z: objects.camera.rotation.z,
+          }
+        : null;
+      const initialCameraPosition = objects.camera
+        ? {
+            x: objects.camera.position.x,
+            y: objects.camera.position.y,
+            z: objects.camera.position.z,
+          }
+        : null;
+      const introCameraPosition = initialCameraPosition
+        ? (() => {
+            const targetX = objects.hormigon.position.x;
+            const targetZ = objects.hormigon.position.z;
+            const relativeX = initialCameraPosition.x - targetX;
+            const relativeZ = initialCameraPosition.z - targetZ;
+
+            return {
+              x: targetX + relativeX * Math.cos(INTRO_ROTATION) + relativeZ * Math.sin(INTRO_ROTATION),
+              y: initialCameraPosition.y,
+              z: targetZ - relativeX * Math.sin(INTRO_ROTATION) + relativeZ * Math.cos(INTRO_ROTATION),
+            };
+          })()
+        : null;
+      const zoom = { value: 0.08 };
+
+      gsap.set(canvas, { opacity: 0 });
+      spline.setZoom(zoom.value);
+
+      if (objects.camera && initialCameraPosition && initialCameraRotation && introCameraPosition) {
+        objects.camera.position.x = introCameraPosition.x;
+        objects.camera.position.y = introCameraPosition.y;
+        objects.camera.position.z = introCameraPosition.z;
+        objects.camera.rotation.y = initialCameraRotation.y + INTRO_ROTATION;
+      }
+
+      timeline = gsap.timeline({
+        defaults: { ease: "power2.inOut" },
+        onUpdate: () => {
+          const progress = timeline?.progress() ?? 0;
+
+          section.style.setProperty("--flooring-progress", String(progress));
+          setActivePanel(getPanelIndex(progress));
+          spline.setZoom(zoom.value);
+          spline.requestRender();
+        },
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: true,
+        },
+      });
+
+      timeline.to(canvas, { opacity: 1, duration: INTRO_DURATION, ease: "power1.out" }, 0);
+      timeline.to(
+        zoom,
+        {
+          value: 0.86,
+          duration: INTRO_DURATION,
+          ease: "power1.inOut",
+        },
+        0
+      );
+
+      if (objects.camera && initialCameraPosition && initialCameraRotation) {
+        timeline.to(
+          objects.camera.position,
+          {
+            x: initialCameraPosition.x,
+            y: initialCameraPosition.y,
+            z: initialCameraPosition.z,
+            duration: INTRO_DURATION,
+          },
+          0
+        );
+        timeline.to(
+          objects.camera.rotation,
+          { y: initialCameraRotation.y, duration: INTRO_DURATION },
+          0
+        );
+      }
+
+      layerConfiguration.forEach(({ object, targetScaleZ, targetPositionZ }, index) => {
+        const isSealer = index === layerConfiguration.length - 1;
+        const movementDuration = isSealer ? 12 : 16;
+        const holdDuration = isSealer ? 3 : 4;
+
+        timeline.to(object.scale, { z: targetScaleZ, duration: movementDuration });
+        timeline.to(object.position, { z: targetPositionZ, duration: movementDuration }, "<");
+        timeline.to({}, { duration: holdDuration });
+      });
+
+      const finalCameraStart = timeline.duration();
+
+      timeline.to(
+        zoom,
+        {
+          value: 1.02,
+          duration: 10,
+          ease: "power1.inOut",
+        },
+        finalCameraStart
+      );
+
+      if (objects.camera && initialCameraRotation) {
+        timeline.to(
+          objects.camera.rotation,
+          {
+            x: initialCameraRotation.x - 0.035,
+            y: initialCameraRotation.y + 0.12,
+            duration: 10,
+          },
+          finalCameraStart
+        );
+      }
+
+      setActivePanel(0);
+      await renderInitialFrames(spline, 2);
+
+      if (isDisposed) return;
+
+      if (loader instanceof HTMLElement) loader.classList.add("is-hidden");
+      section.classList.remove("is-loading");
+      section.classList.add("is-ready");
+      section.dataset.flooringInitialized = "ready";
+
+      // Recalculate ScrollTrigger only after the two initial manual renders.
+      window.requestAnimationFrame(() => {
+        if (isDisposed) return;
+        ScrollTrigger.refresh();
+        timeline.scrollTrigger?.update();
+      });
+
+      window.addEventListener("resize", refreshScrollTrigger, { passive: true });
+    } catch (error) {
+      console.error("No se pudo inicializar la escena MP Systems.", error);
+      showError(getMessage("mp_systems_error", "No se ha podido cargar el sistema 3D."));
+      throw error;
+    }
+  };
+
+  const initializeSplineScroll = () => {
+    if (!flooringWindow.flooring3DReady) {
+      flooringWindow.flooring3DReady = buildSplineScroll();
+    }
+
+    return flooringWindow.flooring3DReady;
+  };
+
+  const prepareSplineAfterFirstPaint = () => {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        void initializeSplineScroll().catch(() => undefined);
+      });
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", prepareSplineAfterFirstPaint, { once: true });
+  } else {
+    prepareSplineAfterFirstPaint();
+  }
+</script>
