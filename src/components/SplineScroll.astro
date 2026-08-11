@@ -78,8 +78,111 @@
   };
   const CONCRETE_DEPTH = 364.706;
   const INTRO_DURATION = 15;
-  const INTRO_ROTATION = Math.PI / 4;
+  const LAYER_BUILD_DURATION = 16;
+  const LAYER_HOLD_DURATION = 4;
+  const SEALER_BUILD_DURATION = 12;
+  const SEALER_HOLD_DURATION = 3;
   const MODEL_SCALE_MULTIPLIER = 1.3;
+  const DEGREES_TO_RADIANS = Math.PI / 180;
+  const MODEL_REFERENCE_VIEWPORT_WIDTH = 1280;
+  const MODEL_REFERENCE_VIEWPORT_HEIGHT = 760;
+  const MODEL_REFERENCE_ASPECT_RATIO =
+    MODEL_REFERENCE_VIEWPORT_WIDTH / MODEL_REFERENCE_VIEWPORT_HEIGHT;
+  const MODEL_ASPECT_SCALE_EXPONENT = 0.72;
+  const MODEL_MIN_VIEWPORT_FIT = 0.38;
+  const MODEL_MIN_BASE_SCALE = 0.78;
+  const MODEL_MAX_FOCUS_SCALE_DELTA = 0.3;
+  const MODEL_MAX_HORIZONTAL_TRAVEL = 124;
+  const MODEL_HORIZONTAL_TRAVEL_RATIO = 0.082;
+  const MODEL_MAX_VERTICAL_TRAVEL = 90;
+  const MODEL_VERTICAL_TRAVEL_RATIO = 0.1;
+  const MODEL_MAX_PORTRAIT_CENTER_OFFSET = 70;
+  const MODEL_MAX_LAYER_SEPARATION = 46;
+  const MODEL_FINAL_OVERVIEW_SCALE = 0.72;
+  const MODEL_FINAL_ACCORDION_OPEN = 1.75;
+  const MODEL_FINAL_ACCORDION_REST = 0.82;
+  const MODEL_LAYER_MOTIONS = [
+    {
+      xRatio: 0.08,
+      yRatio: 0,
+      focus: 0.58,
+      rotationY: -6 * DEGREES_TO_RADIANS,
+    },
+    {
+      xRatio: 0.24,
+      yRatio: -0.28,
+      focus: 0.72,
+      rotationY: 2 * DEGREES_TO_RADIANS,
+    },
+    {
+      xRatio: 0.26,
+      yRatio: -0.3,
+      focus: 0.74,
+      rotationY: 1 * DEGREES_TO_RADIANS,
+    },
+    {
+      xRatio: 0.26,
+      yRatio: -0.3,
+      focus: 1.12,
+      rotationY: 1 * DEGREES_TO_RADIANS,
+    },
+  ];
+  const MODEL_SILICA_MID_MOTION = {
+    xRatio: 0.14,
+    yRatio: -0.08,
+    focus: 0.7,
+    rotationY: 1 * DEGREES_TO_RADIANS,
+  };
+  const MODEL_SILICA_SECOND_HALF_MOTION = {
+    xRatio: 0.24,
+    yRatio: -0.28,
+    focus: 0.72,
+    rotationY: 2 * DEGREES_TO_RADIANS,
+  };
+  const CAMERA_LAYER_MOTIONS = [
+    { pitch: 1.2 * DEGREES_TO_RADIANS, yaw: 1.5 * DEGREES_TO_RADIANS },
+    { pitch: 1.8 * DEGREES_TO_RADIANS, yaw: 0.8 * DEGREES_TO_RADIANS },
+    { pitch: 1.9 * DEGREES_TO_RADIANS, yaw: 0.7 * DEGREES_TO_RADIANS },
+    { pitch: 1.9 * DEGREES_TO_RADIANS, yaw: 0.7 * DEGREES_TO_RADIANS },
+  ];
+  const CAMERA_SILICA_MID_MOTION = {
+    pitch: 1.6 * DEGREES_TO_RADIANS,
+    yaw: 0,
+  };
+  const CAMERA_SILICA_SECOND_HALF_MOTION = {
+    pitch: 1.8 * DEGREES_TO_RADIANS,
+    yaw: 0.8 * DEGREES_TO_RADIANS,
+  };
+  const MODEL_FINAL_MOTION = {
+    xRatio: 1.6,
+    yRatio: -1.05,
+    focus: 0.42,
+  };
+  const MODEL_FINAL_ACCORDION_Y_RATIO = -2;
+  const CAMERA_FINAL_MOTION = {
+    pitch: 2.5 * DEGREES_TO_RADIANS,
+    yaw: 0,
+  };
+  const FINAL_REPOSITION_DURATION = 3;
+  const FINAL_ACCORDION_OPEN_DURATION = 14;
+  const FINAL_ACCORDION_SETTLE_DURATION = 9;
+  const FINAL_SEQUENCE_DURATION =
+    FINAL_REPOSITION_DURATION +
+    FINAL_ACCORDION_OPEN_DURATION +
+    FINAL_ACCORDION_SETTLE_DURATION;
+  const STANDARD_LAYER_TOTAL_DURATION = LAYER_BUILD_DURATION + LAYER_HOLD_DURATION;
+  const SEALER_TOTAL_DURATION = SEALER_BUILD_DURATION + SEALER_HOLD_DURATION;
+  const PRE_FINAL_TIMELINE_DURATION =
+    INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 3 + SEALER_TOTAL_DURATION;
+  const FLOORING_TIMELINE_DURATION =
+    PRE_FINAL_TIMELINE_DURATION + FINAL_SEQUENCE_DURATION;
+  const PANEL_PROGRESS_THRESHOLDS = [
+    INTRO_DURATION,
+    INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION,
+    INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 2,
+    INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 3,
+    PRE_FINAL_TIMELINE_DURATION,
+  ].map((duration) => duration / FLOORING_TIMELINE_DURATION);
   const SCROLL_SCRUB_SECONDS = 0.22;
   const MAX_RENDER_PIXEL_RATIO = 2;
   const MAX_RENDER_PIXELS = 2560 * 1440;
@@ -134,6 +237,7 @@
     let renderResizeObserver;
     let renderResizeTimer;
     let postLoadRenderResizeTimer;
+    let applyCurrentModelTransform = () => undefined;
 
     const showError = (message) => {
       if (loader instanceof HTMLElement) loader.classList.add("has-error");
@@ -155,11 +259,11 @@
     };
 
     const getPanelIndex = (progress) => {
-      if (progress < 0.15) return 0;
-      if (progress < 0.35) return 1;
-      if (progress < 0.55) return 2;
-      if (progress < 0.75) return 3;
-      if (progress < 0.9) return 4;
+      if (progress < PANEL_PROGRESS_THRESHOLDS[0]) return 0;
+      if (progress < PANEL_PROGRESS_THRESHOLDS[1]) return 1;
+      if (progress < PANEL_PROGRESS_THRESHOLDS[2]) return 2;
+      if (progress < PANEL_PROGRESS_THRESHOLDS[3]) return 3;
+      if (progress < PANEL_PROGRESS_THRESHOLDS[4]) return 4;
       return 5;
     };
 
@@ -222,6 +326,51 @@
 
       let renderWidth = 0;
       let renderHeight = 0;
+      let modelMotionBounds = {
+        baseScale: 1,
+        focusScaleDelta: MODEL_MAX_FOCUS_SCALE_DELTA,
+        horizontalTravel: MODEL_MAX_HORIZONTAL_TRAVEL,
+        verticalTravel: MODEL_MAX_VERTICAL_TRAVEL,
+        horizontalCenterOffset: 0,
+        layerSeparation: MODEL_MAX_LAYER_SEPARATION,
+      };
+
+      const updateModelMotionBounds = (width, height) => {
+        const viewportFit = Math.min(
+          1,
+          Math.max(
+            MODEL_MIN_VIEWPORT_FIT,
+            Math.min(
+              width / MODEL_REFERENCE_VIEWPORT_WIDTH,
+              height / MODEL_REFERENCE_VIEWPORT_HEIGHT
+            )
+          )
+        );
+        const heightFit = Math.min(1, height / MODEL_REFERENCE_VIEWPORT_HEIGHT);
+        const aspectFit = Math.pow(
+          Math.min(1, width / height / MODEL_REFERENCE_ASPECT_RATIO),
+          MODEL_ASPECT_SCALE_EXPONENT
+        );
+        const verticalMotionFit = Math.max(0.55, viewportFit);
+
+        modelMotionBounds = {
+          // Reduce the complete model on narrow viewports before applying any
+          // layer focus, so rotation never pushes it outside the visible area.
+          baseScale:
+            (MODEL_MIN_BASE_SCALE + (1 - MODEL_MIN_BASE_SCALE) * viewportFit) * aspectFit,
+          focusScaleDelta: MODEL_MAX_FOCUS_SCALE_DELTA * viewportFit,
+          horizontalTravel:
+            Math.min(MODEL_MAX_HORIZONTAL_TRAVEL, width * MODEL_HORIZONTAL_TRAVEL_RATIO) *
+            heightFit *
+            aspectFit,
+          verticalTravel:
+            Math.min(MODEL_MAX_VERTICAL_TRAVEL, height * MODEL_VERTICAL_TRAVEL_RATIO) *
+            heightFit *
+            aspectFit,
+          horizontalCenterOffset: (1 - aspectFit) * MODEL_MAX_PORTRAIT_CENTER_OFFSET,
+          layerSeparation: MODEL_MAX_LAYER_SEPARATION * verticalMotionFit,
+        };
+      };
 
       const syncRenderResolution = () => {
         if (isDisposed || !spline) return;
@@ -229,6 +378,9 @@
         const cssWidth = canvas.clientWidth;
         const cssHeight = canvas.clientHeight;
         if (cssWidth <= 0 || cssHeight <= 0) return;
+
+        updateModelMotionBounds(cssWidth, cssHeight);
+        applyCurrentModelTransform();
 
         const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
         const pixelBudgetRatio = Math.sqrt(MAX_RENDER_PIXELS / (cssWidth * cssHeight));
@@ -311,6 +463,9 @@
         objects.epoxi,
         objects.sellador,
       ];
+      const modelLayerIndexByObject = new Map(
+        modelObjects.map((object, layerIndex) => [object, layerIndex])
+      );
       const modelScaleOrigin = modelObjects.reduce(
         (origin, object) => ({
           x: origin.x + object.position.x / modelObjects.length,
@@ -351,42 +506,102 @@
           targetPositionZ: anchoredRearEdge + targetLayerDepth / 2,
         };
       });
-      const initialCameraRotation = objects.camera
+      const modelStateConfiguration = modelScaleConfiguration.map((configuration) => ({
+        object: configuration.object,
+        scaleX: configuration.object.scale.x,
+        scaleY: configuration.object.scale.y,
+        scaleZ: configuration.object.scale.z,
+        positionX: configuration.object.position.x,
+        positionY: configuration.object.position.y,
+        positionZ: configuration.object.position.z,
+        rotationX: configuration.object.rotation.x,
+        rotationY: configuration.object.rotation.y,
+        rotationZ: configuration.object.rotation.z,
+        introScaleX: configuration.targetScaleX,
+        introScaleY: configuration.targetScaleY,
+        introScaleZ: configuration.targetScaleZ,
+        introPositionX: configuration.targetPositionX,
+        introPositionY: configuration.targetPositionY,
+        introPositionZ: configuration.targetPositionZ,
+      }));
+      const modelStateByObject = new Map(
+        modelStateConfiguration.map((configuration) => [configuration.object, configuration])
+      );
+      const cameraOrigin = objects.camera
         ? {
-            x: objects.camera.rotation.x,
-            y: objects.camera.rotation.y,
-            z: objects.camera.rotation.z,
+            rotationX: objects.camera.rotation.x,
+            rotationY: objects.camera.rotation.y,
+            rotationZ: objects.camera.rotation.z,
           }
         : null;
-      const initialCameraPosition = objects.camera
-        ? {
-            x: objects.camera.position.x,
-            y: objects.camera.position.y,
-            z: objects.camera.position.z,
-          }
-        : null;
-      const introCameraPosition = initialCameraPosition
-        ? (() => {
-            const targetX = objects.hormigon.position.x;
-            const targetZ = objects.hormigon.position.z;
-            const relativeX = initialCameraPosition.x - targetX;
-            const relativeZ = initialCameraPosition.z - targetZ;
+      const cameraMotion = {
+        pitch: 0,
+        yaw: 0,
+      };
+      const modelMotion = {
+        rotationY: 0,
+        focus: 0,
+        xRatio: 0,
+        yRatio: 0,
+        explode: 0,
+        overview: 0,
+      };
+      const applyModelTransform = () => {
+        const overviewScale =
+          1 - modelMotion.overview * (1 - MODEL_FINAL_OVERVIEW_SCALE);
+        const effectiveScale =
+          modelMotionBounds.baseScale *
+          (1 + modelMotionBounds.focusScaleDelta * modelMotion.focus) *
+          overviewScale;
+        const cosY = Math.cos(modelMotion.rotationY);
+        const sinY = Math.sin(modelMotion.rotationY);
+        const rotationWidthPenalty =
+          1 + Math.abs(Math.sin(modelMotion.rotationY)) * 0.28;
+        const horizontalPosition =
+          modelMotionBounds.horizontalCenterOffset +
+          (modelMotion.xRatio * modelMotionBounds.horizontalTravel) /
+            (Math.max(1, effectiveScale) * rotationWidthPenalty);
+        const verticalPosition =
+          (modelMotion.yRatio * modelMotionBounds.verticalTravel) /
+          Math.max(1, effectiveScale);
 
-            return {
-              x: targetX + relativeX * Math.cos(INTRO_ROTATION) + relativeZ * Math.sin(INTRO_ROTATION),
-              y: initialCameraPosition.y,
-              z: targetZ - relativeX * Math.sin(INTRO_ROTATION) + relativeZ * Math.cos(INTRO_ROTATION),
-            };
-          })()
-        : null;
+        modelStateConfiguration.forEach((state) => {
+          const layerIndex = modelLayerIndexByObject.get(state.object) ?? 0;
+          const verticalOffset =
+            layerIndex * modelMotion.explode * modelMotionBounds.layerSeparation;
+          const relativeX = (state.positionX - modelScaleOrigin.x) * effectiveScale;
+          const relativeY =
+            (state.positionY + verticalOffset - modelScaleOrigin.y) * effectiveScale;
+          const relativeZ = (state.positionZ - modelScaleOrigin.z) * effectiveScale;
+
+          state.object.position.x =
+            modelScaleOrigin.x + relativeX * cosY + relativeZ * sinY + horizontalPosition;
+          state.object.position.y = modelScaleOrigin.y + relativeY + verticalPosition;
+          state.object.position.z =
+            modelScaleOrigin.z - relativeX * sinY + relativeZ * cosY;
+          state.object.scale.x = state.scaleX * effectiveScale;
+          state.object.scale.y = state.scaleY * effectiveScale;
+          state.object.scale.z = state.scaleZ * effectiveScale;
+          state.object.rotation.x = state.rotationX;
+          state.object.rotation.y = state.rotationY + modelMotion.rotationY;
+          state.object.rotation.z = state.rotationZ;
+        });
+      };
+      const applyCameraTransform = () => {
+        if (!objects.camera || !cameraOrigin) return;
+
+        objects.camera.rotation.x = cameraOrigin.rotationX + cameraMotion.pitch;
+        objects.camera.rotation.y = cameraOrigin.rotationY + cameraMotion.yaw;
+        objects.camera.rotation.z = cameraOrigin.rotationZ;
+      };
+      const applySceneTransform = () => {
+        applyModelTransform();
+        applyCameraTransform();
+      };
+      applyCurrentModelTransform = applySceneTransform;
+
       gsap.set(canvas, { opacity: 0 });
-
-      if (objects.camera && initialCameraPosition && initialCameraRotation && introCameraPosition) {
-        objects.camera.position.x = introCameraPosition.x;
-        objects.camera.position.y = introCameraPosition.y;
-        objects.camera.position.z = introCameraPosition.z;
-        objects.camera.rotation.y = initialCameraRotation.y + INTRO_ROTATION;
-      }
+      applySceneTransform();
 
       const readSceneState = () => [
         ...(objects.camera
@@ -406,6 +621,9 @@
           object.position.x,
           object.position.y,
           object.position.z,
+          object.rotation.x,
+          object.rotation.y,
+          object.rotation.z,
         ]),
       ];
       let renderedSceneState = readSceneState();
@@ -427,6 +645,7 @@
         onUpdate: () => {
           const progress = timeline?.progress() ?? 0;
 
+          applySceneTransform();
           if (progressBar instanceof HTMLElement) {
             progressBar.style.setProperty("--flooring-progress", String(progress));
           }
@@ -451,82 +670,174 @@
         0
       );
 
-      modelScaleConfiguration.forEach(
-        ({
-          object,
-          targetScaleX,
-          targetScaleY,
-          targetScaleZ,
-          targetPositionX,
-          targetPositionY,
-          targetPositionZ,
-        }) => {
-          timeline.to(
-            object.scale,
-            {
-              x: targetScaleX,
-              y: targetScaleY,
-              z: targetScaleZ,
-              duration: INTRO_DURATION,
-              ease: "power1.inOut",
-            },
-            0
-          );
-          timeline.to(
-            object.position,
-            {
-              x: targetPositionX,
-              y: targetPositionY,
-              z: targetPositionZ,
-              duration: INTRO_DURATION,
-              ease: "power1.inOut",
-            },
-            0
-          );
-        }
-      );
-
-      if (objects.camera && initialCameraPosition && initialCameraRotation) {
+      modelStateConfiguration.forEach((state) => {
         timeline.to(
-          objects.camera.position,
+          state,
           {
-            x: initialCameraPosition.x,
-            y: initialCameraPosition.y,
-            z: initialCameraPosition.z,
+            scaleX: state.introScaleX,
+            scaleY: state.introScaleY,
+            scaleZ: state.introScaleZ,
+            positionX: state.introPositionX,
+            positionY: state.introPositionY,
+            positionZ: state.introPositionZ,
             duration: INTRO_DURATION,
+            ease: "power1.inOut",
           },
           0
         );
-        timeline.to(
-          objects.camera.rotation,
-          { y: initialCameraRotation.y, duration: INTRO_DURATION },
-          0
-        );
-      }
+      });
 
       layerConfiguration.forEach(({ object, targetScaleZ, targetPositionZ }, index) => {
         const isSealer = index === layerConfiguration.length - 1;
-        const movementDuration = isSealer ? 12 : 16;
-        const holdDuration = isSealer ? 3 : 4;
+        const movementDuration = isSealer ? SEALER_BUILD_DURATION : LAYER_BUILD_DURATION;
+        const holdDuration = isSealer ? SEALER_HOLD_DURATION : LAYER_HOLD_DURATION;
+        const movementStart = timeline.duration();
+        const activeLayerState = modelStateByObject.get(object);
+        const layerMotion = MODEL_LAYER_MOTIONS[index];
+        const cameraLayerMotion = CAMERA_LAYER_MOTIONS[index];
 
-        timeline.to(object.scale, { z: targetScaleZ, duration: movementDuration });
-        timeline.to(object.position, { z: targetPositionZ, duration: movementDuration }, "<");
+        timeline.to(
+          activeLayerState,
+          {
+            scaleZ: targetScaleZ,
+            positionZ: targetPositionZ,
+            duration: movementDuration,
+          },
+          movementStart
+        );
+        if (index === 1) {
+          const halfDuration = movementDuration / 2;
+          const secondHalfStart = movementStart + halfDuration;
+
+          timeline.to(
+            modelMotion,
+            {
+              xRatio: MODEL_SILICA_MID_MOTION.xRatio,
+              yRatio: MODEL_SILICA_MID_MOTION.yRatio,
+              focus: MODEL_SILICA_MID_MOTION.focus,
+              rotationY: MODEL_SILICA_MID_MOTION.rotationY,
+              duration: halfDuration,
+              ease: "sine.inOut",
+            },
+            movementStart
+          );
+          timeline.to(
+            cameraMotion,
+            {
+              pitch: CAMERA_SILICA_MID_MOTION.pitch,
+              yaw: CAMERA_SILICA_MID_MOTION.yaw,
+              duration: halfDuration,
+              ease: "sine.inOut",
+            },
+            movementStart
+          );
+          timeline.to(
+            modelMotion,
+            {
+              xRatio: MODEL_SILICA_SECOND_HALF_MOTION.xRatio,
+              yRatio: MODEL_SILICA_SECOND_HALF_MOTION.yRatio,
+              focus: MODEL_SILICA_SECOND_HALF_MOTION.focus,
+              rotationY: MODEL_SILICA_SECOND_HALF_MOTION.rotationY,
+              duration: halfDuration,
+              ease: "sine.inOut",
+            },
+            secondHalfStart
+          );
+          timeline.to(
+            cameraMotion,
+            {
+              pitch: CAMERA_SILICA_SECOND_HALF_MOTION.pitch,
+              yaw: CAMERA_SILICA_SECOND_HALF_MOTION.yaw,
+              duration: halfDuration,
+              ease: "sine.inOut",
+            },
+            secondHalfStart
+          );
+        } else {
+          timeline.to(
+            modelMotion,
+            {
+              xRatio: layerMotion.xRatio,
+              yRatio: layerMotion.yRatio,
+              focus: layerMotion.focus,
+              rotationY: layerMotion.rotationY,
+              duration: movementDuration,
+              ease: "sine.inOut",
+            },
+            movementStart
+          );
+          timeline.to(
+            cameraMotion,
+            {
+              pitch: cameraLayerMotion.pitch,
+              yaw: cameraLayerMotion.yaw,
+              duration: movementDuration,
+              ease: "sine.inOut",
+            },
+            movementStart
+          );
+        }
+
         timeline.to({}, { duration: holdDuration });
       });
 
-      const finalCameraStart = timeline.duration();
+      const finalMotionStart = timeline.duration();
+      const finalAccordionOpenStart = finalMotionStart + FINAL_REPOSITION_DURATION;
+      const finalAccordionSettleStart =
+        finalAccordionOpenStart + FINAL_ACCORDION_OPEN_DURATION;
 
-      if (objects.camera && initialCameraRotation) {
-        timeline.to(
-          objects.camera.rotation,
-          {
-            x: initialCameraRotation.x - 0.035,
-            y: initialCameraRotation.y + 0.12,
-            duration: 10,
-          },
-          finalCameraStart
-        );
-      }
+      timeline.to(
+        modelMotion,
+        {
+          xRatio: MODEL_FINAL_MOTION.xRatio,
+          yRatio: MODEL_FINAL_MOTION.yRatio,
+          rotationY: 0,
+          duration: FINAL_REPOSITION_DURATION,
+          ease: "sine.inOut",
+        },
+        finalMotionStart
+      );
+      timeline.to(
+        modelMotion,
+        {
+          focus: MODEL_FINAL_MOTION.focus,
+          overview: 1,
+          duration: FINAL_SEQUENCE_DURATION,
+          ease: "sine.inOut",
+        },
+        finalMotionStart
+      );
+      timeline.to(
+        modelMotion,
+        {
+          xRatio: MODEL_FINAL_MOTION.xRatio,
+          yRatio: MODEL_FINAL_ACCORDION_Y_RATIO,
+          explode: MODEL_FINAL_ACCORDION_OPEN,
+          duration: FINAL_ACCORDION_OPEN_DURATION,
+          ease: "sine.inOut",
+        },
+        finalAccordionOpenStart
+      );
+      timeline.to(
+        modelMotion,
+        {
+          yRatio: MODEL_FINAL_MOTION.yRatio,
+          explode: MODEL_FINAL_ACCORDION_REST,
+          duration: FINAL_ACCORDION_SETTLE_DURATION,
+          ease: "sine.inOut",
+        },
+        finalAccordionSettleStart
+      );
+      timeline.to(
+        cameraMotion,
+        {
+          pitch: CAMERA_FINAL_MOTION.pitch,
+          yaw: CAMERA_FINAL_MOTION.yaw,
+          duration: FINAL_SEQUENCE_DURATION,
+          ease: "sine.inOut",
+        },
+        finalMotionStart
+      );
 
       setActivePanel(0);
       await renderInitialFrames(spline, 2);
