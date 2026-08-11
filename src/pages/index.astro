@@ -385,18 +385,20 @@ import SplineScroll from "../components/SplineScroll.astro";
     updateFixedControlsTone();
   }
 
-  // Entry scroll behavior.
+  // Reusable transition between the video cover and the first card carousel.
   const entryScrollTarget = document.querySelector("[data-entry-scroll-target]");
 
   if (entryScrollTarget instanceof HTMLElement) {
-    const canUseEntryScroll = window.scrollY <= 2 && !window.location.hash;
-    let hasUsedEntryScroll = false;
     let isEntryScrollAnimating = false;
+    let touchStartX = 0;
     let touchStartY = 0;
     let entryAnimationFrame = 0;
+    let lastObservedScrollY = window.scrollY;
+    let canDetectNativeScroll = false;
     const entryScrollDuration = 1200;
     const entryScrollTargetOffset = 0;
-    const entryScrollStartLimit = 32;
+    const entryScrollTolerance = 12;
+    const entryScrollReturnRange = 48;
 
     const easeInOutCubic = (progress) =>
       progress < 0.5
@@ -438,23 +440,30 @@ import SplineScroll from "../components/SplineScroll.astro";
       entryAnimationFrame = window.requestAnimationFrame(step);
     };
 
-    const scrollToEntryFrame = () => {
+    const scrollBetweenEntryFrames = (direction) => {
+      if (isEntryScrollAnimating) return false;
+
       const entryScrollTop = getEntryScrollTop();
 
-      if (
-        !canUseEntryScroll ||
-        hasUsedEntryScroll ||
-        isEntryScrollAnimating ||
-        window.scrollY > entryScrollStartLimit ||
-        window.scrollY >= entryScrollTop - 12
-      ) {
-        return false;
+      if (direction === "down") {
+        if (window.scrollY >= entryScrollTop - entryScrollTolerance) return false;
+
+        animateEntryScroll(entryScrollTop);
+        return true;
       }
 
-      hasUsedEntryScroll = true;
-      animateEntryScroll(entryScrollTop);
+      if (direction === "up") {
+        const canReturnToHero =
+          window.scrollY > entryScrollTolerance &&
+          window.scrollY <= entryScrollTop + entryScrollReturnRange;
 
-      return true;
+        if (!canReturnToHero) return false;
+
+        animateEntryScroll(0);
+        return true;
+      }
+
+      return false;
     };
 
     const preventInputDuringEntryScroll = (event) => {
@@ -468,8 +477,10 @@ import SplineScroll from "../components/SplineScroll.astro";
       "wheel",
       (event) => {
         if (preventInputDuringEntryScroll(event)) return;
-        if (event.deltaY <= 0) return;
-        if (!scrollToEntryFrame()) return;
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+
+        const direction = event.deltaY > 0 ? "down" : "up";
+        if (!scrollBetweenEntryFrames(direction)) return;
 
         event.preventDefault();
       },
@@ -479,6 +490,7 @@ import SplineScroll from "../components/SplineScroll.astro";
     document.addEventListener(
       "touchstart",
       (event) => {
+        touchStartX = event.touches[0]?.clientX ?? 0;
         touchStartY = event.touches[0]?.clientY ?? 0;
       },
       { passive: true, capture: true }
@@ -489,11 +501,15 @@ import SplineScroll from "../components/SplineScroll.astro";
       (event) => {
         if (preventInputDuringEntryScroll(event)) return;
 
+        const touchX = event.touches[0]?.clientX ?? touchStartX;
         const touchY = event.touches[0]?.clientY ?? touchStartY;
+        const deltaX = touchStartX - touchX;
         const deltaY = touchStartY - touchY;
 
-        if (deltaY <= 12) return;
-        if (!scrollToEntryFrame()) return;
+        if (Math.abs(deltaY) <= 12 || Math.abs(deltaY) <= Math.abs(deltaX)) return;
+
+        const direction = deltaY > 0 ? "down" : "up";
+        if (!scrollBetweenEntryFrames(direction)) return;
 
         event.preventDefault();
       },
@@ -503,23 +519,40 @@ import SplineScroll from "../components/SplineScroll.astro";
     document.addEventListener(
       "scroll",
       () => {
-        if (isEntryScrollAnimating) return;
-        if (window.scrollY <= 1) return;
-        if (window.scrollY > entryScrollStartLimit) return;
+        const currentScrollY = window.scrollY;
+        const scrollDelta = currentScrollY - lastObservedScrollY;
+        lastObservedScrollY = currentScrollY;
 
-        scrollToEntryFrame();
+        if (!canDetectNativeScroll || isEntryScrollAnimating) return;
+        if (Math.abs(scrollDelta) < 1) return;
+
+        scrollBetweenEntryFrames(scrollDelta > 0 ? "down" : "up");
       },
       { passive: true, capture: true }
     );
 
     document.addEventListener("keydown", (event) => {
-      const scrollKeys = ["ArrowDown", "PageDown", " ", "Spacebar"];
+      const isSpaceKey = event.key === " " || event.key === "Spacebar";
+      const isDownKey =
+        event.key === "ArrowDown" ||
+        event.key === "PageDown" ||
+        (isSpaceKey && !event.shiftKey);
+      const isUpKey =
+        event.key === "ArrowUp" ||
+        event.key === "PageUp" ||
+        event.key === "Home" ||
+        (isSpaceKey && event.shiftKey);
 
-      if (!scrollKeys.includes(event.key)) return;
+      if (!isDownKey && !isUpKey) return;
       if (preventInputDuringEntryScroll(event)) return;
-      if (!scrollToEntryFrame()) return;
+      if (!scrollBetweenEntryFrames(isDownKey ? "down" : "up")) return;
 
       event.preventDefault();
     });
+
+    window.setTimeout(() => {
+      lastObservedScrollY = window.scrollY;
+      canDetectNativeScroll = true;
+    }, 0);
   }
 </script>
