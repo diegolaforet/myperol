@@ -13,8 +13,8 @@ yarn-error.log*
 pnpm-debug.log*
 dev-server.err.log
 dev-server.out.log
-astro-inspector.err.log
-astro-inspector.out.log
+astro-inspect.err.log
+astro-inspect.out.log
 
 
 # environment variables
