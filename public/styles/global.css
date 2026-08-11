@@ -274,6 +274,19 @@ main {
   object-position: center;
 }
 
+@media (min-width: 903px) {
+  .hero-placeholder.home-video-hero {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .home-video-hero__media {
+    object-position: center bottom;
+  }
+}
+
 .hero-placeholder::before {
   content: "";
   position: absolute;
