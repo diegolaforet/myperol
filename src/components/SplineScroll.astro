@@ -98,9 +98,19 @@
   const MODEL_VERTICAL_TRAVEL_RATIO = 0.1;
   const MODEL_MAX_PORTRAIT_CENTER_OFFSET = 70;
   const MODEL_MAX_LAYER_SEPARATION = 46;
+  const MODEL_MAX_LAYER_SCATTER_X = 190;
+  const MODEL_MAX_LAYER_SCATTER_Y = 36;
+  const MODEL_MAX_LAYER_SCATTER_Z = 64;
   const MODEL_FINAL_OVERVIEW_SCALE = 0.72;
-  const MODEL_FINAL_ACCORDION_OPEN = 1.75;
+  const MODEL_FINAL_ACCORDION_OPEN = 1.5;
   const MODEL_FINAL_ACCORDION_REST = 0.82;
+  const MODEL_LAYER_SCATTER_OFFSETS = [
+    { x: 0.3, y: -0.12, z: 0.2 },
+    { x: 0.9, y: 0.08, z: -0.48 },
+    { x: -1, y: 0.16, z: 0.42 },
+    { x: 0.88, y: -0.08, z: 0.3 },
+    { x: -0.7, y: 0.14, z: -0.52 },
+  ];
   const MODEL_LAYER_MOTIONS = [
     {
       xRatio: 0.08,
@@ -158,24 +168,37 @@
     yRatio: -1.05,
     focus: 0.42,
   };
-  const MODEL_FINAL_ACCORDION_Y_RATIO = -2;
+  const MODEL_FINAL_CENTER_MOTION = {
+    xRatio: -0.55,
+    yRatio: 0,
+  };
+  const MODEL_FINAL_SCATTER_MOTION = {
+    xRatio: 0,
+    yRatio: -1.08,
+  };
   const CAMERA_FINAL_MOTION = {
     pitch: 2.5 * DEGREES_TO_RADIANS,
     yaw: 0,
   };
-  const FINAL_REPOSITION_DURATION = 3;
-  const FINAL_ACCORDION_OPEN_DURATION = 14;
-  const FINAL_ACCORDION_SETTLE_DURATION = 9;
+  const FINAL_CENTER_DURATION = 4;
+  const FINAL_SCATTER_DURATION = 12;
+  const FINAL_RESOLVE_DURATION = 10;
+  const FINAL_POSITION_DURATION = 6;
+  const FINAL_TEXT_REVEAL_DELAY = 4;
   const FINAL_SEQUENCE_DURATION =
-    FINAL_REPOSITION_DURATION +
-    FINAL_ACCORDION_OPEN_DURATION +
-    FINAL_ACCORDION_SETTLE_DURATION;
+    FINAL_CENTER_DURATION + FINAL_SCATTER_DURATION + FINAL_RESOLVE_DURATION;
   const STANDARD_LAYER_TOTAL_DURATION = LAYER_BUILD_DURATION + LAYER_HOLD_DURATION;
   const SEALER_TOTAL_DURATION = SEALER_BUILD_DURATION + SEALER_HOLD_DURATION;
   const PRE_FINAL_TIMELINE_DURATION =
     INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 3 + SEALER_TOTAL_DURATION;
   const FLOORING_TIMELINE_DURATION =
     PRE_FINAL_TIMELINE_DURATION + FINAL_SEQUENCE_DURATION;
+  const FINAL_TEXT_REVEAL_PROGRESS =
+    (PRE_FINAL_TIMELINE_DURATION +
+      FINAL_CENTER_DURATION +
+      FINAL_SCATTER_DURATION +
+      FINAL_TEXT_REVEAL_DELAY) /
+    FLOORING_TIMELINE_DURATION;
   const PANEL_PROGRESS_THRESHOLDS = [
     INTRO_DURATION,
     INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION,
@@ -264,6 +287,7 @@
       if (progress < PANEL_PROGRESS_THRESHOLDS[2]) return 2;
       if (progress < PANEL_PROGRESS_THRESHOLDS[3]) return 3;
       if (progress < PANEL_PROGRESS_THRESHOLDS[4]) return 4;
+      if (progress < FINAL_TEXT_REVEAL_PROGRESS) return -1;
       return 5;
     };
 
@@ -333,6 +357,9 @@
         verticalTravel: MODEL_MAX_VERTICAL_TRAVEL,
         horizontalCenterOffset: 0,
         layerSeparation: MODEL_MAX_LAYER_SEPARATION,
+        layerScatterX: MODEL_MAX_LAYER_SCATTER_X,
+        layerScatterY: MODEL_MAX_LAYER_SCATTER_Y,
+        layerScatterZ: MODEL_MAX_LAYER_SCATTER_Z,
       };
 
       const updateModelMotionBounds = (width, height) => {
@@ -369,6 +396,9 @@
             aspectFit,
           horizontalCenterOffset: (1 - aspectFit) * MODEL_MAX_PORTRAIT_CENTER_OFFSET,
           layerSeparation: MODEL_MAX_LAYER_SEPARATION * verticalMotionFit,
+          layerScatterX: MODEL_MAX_LAYER_SCATTER_X * viewportFit,
+          layerScatterY: MODEL_MAX_LAYER_SCATTER_Y * verticalMotionFit,
+          layerScatterZ: MODEL_MAX_LAYER_SCATTER_Z * viewportFit,
         };
       };
 
@@ -544,6 +574,7 @@
         xRatio: 0,
         yRatio: 0,
         explode: 0,
+        scatter: 0,
         overview: 0,
       };
       const applyModelTransform = () => {
@@ -567,12 +598,21 @@
 
         modelStateConfiguration.forEach((state) => {
           const layerIndex = modelLayerIndexByObject.get(state.object) ?? 0;
+          const scatterOffset = MODEL_LAYER_SCATTER_OFFSETS[layerIndex];
           const verticalOffset =
             layerIndex * modelMotion.explode * modelMotionBounds.layerSeparation;
-          const relativeX = (state.positionX - modelScaleOrigin.x) * effectiveScale;
+          const scatterX =
+            scatterOffset.x * modelMotion.scatter * modelMotionBounds.layerScatterX;
+          const scatterY =
+            scatterOffset.y * modelMotion.scatter * modelMotionBounds.layerScatterY;
+          const scatterZ =
+            scatterOffset.z * modelMotion.scatter * modelMotionBounds.layerScatterZ;
+          const relativeX =
+            (state.positionX + scatterX - modelScaleOrigin.x) * effectiveScale;
           const relativeY =
-            (state.positionY + verticalOffset - modelScaleOrigin.y) * effectiveScale;
-          const relativeZ = (state.positionZ - modelScaleOrigin.z) * effectiveScale;
+            (state.positionY + verticalOffset + scatterY - modelScaleOrigin.y) * effectiveScale;
+          const relativeZ =
+            (state.positionZ + scatterZ - modelScaleOrigin.z) * effectiveScale;
 
           state.object.position.x =
             modelScaleOrigin.x + relativeX * cosY + relativeZ * sinY + horizontalPosition;
@@ -782,17 +822,16 @@
       });
 
       const finalMotionStart = timeline.duration();
-      const finalAccordionOpenStart = finalMotionStart + FINAL_REPOSITION_DURATION;
-      const finalAccordionSettleStart =
-        finalAccordionOpenStart + FINAL_ACCORDION_OPEN_DURATION;
+      const finalScatterStart = finalMotionStart + FINAL_CENTER_DURATION;
+      const finalResolveStart = finalScatterStart + FINAL_SCATTER_DURATION;
 
       timeline.to(
         modelMotion,
         {
-          xRatio: MODEL_FINAL_MOTION.xRatio,
-          yRatio: MODEL_FINAL_MOTION.yRatio,
+          xRatio: MODEL_FINAL_CENTER_MOTION.xRatio,
+          yRatio: MODEL_FINAL_CENTER_MOTION.yRatio,
           rotationY: 0,
-          duration: FINAL_REPOSITION_DURATION,
+          duration: FINAL_CENTER_DURATION,
           ease: "sine.inOut",
         },
         finalMotionStart
@@ -810,23 +849,34 @@
       timeline.to(
         modelMotion,
         {
-          xRatio: MODEL_FINAL_MOTION.xRatio,
-          yRatio: MODEL_FINAL_ACCORDION_Y_RATIO,
+          xRatio: MODEL_FINAL_SCATTER_MOTION.xRatio,
+          yRatio: MODEL_FINAL_SCATTER_MOTION.yRatio,
           explode: MODEL_FINAL_ACCORDION_OPEN,
-          duration: FINAL_ACCORDION_OPEN_DURATION,
+          scatter: 1,
+          duration: FINAL_SCATTER_DURATION,
           ease: "sine.inOut",
         },
-        finalAccordionOpenStart
+        finalScatterStart
       );
       timeline.to(
         modelMotion,
         {
+          xRatio: MODEL_FINAL_MOTION.xRatio,
           yRatio: MODEL_FINAL_MOTION.yRatio,
-          explode: MODEL_FINAL_ACCORDION_REST,
-          duration: FINAL_ACCORDION_SETTLE_DURATION,
+          duration: FINAL_POSITION_DURATION,
           ease: "sine.inOut",
         },
-        finalAccordionSettleStart
+        finalResolveStart
+      );
+      timeline.to(
+        modelMotion,
+        {
+          explode: MODEL_FINAL_ACCORDION_REST,
+          scatter: 0,
+          duration: FINAL_RESOLVE_DURATION,
+          ease: "sine.inOut",
+        },
+        finalResolveStart
       );
       timeline.to(
         cameraMotion,
