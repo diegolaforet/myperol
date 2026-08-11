@@ -79,6 +79,10 @@
   const CONCRETE_DEPTH = 364.706;
   const INTRO_DURATION = 15;
   const INTRO_ROTATION = Math.PI / 4;
+  const MODEL_SCALE_MULTIPLIER = 1.3;
+  const SCROLL_SCRUB_SECONDS = 0.22;
+  const MAX_RENDER_PIXEL_RATIO = 2;
+  const MAX_RENDER_PIXELS = 2560 * 1440;
   const OBJECT_ALIASES = {
     hormigon: ["hormigon", "concrete", "base hormigon"],
     imprimacion: ["imprimacion", "primer", "epoxy primer"],
@@ -112,6 +116,7 @@
     const loader = section?.querySelector("[data-flooring-loader]");
     const loaderMessage = section?.querySelector("[data-flooring-loader-message]");
     const panels = Array.from(section?.querySelectorAll("[data-flooring-panel]") || []);
+    const progressBar = section?.querySelector(".flooring-progress-bar");
 
     if (
       !(section instanceof HTMLElement) ||
@@ -126,6 +131,9 @@
     let spline;
     let timeline;
     let ScrollTrigger;
+    let renderResizeObserver;
+    let renderResizeTimer;
+    let postLoadRenderResizeTimer;
 
     const showError = (message) => {
       if (loader instanceof HTMLElement) loader.classList.add("has-error");
@@ -175,16 +183,16 @@
         application.requestRender();
       });
 
-    const refreshScrollTrigger = () => ScrollTrigger?.refresh();
-
     const cleanup = () => {
       if (isDisposed) return;
 
       isDisposed = true;
       timeline?.scrollTrigger?.kill();
       timeline?.kill();
+      renderResizeObserver?.disconnect();
+      window.clearTimeout(renderResizeTimer);
+      window.clearTimeout(postLoadRenderResizeTimer);
       spline?.dispose();
-      window.removeEventListener("resize", refreshScrollTrigger);
     };
 
     window.addEventListener("pagehide", cleanup, { once: true });
@@ -201,6 +209,7 @@
 
       ScrollTrigger = scrollTriggerModule.ScrollTrigger;
       gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.config({ ignoreMobileResize: true });
 
       if (isDisposed) return;
 
@@ -210,6 +219,58 @@
       await spline.load(SCENE_URL, undefined, { cache: "force-cache" });
 
       if (isDisposed) return;
+
+      let renderWidth = 0;
+      let renderHeight = 0;
+
+      const syncRenderResolution = () => {
+        if (isDisposed || !spline) return;
+
+        const cssWidth = canvas.clientWidth;
+        const cssHeight = canvas.clientHeight;
+        if (cssWidth <= 0 || cssHeight <= 0) return;
+
+        const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
+        const pixelBudgetRatio = Math.sqrt(MAX_RENDER_PIXELS / (cssWidth * cssHeight));
+        const targetPixelRatio = Math.min(
+          devicePixelRatio,
+          MAX_RENDER_PIXEL_RATIO,
+          pixelBudgetRatio
+        );
+        const renderScale = targetPixelRatio / devicePixelRatio;
+        const nextWidth = Math.max(1, Math.round(cssWidth * renderScale));
+        const nextHeight = Math.max(1, Math.round(cssHeight * renderScale));
+        const expectedBufferWidth = Math.floor(nextWidth * devicePixelRatio);
+        const expectedBufferHeight = Math.floor(nextHeight * devicePixelRatio);
+
+        if (
+          nextWidth === renderWidth &&
+          nextHeight === renderHeight &&
+          Math.abs(canvas.width - expectedBufferWidth) <= 1 &&
+          Math.abs(canvas.height - expectedBufferHeight) <= 1
+        ) return;
+
+        renderWidth = nextWidth;
+        renderHeight = nextHeight;
+        spline.setSize(renderWidth, renderHeight);
+        spline.requestRender();
+      };
+
+      const scheduleRenderResolutionSync = (delay = 32) => {
+        window.clearTimeout(renderResizeTimer);
+        renderResizeTimer = window.setTimeout(syncRenderResolution, delay);
+      };
+
+      syncRenderResolution();
+
+      if ("ResizeObserver" in window && canvas.parentElement) {
+        renderResizeObserver = new ResizeObserver(() => scheduleRenderResolutionSync());
+        renderResizeObserver.observe(canvas.parentElement);
+      }
+
+      // Spline registers its own resize observer after load. Reapply the render
+      // budget once that observer has completed its initial measurement.
+      postLoadRenderResizeTimer = window.setTimeout(syncRenderResolution, 360);
 
       const sceneObjects = spline.getAllObjects();
       const resolveObject = (key) => {
@@ -243,11 +304,43 @@
         { object: objects.epoxi, depth: LAYER_DEPTHS.epoxi },
         { object: objects.sellador, depth: LAYER_DEPTHS.sellador },
       ];
-      let previousLayerDepth = CONCRETE_DEPTH * Math.abs(objects.hormigon.scale.z);
+      const modelObjects = [
+        objects.hormigon,
+        objects.imprimacion,
+        objects.silice,
+        objects.epoxi,
+        objects.sellador,
+      ];
+      const modelScaleOrigin = modelObjects.reduce(
+        (origin, object) => ({
+          x: origin.x + object.position.x / modelObjects.length,
+          y: origin.y + object.position.y / modelObjects.length,
+          z: origin.z + object.position.z / modelObjects.length,
+        }),
+        { x: 0, y: 0, z: 0 }
+      );
+      const modelScaleConfiguration = modelObjects.map((object) => ({
+        object,
+        targetScaleX: object.scale.x * MODEL_SCALE_MULTIPLIER,
+        targetScaleY: object.scale.y * MODEL_SCALE_MULTIPLIER,
+        targetScaleZ: object.scale.z * MODEL_SCALE_MULTIPLIER,
+        targetPositionX:
+          modelScaleOrigin.x + (object.position.x - modelScaleOrigin.x) * MODEL_SCALE_MULTIPLIER,
+        targetPositionY:
+          modelScaleOrigin.y + (object.position.y - modelScaleOrigin.y) * MODEL_SCALE_MULTIPLIER,
+        targetPositionZ:
+          modelScaleOrigin.z + (object.position.z - modelScaleOrigin.z) * MODEL_SCALE_MULTIPLIER,
+      }));
+      const targetScaleByObject = new Map(
+        modelScaleConfiguration.map((configuration) => [configuration.object, configuration])
+      );
+      const concreteTargetScale = targetScaleByObject.get(objects.hormigon);
+      let previousLayerDepth = CONCRETE_DEPTH * Math.abs(concreteTargetScale.targetScaleZ);
       const layerConfiguration = layerSources.map(({ object, depth }) => {
-        const initialDepth = depth * Math.abs(object.scale.z);
-        const anchoredRearEdge = object.position.z - initialDepth / 2;
-        const scaleDirection = Math.sign(object.scale.z) || 1;
+        const introScale = targetScaleByObject.get(object);
+        const initialDepth = depth * Math.abs(introScale.targetScaleZ);
+        const anchoredRearEdge = introScale.targetPositionZ - initialDepth / 2;
+        const scaleDirection = Math.sign(introScale.targetScaleZ) || 1;
         const targetLayerDepth = previousLayerDepth * layerCoverageRatio;
 
         previousLayerDepth = targetLayerDepth;
@@ -286,10 +379,7 @@
             };
           })()
         : null;
-      const zoom = { value: 0.08 };
-
       gsap.set(canvas, { opacity: 0 });
-      spline.setZoom(zoom.value);
 
       if (objects.camera && initialCameraPosition && initialCameraRotation && introCameraPosition) {
         objects.camera.position.x = introCameraPosition.x;
@@ -298,33 +388,102 @@
         objects.camera.rotation.y = initialCameraRotation.y + INTRO_ROTATION;
       }
 
+      const readSceneState = () => [
+        ...(objects.camera
+          ? [
+              objects.camera.position.x,
+              objects.camera.position.y,
+              objects.camera.position.z,
+              objects.camera.rotation.x,
+              objects.camera.rotation.y,
+              objects.camera.rotation.z,
+            ]
+          : []),
+        ...modelScaleConfiguration.flatMap(({ object }) => [
+          object.scale.x,
+          object.scale.y,
+          object.scale.z,
+          object.position.x,
+          object.position.y,
+          object.position.z,
+        ]),
+      ];
+      let renderedSceneState = readSceneState();
+
+      const requestChangedSceneRender = () => {
+        const sceneState = readSceneState();
+        const hasSceneChanged = sceneState.some(
+          (value, index) => Math.abs(value - renderedSceneState[index]) > 0.000001
+        );
+
+        if (!hasSceneChanged) return;
+
+        renderedSceneState = sceneState;
+        spline.requestRender();
+      };
+
       timeline = gsap.timeline({
         defaults: { ease: "power2.inOut" },
         onUpdate: () => {
           const progress = timeline?.progress() ?? 0;
 
-          section.style.setProperty("--flooring-progress", String(progress));
+          if (progressBar instanceof HTMLElement) {
+            progressBar.style.setProperty("--flooring-progress", String(progress));
+          }
           setActivePanel(getPanelIndex(progress));
-          spline.setZoom(zoom.value);
-          spline.requestRender();
+          requestChangedSceneRender();
         },
         scrollTrigger: {
           trigger: section,
           start: "top top",
           end: "bottom bottom",
-          scrub: true,
+          scrub: SCROLL_SCRUB_SECONDS,
         },
       });
 
-      timeline.to(canvas, { opacity: 1, duration: INTRO_DURATION, ease: "power1.out" }, 0);
       timeline.to(
-        zoom,
+        canvas,
         {
-          value: 0.86,
+          opacity: 1,
           duration: INTRO_DURATION,
-          ease: "power1.inOut",
+          ease: "power1.out",
         },
         0
+      );
+
+      modelScaleConfiguration.forEach(
+        ({
+          object,
+          targetScaleX,
+          targetScaleY,
+          targetScaleZ,
+          targetPositionX,
+          targetPositionY,
+          targetPositionZ,
+        }) => {
+          timeline.to(
+            object.scale,
+            {
+              x: targetScaleX,
+              y: targetScaleY,
+              z: targetScaleZ,
+              duration: INTRO_DURATION,
+              ease: "power1.inOut",
+            },
+            0
+          );
+          timeline.to(
+            object.position,
+            {
+              x: targetPositionX,
+              y: targetPositionY,
+              z: targetPositionZ,
+              duration: INTRO_DURATION,
+              ease: "power1.inOut",
+            },
+            0
+          );
+        }
       );
 
       if (objects.camera && initialCameraPosition && initialCameraRotation) {
@@ -357,16 +516,6 @@
 
       const finalCameraStart = timeline.duration();
 
-      timeline.to(
-        zoom,
-        {
-          value: 1.02,
-          duration: 10,
-          ease: "power1.inOut",
-        },
-        finalCameraStart
-      );
-
       if (objects.camera && initialCameraRotation) {
         timeline.to(
           objects.camera.rotation,
@@ -396,7 +545,6 @@
         timeline.scrollTrigger?.update();
       });
 
-      window.addEventListener("resize", refreshScrollTrigger, { passive: true });
     } catch (error) {
       console.error("No se pudo inicializar la escena MP Systems.", error);
       showError(getMessage("mp_systems_error", "No se ha podido cargar el sistema 3D."));
