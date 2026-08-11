@@ -59,6 +59,7 @@
   /* Hero image treatment. */
   --hero-overlay: rgba(0, 0, 0, 0.36);
   --hero-bottom-fade-height: clamp(150px, 22vh, 220px);
+  --home-hero-viewport-extension: clamp(72px, 11vh, 120px);
 
   /* Shared shadows for floating surfaces and icon/text contrast. */
   --shadow-surface:
@@ -256,8 +257,12 @@ main {
 }
 
 /* Video de portada exclusivo de la pagina principal */
-.home-video-hero {
+.hero-placeholder.home-video-hero {
   --hero-overlay: transparent;
+  height: calc(100vh + var(--home-hero-viewport-extension));
+  height: calc(100dvh + var(--home-hero-viewport-extension));
+  min-height: calc(100vh + var(--home-hero-viewport-extension));
+  min-height: calc(100dvh + var(--home-hero-viewport-extension));
 }
 
 .home-video-hero__media {
@@ -377,6 +382,8 @@ main {
 
 /* Home first carousel. Add overrides here when this carousel needs its own layout. */
 .home-primary-cards {
+  padding-top: 48px;
+  border-radius: 0;
 }
 
 .home-primary-cards-header,
