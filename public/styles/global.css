@@ -402,6 +402,8 @@ main {
 /* Home first carousel. Add overrides here when this carousel needs its own layout. */
 .home-primary-cards {
   position: relative;
+  z-index: 3;
+  overflow: visible;
   padding-top: var(--home-primary-cards-top-padding);
   border-radius: 0;
 }
@@ -415,11 +417,13 @@ main {
 
 /* Home second carousel. Add overrides here when this carousel needs its own layout. */
 .home-secondary-cards {
+  position: relative;
+  z-index: 2;
+  overflow: visible;
 }
 
 .home-secondary-cards-header,
 .home-secondary-cards-shell,
-.home-secondary-cards-track,
 .home-secondary-card,
 .home-secondary-cards-dots {
 }
@@ -491,6 +495,7 @@ main {
 .flooring-scroll {
   --flooring-progress: 0;
   position: relative;
+  z-index: 1;
   width: 100vw;
   height: 620vh;
   margin-left: calc(50% - 50vw);
@@ -672,6 +677,7 @@ main {
 }
 
 .feature-cards-track {
+  --carousel-shadow-bleed: 36px;
   display: flex;
   gap: var(--card-gap);
   overflow-x: auto;
@@ -680,7 +686,8 @@ main {
   scroll-padding-inline: 28px;
   scroll-snap-type: x mandatory;
   margin-top: -12px;
-  padding: 12px 28px 48px;
+  margin-bottom: calc(0px - var(--carousel-shadow-bleed));
+  padding: 12px 28px calc(48px + var(--carousel-shadow-bleed));
   scrollbar-width: none;
 }
 
@@ -2547,7 +2554,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
 
   .feature-cards-track {
     scroll-padding-inline: 28px;
-    padding: 12px 28px 48px;
+    padding: 12px 28px calc(48px + var(--carousel-shadow-bleed));
   }
 
   .flooring-scroll {
@@ -2982,7 +2989,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
 
   .feature-cards-track {
     scroll-padding-inline: 28px;
-    padding: 12px 28px 48px;
+    padding: 12px 28px calc(48px + var(--carousel-shadow-bleed));
   }
 
   .feature-cards-prev {
