@@ -1,3 +1,7 @@
+---
+import SectionCornerControls from "./SectionCornerControls.astro";
+---
+
 <section
   id="mp-systems"
   class="flooring-scroll is-loading"
@@ -6,6 +10,8 @@
   aria-labelledby="flooring-title"
 >
   <div class="flooring-sticky">
+    <SectionCornerControls instanceId="flooring" />
+
     <canvas
       class="flooring-canvas"
       data-flooring-canvas

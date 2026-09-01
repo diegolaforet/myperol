@@ -77,8 +77,9 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
       }
 
       function updateLangLabel() {
-        const label = document.getElementById("currentLang");
-        if (label) label.textContent = getLang().toUpperCase();
+        document.querySelectorAll("#currentLang, [data-current-lang]").forEach((label) => {
+          label.textContent = getLang().toUpperCase();
+        });
       }
 
       function updateDocumentLang(lang) {
@@ -119,23 +120,31 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
         }
       }
 
-      function setLangMenuOpen(isOpen) {
-        setFloatingMenuOpen(
-          document.getElementById("langMenu"),
-          document.getElementById("langToggle"),
-          isOpen
-        );
+      function getLangMenu(toggle) {
+        const menuId = toggle?.getAttribute("aria-controls");
+        return menuId ? document.getElementById(menuId) : null;
       }
 
-      function toggleLangMenu() {
-        const menu = document.getElementById("langMenu");
+      function setLangMenuOpen(toggle, isOpen) {
+        setFloatingMenuOpen(getLangMenu(toggle), toggle, isOpen);
+      }
+
+      function toggleLangMenu(toggle = document.getElementById("langToggle")) {
+        const menu = getLangMenu(toggle);
         const shouldOpen = menu ? !menu.classList.contains("open") : false;
-        if (shouldOpen) closeMobileMenu();
-        setLangMenuOpen(shouldOpen);
+
+        if (shouldOpen) {
+          closeLangMenu();
+          closeMobileMenu();
+        }
+
+        setLangMenuOpen(toggle, shouldOpen);
       }
 
       function closeLangMenu() {
-        setLangMenuOpen(false);
+        document.querySelectorAll(".lang-button[aria-controls]").forEach((toggle) => {
+          setLangMenuOpen(toggle, false);
+        });
       }
 
       function setMobileMenuOpen(isOpen) {
@@ -178,12 +187,11 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
       }
 
       function updateWhatsappText(lang = getLang()) {
-        const el = document.getElementById("whatsappText");
-        if (!el) return;
-
-        el.textContent =
-          i18nMessages[lang]?.whatsapp_cta ||
-          i18nMessages.es.whatsapp_cta;
+        document.querySelectorAll("#whatsappText, [data-whatsapp-text]").forEach((el) => {
+          el.textContent =
+            i18nMessages[lang]?.whatsapp_cta ||
+            i18nMessages.es.whatsapp_cta;
+        });
       }
 
       function getMessage(lang, key) {
@@ -257,8 +265,11 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
       }
 
       document.addEventListener("click", (event) => {
-        const dropdown = document.querySelector(".lang-dropdown");
-        if (dropdown && !dropdown.contains(event.target)) {
+        const dropdown = event.target instanceof Element
+          ? event.target.closest(".lang-dropdown")
+          : null;
+
+        if (!dropdown) {
           closeLangMenu();
         }
 

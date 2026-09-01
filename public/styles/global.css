@@ -167,6 +167,11 @@ body.controls-over-light .social-link {
   text-shadow: none;
 }
 
+body.controls-over-light .language-control {
+  --color-fixed-control: var(--color-fixed-control-on-light);
+  --color-fixed-control-hover: var(--color-fixed-control-on-light-hover);
+}
+
 /* Keep the language selector on the dark-surface token set on every route. */
 .language-control {
   --color-fixed-control: var(--color-fixed-control-on-dark);
@@ -396,6 +401,7 @@ main {
 
 /* Home first carousel. Add overrides here when this carousel needs its own layout. */
 .home-primary-cards {
+  position: relative;
   padding-top: var(--home-primary-cards-top-padding);
   border-radius: 0;
 }
@@ -2441,6 +2447,43 @@ body.services-route:not(.controls-over-light) .lang-menu {
   color: var(--color-fixed-control-hover);
   transform: translateY(-1px);
   outline: none;
+}
+
+/* Per-screen copies stay inside their own carousel or sticky 3D panel. */
+.section-corner-controls {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 6;
+  height: 0;
+  pointer-events: none;
+}
+
+.section-corner-controls .language-control,
+.section-corner-controls .social-float {
+  pointer-events: auto;
+}
+
+.section-corner-controls--light .language-control,
+.section-corner-controls--light .social-float {
+  --color-fixed-control: var(--color-fixed-control-on-light);
+  --color-fixed-control-hover: var(--color-fixed-control-on-light-hover);
+  color: var(--color-fixed-control);
+  text-shadow: none;
+}
+
+.section-corner-controls--light .language-control {
+  --surface-dropdown-background: var(--surface-services-dropdown);
+  --glass-border-dropdown: var(--glass-border-services-dropdown);
+  --color-dropdown-control: var(--color-fixed-control-on-dark);
+  --color-dropdown-control-hover: var(--color-fixed-control-on-dark-hover);
+  --color-dropdown-hover-shared: var(--color-dropdown-hover-on-dark);
+  --color-dropdown-hover: var(--color-dropdown-hover-on-dark);
+}
+
+@media (max-width: 902px) {
+  .section-corner-controls {
+    display: none;
+  }
 }
 
 /* ==========================================================================

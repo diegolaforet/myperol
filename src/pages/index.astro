@@ -1,5 +1,6 @@
 ﻿---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import SectionCornerControls from "../components/SectionCornerControls.astro";
 import SplineScroll from "../components/SplineScroll.astro";
 ---
 
@@ -24,6 +25,8 @@ import SplineScroll from "../components/SplineScroll.astro";
     </section>
 
     <section class="feature-cards home-primary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
+      <SectionCornerControls instanceId="primary-cards" />
+
       <div class="feature-cards-header home-primary-cards-header">
         <p class="home-primary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
       </div>
