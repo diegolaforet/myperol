@@ -121,6 +121,7 @@
   --font-size-nav: 18px;
   --font-size-language-button: 18px;
   --font-size-social-link: 14px;
+  --social-icon-size: 24px;
   --font-weight-nav: 400;
   --font-weight-control: 400;
   --font-weight-social: 400;
@@ -2430,6 +2431,7 @@ body.services-route:not(.controls-over-light) .lang-menu {
 }
 
 .social-link {
+  --social-link-icon-scale: 1;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2444,10 +2446,22 @@ body.services-route:not(.controls-over-light) .lang-menu {
     transform 0.2s ease;
 }
 
+.social-link--instagram {
+  --social-link-icon-scale: 1.25;
+}
+
+.social-link--whatsapp {
+  --social-link-icon-scale: 1;
+}
+
 .social-link svg {
-  width: 24px;
-  height: 24px;
+  display: block;
+  flex: 0 0 auto;
+  width: var(--social-icon-size);
+  height: var(--social-icon-size);
   fill: currentColor;
+  transform: scale(var(--social-link-icon-scale));
+  transform-origin: center;
 }
 
 .social-link:hover,
@@ -2552,6 +2566,7 @@ html.section-controls-reveal-enabled
     --font-size-home-intro-subtitle: 52px;
     --font-size-subtitle: 44px;
     --font-size-text: 18px;
+    --social-icon-size: 27px;
     --hero-caption-space: 66px;
     --hero-next-peek-space: 0px;
   }
@@ -2958,8 +2973,8 @@ html.section-controls-reveal-enabled
   }
 
   .social-link svg {
-    width: 27px;
-    height: 27px;
+    width: var(--social-icon-size);
+    height: var(--social-icon-size);
   }
 }
 
@@ -2972,6 +2987,7 @@ html.section-controls-reveal-enabled
     --font-size-home-intro-subtitle: 40px;
     --font-size-subtitle: 34px;
     --font-size-text: 16px;
+    --social-icon-size: 25px;
     --hero-caption-space: 62px;
     --hero-next-peek-space: 0px;
     --carousel-arrow-size: 52px;
@@ -3074,7 +3090,7 @@ html.section-controls-reveal-enabled
   }
 
   .social-link svg {
-    width: 25px;
-    height: 25px;
+    width: var(--social-icon-size);
+    height: var(--social-icon-size);
   }
 }
