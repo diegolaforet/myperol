@@ -151,6 +151,22 @@ import SplineScroll from "../components/SplineScroll.astro";
 </BaseLayout>
 
 <script>
+  const sectionCornerControls = Array.from(
+    document.querySelectorAll("[data-section-corner-controls]")
+  ).filter((control) => control instanceof HTMLElement);
+
+  const setSectionCornerControlsVisible = (control, isVisible) => {
+    if (!(control instanceof HTMLElement)) return;
+
+    control.classList.toggle("is-visible", isVisible);
+    control.toggleAttribute("inert", !isVisible);
+  };
+
+  if (sectionCornerControls.length) {
+    document.documentElement.classList.add("section-controls-reveal-enabled");
+    sectionCornerControls.forEach((control) => setSectionCornerControlsVisible(control, false));
+  }
+
   const initializeScrollReveal = () => {
     const revealItems = Array.from(document.querySelectorAll(".feature-card")).filter(
       (item) => item instanceof HTMLElement
@@ -392,6 +408,9 @@ import SplineScroll from "../components/SplineScroll.astro";
   const entryScrollTarget = document.querySelector("[data-entry-scroll-target]");
 
   if (entryScrollTarget instanceof HTMLElement) {
+    const entrySectionControls = entryScrollTarget.querySelector(
+      '[data-section-corner-controls="primary-cards"]'
+    );
     let isEntryScrollAnimating = false;
     let touchStartX = 0;
     let touchStartY = 0;
@@ -414,7 +433,7 @@ import SplineScroll from "../components/SplineScroll.astro";
       return Math.max(0, targetTop - entryScrollTargetOffset);
     };
 
-    const animateEntryScroll = (targetTop) => {
+    const animateEntryScroll = (targetTop, onComplete = () => {}) => {
       const startTop = window.scrollY;
       const distance = targetTop - startTop;
       const startTime = performance.now();
@@ -433,6 +452,7 @@ import SplineScroll from "../components/SplineScroll.astro";
           isEntryScrollAnimating = false;
           entryAnimationFrame = 0;
           window.scrollTo(0, targetTop);
+          onComplete();
         }
       };
 
@@ -451,7 +471,10 @@ import SplineScroll from "../components/SplineScroll.astro";
       if (direction === "down") {
         if (window.scrollY >= entryScrollTop - entryScrollTolerance) return false;
 
-        animateEntryScroll(entryScrollTop);
+        setSectionCornerControlsVisible(entrySectionControls, false);
+        animateEntryScroll(entryScrollTop, () => {
+          setSectionCornerControlsVisible(entrySectionControls, true);
+        });
         return true;
       }
 
@@ -462,6 +485,7 @@ import SplineScroll from "../components/SplineScroll.astro";
 
         if (!canReturnToHero) return false;
 
+        setSectionCornerControlsVisible(entrySectionControls, false);
         animateEntryScroll(0);
         return true;
       }
@@ -556,6 +580,41 @@ import SplineScroll from "../components/SplineScroll.astro";
     window.setTimeout(() => {
       lastObservedScrollY = window.scrollY;
       canDetectNativeScroll = true;
+
+      const entryScrollTop = getEntryScrollTop();
+      const isRestoredAtCards =
+        Math.abs(window.scrollY - entryScrollTop) <= entryScrollTolerance;
+      setSectionCornerControlsVisible(entrySectionControls, isRestoredAtCards);
     }, 0);
+  }
+
+  const flooringSection = document.querySelector("[data-flooring-scroll]");
+  const flooringSectionControls = flooringSection?.querySelector(
+    '[data-section-corner-controls="flooring"]'
+  );
+
+  if (
+    flooringSection instanceof HTMLElement &&
+    flooringSectionControls instanceof HTMLElement
+  ) {
+    let flooringControlsFrame = 0;
+
+    const updateFlooringControlsVisibility = () => {
+      const flooringBounds = flooringSection.getBoundingClientRect();
+      const isFlooringScreenActive =
+        flooringBounds.top <= 2 && flooringBounds.bottom > 0;
+
+      setSectionCornerControlsVisible(flooringSectionControls, isFlooringScreenActive);
+      flooringControlsFrame = 0;
+    };
+
+    const requestFlooringControlsUpdate = () => {
+      if (flooringControlsFrame) return;
+      flooringControlsFrame = window.requestAnimationFrame(updateFlooringControlsVisibility);
+    };
+
+    window.addEventListener("scroll", requestFlooringControlsUpdate, { passive: true });
+    window.addEventListener("resize", requestFlooringControlsUpdate);
+    updateFlooringControlsVisibility();
   }
 </script>

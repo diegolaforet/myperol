@@ -3,7 +3,10 @@ const { instanceId } = Astro.props;
 const menuId = `langMenu-${instanceId}`;
 ---
 
-<div class="section-corner-controls section-corner-controls--light">
+<div
+  class="section-corner-controls section-corner-controls--light section-corner-controls--reveal"
+  data-section-corner-controls={instanceId}
+>
   <div class="social-float">
     <a
       href="https://www.instagram.com/myperol/"

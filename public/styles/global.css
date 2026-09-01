@@ -97,6 +97,7 @@
   --reveal-duration: 2000ms;
   --reveal-easing: cubic-bezier(0.16, 1, 0.3, 1);
   --reveal-stagger: 90ms;
+  --section-controls-reveal-distance: 22px;
 
   /* Fonts. */
   --font-ui: "Lexend", sans-serif;
@@ -2485,6 +2486,55 @@ body.services-route:not(.controls-over-light) .lang-menu {
   --color-dropdown-control-hover: var(--color-fixed-control-on-dark-hover);
   --color-dropdown-hover-shared: var(--color-dropdown-hover-on-dark);
   --color-dropdown-hover: var(--color-dropdown-hover-on-dark);
+}
+
+/* Section copies reveal only when their screen transition has completed. */
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal:not(.is-visible)
+  .social-float,
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal:not(.is-visible)
+  .language-control {
+  opacity: 0;
+  transform: translateY(var(--section-controls-reveal-distance)) scale(0.985);
+  pointer-events: none;
+}
+
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal
+  .social-float,
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal
+  .language-control {
+  transition:
+    opacity var(--reveal-duration) var(--reveal-easing),
+    transform var(--reveal-duration) var(--reveal-easing),
+    color 0.32s ease,
+    text-shadow 0.32s ease;
+  will-change: opacity, transform;
+}
+
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal.is-visible
+  .social-float,
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal.is-visible
+  .language-control {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.section-controls-reveal-enabled
+    .section-corner-controls--reveal
+    .social-float,
+  html.section-controls-reveal-enabled
+    .section-corner-controls--reveal
+    .language-control {
+    transform: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 902px) {
