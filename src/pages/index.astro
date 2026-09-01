@@ -34,29 +34,71 @@ import SplineScroll from "../components/SplineScroll.astro";
       <div class="feature-cards-shell home-primary-cards-shell">
         <div class="feature-cards-track home-primary-cards-track" id="featureCardsTrack">
           <article class="feature-card home-primary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_1_title">Superficie continua</h2>
-            <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_1_text">Un suelo MyPerol no solo cambia la superficie, cambia la percepción COMPLETA del lugar.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="percepcion-title percepcion-desc">
+              <title id="percepcion-title" data-i18n="home_primary_card_1_icon_title">Percepción transformada</title>
+              <desc id="percepcion-desc" data-i18n="home_primary_card_1_icon_desc">Un ojo sobre una superficie continua representa cómo el pavimento transforma la percepción del espacio.</desc>
+              <path d="M8 24.5C13.8 16.8 21.9 13 32 13s18.2 3.8 24 11.5C50.2 32.2 42.1 36 32 36S13.8 32.2 8 24.5Z"></path>
+              <circle cx="32" cy="24.5" r="6.5"></circle>
+              <circle cx="32" cy="24.5" r="2" fill="currentColor" stroke="none"></circle>
+              <path d="m15 43 17-6 17 6-17 8-17-8Z"></path>
+              <path d="M32 51v5M15 43v5l17 8 17-8v-5"></path>
+              <path d="M50 8v7M46.5 11.5h7"></path>
+            </svg>
           </article>
           <article class="feature-card home-primary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_2_title">Acabado uniforme</h2>
-            <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_2_text">La ausencia de juntas, la continuidad visual y el acabado uniforme generan una sensación de amplitud, orden, comodidad y limpieza inexplicable desde el primer momento.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="continuidad-title continuidad-desc">
+              <title id="continuidad-title" data-i18n="home_primary_card_2_icon_title">Continuidad y amplitud</title>
+              <desc id="continuidad-desc" data-i18n="home_primary_card_2_icon_desc">Una superficie continua con flechas abiertas representa ausencia de juntas, amplitud, orden y limpieza.</desc>
+              <path d="M12 16h40v29H12z"></path>
+              <path d="m12 45 10-12h20l10 12"></path>
+              <path d="M22 33h20"></path>
+              <path d="M27 25H16M16 25l4-4M16 25l4 4"></path>
+              <path d="M37 25h11M48 25l-4-4M48 25l-4 4"></path>
+              <path d="M18 51h28"></path>
+              <path d="M22 56h20"></path>
+              <path d="M48 9v5M45.5 11.5h5"></path>
+            </svg>
           </article>
           <article class="feature-card home-primary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_3_title">Sensación premium</h2>
-            <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_3_text">Al caminar sobre él se percibe una superficie sólida, continua y cuidada, con un acabado pensado para transmitir calidad tanto a la vista como la sensación de caminar por él.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="solidez-title solidez-desc">
+              <title id="solidez-title" data-i18n="home_primary_card_3_icon_title">Solidez y confort</title>
+              <desc id="solidez-desc" data-i18n="home_primary_card_3_icon_desc">Una superficie continua con un acabado suave se apoya sobre una base sólida y estable.</desc>
+              <path d="M43 9v10M38 14h10"></path>
+              <path d="M51 21v5M48.5 23.5h5"></path>
+              <path d="m8 40 24-10 24 10-24 12L8 40Z"></path>
+              <path d="M18.5 41c5.2-4.4 9.8-5.7 14.3-3.4 4.3 2.1 8.2 1.1 12.7-2.4"></path>
+              <path d="M8 46.5 32 58l24-11.5"></path>
+              <path d="M32 52v6"></path>
+            </svg>
           </article>
           <article class="feature-card home-primary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_4_title">Diseño limpio</h2>
-            <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_4_text">Los espacios ganan presencia y el suelo deja de ser un elemento funcional para convertirse en la parte protagonista del diseño y ambiente.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="protagonista-title protagonista-desc">
+              <title id="protagonista-title" data-i18n="home_primary_card_4_icon_title">El suelo como protagonista</title>
+              <desc id="protagonista-desc" data-i18n="home_primary_card_4_icon_desc">Un espacio arquitectónico conduce la mirada hacia una superficie central iluminada.</desc>
+              <path d="M10 9.5h44v43H10z"></path>
+              <path d="M10 29h44"></path>
+              <path d="M10 52.5 24 29h16l14 23.5"></path>
+              <path d="M25 42.5c4.2-2.7 9.8-2.7 14 0"></path>
+              <circle cx="32" cy="37.2" r="2.2" fill="currentColor" stroke="none"></circle>
+              <path d="M32 15v11M27.5 17.5 32 26l4.5-8.5"></path>
+            </svg>
           </article>
           <article class="feature-card home-primary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_5_title">Alta presencia</h2>
-            <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_5_text">Porque un buen pavimento no solo se mide por cómo resiste con el paso del tiempo, sino por la sensación que transmite.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="resistencia-title resistencia-desc">
+              <title id="resistencia-title" data-i18n="home_primary_card_5_icon_title">Resistencia y sensación</title>
+              <desc id="resistencia-desc" data-i18n="home_primary_card_5_icon_desc">Un escudo refinado protege una superficie continua y equilibrada.</desc>
+              <path d="M32 7.5 49 14v13.2c0 11.7-6.6 20.7-17 28.8-10.4-8.1-17-17.1-17-28.8V14l17-6.5Z"></path>
+              <path d="M21 35.5c3.1-3.2 6.8-4.8 11-4.8s7.9 1.6 11 4.8"></path>
+              <path d="M20.5 38.5h23"></path>
+              <path d="M24 42.5h16"></path>
+              <path d="M32 17.5v8M28 21.5h8"></path>
+              <path d="m29.2 18.7 5.6 5.6M34.8 18.7l-5.6 5.6"></path>
+            </svg>
           </article>
         </div>
 

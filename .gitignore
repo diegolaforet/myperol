@@ -26,3 +26,6 @@ astro-inspect.out.log
 
 # jetbrains setting folder
 .idea/
+
+#codex capture files
+.codex-capture.msj

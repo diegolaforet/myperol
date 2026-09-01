@@ -76,21 +76,29 @@
   --color-card-bg: #ffffff;
   --color-card-muted: #6e6e73;
   --color-card-label: #b85b22;
-  --color-carousel-arrow-bg: rgba(var(--surface-dark-rgb), var(--opacity-dark-controls));
-  --color-carousel-arrow: var(--color-text-on-dark);
+  --color-carousel-arrow-bg: rgba(var( --color-text-on-dark), var(--opacity-dark-controls));
+  --color-carousel-arrow: var(--surface-dark-rgb); 
   --card-width: 420px;
   --card-height: 520px;
   --card-radius: 26px;
   --card-padding: 34px;
   --card-gap: 24px;
-  --carousel-arrow-size: 58px;
+  --carousel-arrow-size: 43px;
   --home-primary-cards-top-padding: clamp(84px, 11vh, 112px);
   --font-size-card-label: 13px;
   --font-size-card-title: 34px;
   --font-size-card-text: 18px;
+  --font-size-home-primary-card-text: 20px;
   --font-size-carousel-arrow: 54px;
   --line-height-card-title: 1.08;
   --line-height-card-text: 1.35;
+  --line-height-home-primary-card-text: 1.42;
+  --home-primary-card-icon-size: 92px;
+  --home-primary-card-content-gap: 24px;
+  --home-primary-card-min-height: 194px;
+  --home-primary-card-copy-width-short: 34ch;
+  --home-primary-card-copy-width-medium: 44ch;
+  --home-primary-card-copy-width-long: 50ch;
 
   /* Scroll reveal motion for cards and content blocks. */
   --reveal-distance: 34px;
@@ -413,8 +421,48 @@ main {
 .home-primary-cards-header,
 .home-primary-cards-shell,
 .home-primary-cards-track,
-.home-primary-card,
 .home-primary-cards-dots {
+}
+
+.feature-card.home-primary-card {
+  --home-primary-card-copy-width: var(--home-primary-card-copy-width-medium);
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: var(--home-primary-card-copy-width) var(--home-primary-card-icon-size);
+  align-items: center;
+  align-content: center;
+  gap: var(--home-primary-card-content-gap);
+  width: max-content;
+  height: auto;
+  min-height: var(--home-primary-card-min-height);
+}
+
+.home-primary-card:nth-child(1) {
+  --home-primary-card-copy-width: var(--home-primary-card-copy-width-short);
+}
+
+.home-primary-card:nth-child(2),
+.home-primary-card:nth-child(3) {
+  --home-primary-card-copy-width: var(--home-primary-card-copy-width-long);
+}
+
+.home-primary-card:nth-child(4),
+.home-primary-card:nth-child(5) {
+  --home-primary-card-copy-width: var(--home-primary-card-copy-width-medium);
+}
+
+.home-primary-card .home-primary-card-copy {
+  margin: 0;
+  color: var(--color-text-on-light);
+  font: var(--font-weight-text) var(--font-size-home-primary-card-text)/var(--line-height-home-primary-card-text) var(--font-ui);
+  overflow-wrap: break-word;
+}
+
+.home-primary-card-icon {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--color-text-on-light);
 }
 
 /* Home second carousel. Add overrides here when this carousel needs its own layout. */
@@ -2057,7 +2105,7 @@ main {
   color: var(--color-carousel-arrow);
   box-shadow: var(--shadow-floating-action);
   cursor: pointer;
-  opacity: 1;
+  opacity: 0.6;
   transform: translateY(-50%);
   transition:
     background-color 0.2s ease,
@@ -2569,6 +2617,10 @@ html.section-controls-reveal-enabled
     --social-icon-size: 27px;
     --hero-caption-space: 66px;
     --hero-next-peek-space: 0px;
+    --font-size-home-primary-card-text: 19px;
+    --home-primary-card-icon-size: 86px;
+    --home-primary-card-content-gap: 22px;
+    --home-primary-card-min-height: 188px;
   }
 
   main {
@@ -2991,6 +3043,10 @@ html.section-controls-reveal-enabled
     --hero-caption-space: 62px;
     --hero-next-peek-space: 0px;
     --carousel-arrow-size: 52px;
+    --font-size-home-primary-card-text: 18px;
+    --home-primary-card-icon-size: 80px;
+    --home-primary-card-content-gap: 20px;
+    --home-primary-card-min-height: 180px;
   }
 
   main {
