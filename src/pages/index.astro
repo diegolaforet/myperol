@@ -277,6 +277,18 @@ import SplineScroll from "../components/SplineScroll.astro";
     let hoveredCardIndex = null;
     let hasInitializedArrowVisibility = false;
 
+    const updateArrowCenter = () => {
+      const referenceCard = cards[0];
+      if (!referenceCard) return;
+
+      const centerY = referenceCard.offsetTop + referenceCard.offsetHeight / 2;
+      shell.style.setProperty("--carousel-arrow-center-y", `${centerY}px`);
+    };
+
+    const arrowResizeObserver = new ResizeObserver(updateArrowCenter);
+    arrowResizeObserver.observe(track);
+    cards.forEach((card) => arrowResizeObserver.observe(card));
+
     const getScrollStep = () => {
       const firstCard = track.querySelector(".feature-card");
       if (!(firstCard instanceof HTMLElement)) return 460;
@@ -405,8 +417,10 @@ import SplineScroll from "../components/SplineScroll.astro";
     window.addEventListener("resize", () => {
       updateButtons();
       updateActiveDotFromScroll();
+      updateArrowCenter();
     });
 
+    updateArrowCenter();
     updateButtons();
     hasInitializedArrowVisibility = true;
     shell.classList.add("is-carousel-ready");

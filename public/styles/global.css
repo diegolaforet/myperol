@@ -2091,7 +2091,7 @@ main {
 
 .feature-cards-arrow {
   position: absolute;
-  top: 50%;
+  top: var(--carousel-arrow-center-y, 50%);
   z-index: 2;
   display: flex;
   align-items: center;
@@ -2143,7 +2143,8 @@ main {
 
 .feature-cards-arrow span {
   position: relative;
-  display: block;
+  display: grid;
+  place-items: center;
   width: 18px;
   height: 18px;
   font-size: 0;
@@ -2151,9 +2152,7 @@ main {
 
 .feature-cards-arrow span::before {
   content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: static;
   width: 13px;
   height: 13px;
   border-color: currentColor;
@@ -2163,15 +2162,11 @@ main {
 }
 
 .feature-cards-prev span::before {
-  transform: translate(-42%, -50%) rotate(45deg);
+  transform: rotate(45deg);
 }
 
 .feature-cards-next span::before {
-  transform: translate(-58%, -50%) rotate(-135deg);
-}
-
-.feature-cards-next span{
-  transform: translateX(-3px);
+  transform: rotate(-135deg);
 }
 
 /* ==========================================================================
