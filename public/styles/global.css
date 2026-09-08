@@ -396,6 +396,13 @@ main {
   z-index: 3;
 }
 
+.services-feature-cards.home-services-showcase {
+  min-height: 100svh;
+  margin-top: 0;
+  padding-top: clamp(164px, 19vh, 190px);
+  border-radius: 0;
+}
+
 /* ==========================================================================
    Feature cards carousel
    ========================================================================== */
@@ -868,10 +875,34 @@ main {
   box-shadow: none;
 }
 
-.services-feature-cards .feature-card:hover,
-.services-feature-cards .feature-card:focus-within,
-.reveal-enabled .services-feature-cards .feature-card.is-visible:hover,
-.reveal-enabled .services-feature-cards .feature-card.is-visible:focus-within {
+.home-services-showcase .feature-card {
+  background: var(--color-card-bg);
+  border: 1px solid rgba(var(--color-text-on-light-rgb), 0.08);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.home-services-showcase .feature-card:hover,
+.home-services-showcase .feature-card:focus-within,
+.reveal-enabled .home-services-showcase .feature-card.is-visible:hover,
+.reveal-enabled .home-services-showcase .feature-card.is-visible:focus-within {
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.12);
+}
+
+.home-services-showcase .feature-card h2,
+.home-services-showcase .feature-card p {
+  padding-inline: 24px;
+}
+
+.home-services-showcase .service-card-media {
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
+}
+
+.services-feature-cards:not(.home-services-showcase) .feature-card:hover,
+.services-feature-cards:not(.home-services-showcase) .feature-card:focus-within,
+.reveal-enabled .services-feature-cards:not(.home-services-showcase) .feature-card.is-visible:hover,
+.reveal-enabled .services-feature-cards:not(.home-services-showcase) .feature-card.is-visible:focus-within {
   box-shadow: none;
 }
 

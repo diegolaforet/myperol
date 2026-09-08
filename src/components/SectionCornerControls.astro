@@ -1,10 +1,14 @@
 ---
-const { instanceId } = Astro.props;
+const { instanceId, reveal = true } = Astro.props;
 const menuId = `langMenu-${instanceId}`;
 ---
 
 <div
-  class="section-corner-controls section-corner-controls--light section-corner-controls--reveal"
+  class:list={[
+    "section-corner-controls",
+    "section-corner-controls--light",
+    { "section-corner-controls--reveal": reveal },
+  ]}
   data-section-corner-controls={instanceId}
 >
   <div class="social-float">

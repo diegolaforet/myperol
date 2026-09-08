@@ -1,6 +1,7 @@
 ﻿---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionCornerControls from "../components/SectionCornerControls.astro";
+import ServicesShowcase from "../components/ServicesShowcase.astro";
 import SplineScroll from "../components/SplineScroll.astro";
 ---
 
@@ -189,12 +190,13 @@ import SplineScroll from "../components/SplineScroll.astro";
     </section>
 
     <SplineScroll />
+    <ServicesShowcase />
   </main>
 </BaseLayout>
 
 <script>
   const sectionCornerControls = Array.from(
-    document.querySelectorAll("[data-section-corner-controls]")
+    document.querySelectorAll(".section-corner-controls--reveal[data-section-corner-controls]")
   ).filter((control) => control instanceof HTMLElement);
 
   const setSectionCornerControlsVisible = (control, isVisible) => {
