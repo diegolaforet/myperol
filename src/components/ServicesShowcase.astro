@@ -11,7 +11,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
   <SectionCornerControls instanceId="services" reveal={false} />
 
   <div class="feature-cards-header">
-    <p id="services-feature-heading" class="services-feature-heading" data-i18n="feature_cards_heading">Explora posibilidades para tu espacio.</p>
+    <h2 id="services-feature-heading" class="services-feature-heading" data-i18n="feature_cards_heading">Explora posibilidades para tu espacio.</h2>
     <div class="services-feature-subtitle">
       <p id="services-performance-copy"><b>Cada espacio exige un nivel de rendimiento diferente.</b></p>
       <p id="services-performance-copy-2">
@@ -26,7 +26,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         <div class="service-card-media">
           <span class="service-card-label-text">MyPerol</span>
           <img class="service-card-logo" src="/assets/logo/logo-blanco.png" alt="" aria-hidden="true" />
-          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/home-card.png" alt="" aria-hidden="true" />
+          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/home-card.webp" loading="lazy" decoding="async" width="1200" height="900" alt="" aria-hidden="true" />
         </div>
         <h2>HOME</h2>
         <p class="feature-card-services-text">Continuidad que transforma la forma de vivir cada espacio.</p>
@@ -36,7 +36,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         <div class="service-card-media">
           <span class="service-card-label-text">MyPerol</span>
           <img class="service-card-logo" src="/assets/logo/logo-blanco.png" alt="" aria-hidden="true" />
-          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/garaje-card.png" alt="" aria-hidden="true" />
+          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/garaje-card.webp" loading="lazy" decoding="async" width="1200" height="900" alt="" aria-hidden="true" />
         </div>
         <h2>GARAGE</h2>
         <p class="feature-card-services-text">Convierte tu garaje en un espacio a la altura de lo que guarda.</p>
@@ -46,7 +46,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         <div class="service-card-media">
           <span class="service-card-label-text">MyPerol</span>
           <img class="service-card-logo" src="/assets/logo/logo-blanco.png" alt="" aria-hidden="true" />
-          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/local-card.png" alt="" aria-hidden="true" />
+          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/local-card.webp" loading="lazy" decoding="async" width="1200" height="900" alt="" aria-hidden="true" />
         </div>
         <h2>BUSINESS</h2>
         <p class="feature-card-services-text">Un espacio mas limpio, mas solido y mas memorable.</p>
@@ -56,7 +56,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         <div class="service-card-media">
           <span class="service-card-label-text">MyPerol</span>
           <img class="service-card-logo" src="/assets/logo/logo-blanco.png" alt="" aria-hidden="true" />
-          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/industria-card.png" alt="" aria-hidden="true" />
+          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/industria-card.webp" loading="lazy" decoding="async" width="1200" height="900" alt="" aria-hidden="true" />
         </div>
         <h2>INDUSTRY</h2>
         <p class="feature-card-services-text">Rendimiento continuo para espacios que no pueden detenerse.</p>
@@ -66,7 +66,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         <div class="service-card-media">
           <span class="service-card-label-text">MyPerol</span>
           <img class="service-card-logo" src="/assets/logo/logo-blanco.png" alt="" aria-hidden="true" />
-          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/outdoor-card.png" alt="" aria-hidden="true" />
+          <img class="service-card-image service-card-image-cover" src="/assets/card-images/services/outdoor-card.webp" loading="lazy" decoding="async" width="1200" height="900" alt="" aria-hidden="true" />
         </div>
         <h2>OUTDOOR</h2>
         <p class="feature-card-services-text">El exterior tambien puede sentirse continuo.</p>
@@ -86,102 +86,6 @@ import SectionCornerControls from "./SectionCornerControls.astro";
 </section>
 
 <script>
-  const serviceCards = Array.from(
-    document.querySelectorAll(".home-services-showcase .service-card-expandable:not([data-expansion-ready])")
-  ).filter((card) => card instanceof HTMLElement);
-
-  if (serviceCards.length) {
-    let activeOverlay = null;
-    let isClosing = false;
-
-    const closeExpandedCard = () => {
-      if (!(activeOverlay instanceof HTMLElement) || isClosing) return;
-
-      isClosing = true;
-      activeOverlay.classList.add("is-closing");
-      activeOverlay.classList.remove("is-blurred", "is-open");
-
-      activeOverlay.addEventListener("transitionend", (event) => {
-        if (event.target !== activeOverlay) return;
-        activeOverlay?.remove();
-        activeOverlay = null;
-        isClosing = false;
-      }, { once: true });
-    };
-
-    const openExpandedCard = (card) => {
-      if (!(card instanceof HTMLElement) || activeOverlay || isClosing) return;
-
-      const label = card.querySelector(".service-card-label-text")?.textContent?.trim() || "MyPerol";
-      const title = card.querySelector("h2")?.textContent?.trim() || "";
-      const text = card.querySelector(".feature-card-services-text")?.textContent?.trim() || "";
-      const technicalText = card.dataset.serviceTechnical || text;
-      const image = card.querySelector(".service-card-image");
-      const imageSrc = image instanceof HTMLImageElement ? image.currentSrc || image.src : "";
-      const imageCoverClass = image instanceof HTMLImageElement && image.classList.contains("service-card-image-cover")
-        ? "service-expanded-image-cover"
-        : "";
-      const priceSpace = card.dataset.priceSpace || "";
-
-      activeOverlay = document.createElement("div");
-      activeOverlay.className = "service-expanded-overlay";
-      activeOverlay.innerHTML = `
-        <article class="service-expanded-card" role="dialog" aria-modal="true" aria-label="${label} ${title}">
-          <div class="service-expanded-media">
-            <div class="service-expanded-media-frame">
-              <img class="${imageCoverClass}" src="${imageSrc}" alt="" aria-hidden="true" />
-            </div>
-            <p class="service-expanded-summary">${text}</p>
-          </div>
-          <div class="service-expanded-content">
-            <p class="service-expanded-label">${label}</p>
-            <h2 class="service-expanded-title">${title}</h2>
-            <p class="service-expanded-copy">${technicalText}</p>
-            <button class="service-expanded-action" type="button" data-service-price-space="${priceSpace}">Calcular precio</button>
-            <button class="service-expanded-composition" type="button"><span class="composition-shift-label">Conoce la composicion</span><span class="composition-shift-arrow" aria-hidden="true">&rarr;</span></button>
-          </div>
-        </article>
-      `;
-
-      document.body.append(activeOverlay);
-      const expandedImage = activeOverlay.querySelector(".service-expanded-media-frame img");
-      const requestPriceButton = activeOverlay.querySelector("[data-service-price-space]");
-
-      requestPriceButton?.addEventListener("click", () => {
-        if (!(requestPriceButton instanceof HTMLElement)) return;
-        sessionStorage.removeItem("myperol-price-calculator");
-        window.location.href = `/precios?reset=1&space=${encodeURIComponent(requestPriceButton.dataset.servicePriceSpace || "")}`;
-      });
-
-      activeOverlay.addEventListener("click", (event) => {
-        if (event.target === activeOverlay) closeExpandedCard();
-      });
-
-      const revealOverlay = () => window.requestAnimationFrame(() => {
-        activeOverlay?.classList.add("is-open", "is-blurred");
-      });
-
-      if (expandedImage instanceof HTMLImageElement && "decode" in expandedImage) {
-        expandedImage.decode().then(revealOverlay).catch(revealOverlay);
-      } else {
-        revealOverlay();
-      }
-    };
-
-    serviceCards.forEach((card) => {
-      card.dataset.expansionReady = "true";
-      card.setAttribute("role", "button");
-      card.setAttribute("aria-label", `Abrir ${card.querySelector("h2")?.textContent?.trim() || "servicio"}`);
-      card.addEventListener("click", () => openExpandedCard(card));
-      card.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        openExpandedCard(card);
-      });
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeExpandedCard();
-    });
-  }
+  import { initializeServiceCards } from "../scripts/service-dialog";
+  initializeServiceCards(".home-services-showcase .service-card-expandable", "Calcular precio");
 </script>

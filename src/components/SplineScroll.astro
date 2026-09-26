@@ -212,9 +212,9 @@ import SectionCornerControls from "./SectionCornerControls.astro";
     INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 3,
     PRE_FINAL_TIMELINE_DURATION,
   ].map((duration) => duration / FLOORING_TIMELINE_DURATION);
-  const SCROLL_SCRUB_SECONDS = 0.22;
-  const MAX_RENDER_PIXEL_RATIO = 2;
-  const MAX_RENDER_PIXELS = 2560 * 1440;
+  const SCROLL_SCRUB_SECONDS = 0.35;
+  const MAX_RENDER_PIXEL_RATIO = 1.75;
+  const MAX_RENDER_PIXELS = 1920 * 1080;
   const OBJECT_ALIASES = {
     hormigon: ["hormigon", "concrete", "base hormigon"],
     imprimacion: ["imprimacion", "primer", "epoxy primer"],
@@ -267,6 +267,42 @@ import SectionCornerControls from "./SectionCornerControls.astro";
     let renderResizeTimer;
     let postLoadRenderResizeTimer;
     let applyCurrentModelTransform = () => undefined;
+    let sceneReady = false;
+    let isStageVisible = false;
+    let syncVisibleScene = () => undefined;
+    let cancelInitialRender = () => undefined;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileRenderer = window.matchMedia("(pointer: coarse)");
+
+    const updateVisibility = () => {
+      if (!sceneReady || isDisposed) return;
+      if (isStageVisible && !document.hidden) {
+        spline.play();
+        syncVisibleScene();
+      } else {
+        spline.stop();
+      }
+    };
+    const stageObserver = new IntersectionObserver(([entry]) => {
+      isStageVisible = entry.isIntersecting;
+      updateVisibility();
+    }, { rootMargin: "160px 0px" });
+    stageObserver.observe(canvas);
+    document.addEventListener("visibilitychange", updateVisibility);
+
+    const updateMotionPreference = () => {
+      if (!timeline || isDisposed) return;
+      if (reducedMotion.matches) {
+        timeline.scrollTrigger?.disable(false);
+        timeline.progress(1).pause();
+      } else {
+        timeline.scrollTrigger?.enable();
+        timeline.scrollTrigger?.refresh();
+        timeline.scrollTrigger?.update();
+      }
+      syncVisibleScene();
+    };
+    reducedMotion.addEventListener("change", updateMotionPreference);
 
     const showError = (message) => {
       if (loader instanceof HTMLElement) loader.classList.add("has-error");
@@ -298,19 +334,28 @@ import SectionCornerControls from "./SectionCornerControls.astro";
     };
 
     const renderInitialFrames = (application, frameCount = 2) =>
-      new Promise<void>((resolve) => {
+      new Promise<void>((resolve, reject) => {
         let renderedFrames = 0;
+        let nextFrame = 0;
+        const finish = (error?: Error) => {
+          window.clearTimeout(timeout);
+          window.cancelAnimationFrame(nextFrame);
+          application.removeEventListener("rendered", handleRendered);
+          cancelInitialRender = () => undefined;
+          error ? reject(error) : resolve();
+        };
+        const timeout = window.setTimeout(() => finish(new Error("3D render timed out")), 15000);
+        cancelInitialRender = () => finish();
 
         const handleRendered = () => {
           renderedFrames += 1;
 
           if (renderedFrames >= frameCount) {
-            application.removeEventListener("rendered", handleRendered);
-            resolve();
+            finish();
             return;
           }
 
-          window.requestAnimationFrame(() => application.requestRender());
+          nextFrame = window.requestAnimationFrame(() => application.requestRender());
         };
 
         application.addEventListener("rendered", handleRendered);
@@ -324,12 +369,19 @@ import SectionCornerControls from "./SectionCornerControls.astro";
       timeline?.scrollTrigger?.kill();
       timeline?.kill();
       renderResizeObserver?.disconnect();
+      stageObserver.disconnect();
+      document.removeEventListener("visibilitychange", updateVisibility);
+      reducedMotion.removeEventListener("change", updateMotionPreference);
+      cancelInitialRender();
       window.clearTimeout(renderResizeTimer);
       window.clearTimeout(postLoadRenderResizeTimer);
       spline?.dispose();
     };
 
-    window.addEventListener("pagehide", cleanup, { once: true });
+    // A page in the back/forward cache retains its scene and observers.
+    window.addEventListener("pagehide", (event) => {
+      if (!event.persisted) cleanup();
+    });
     document.addEventListener("astro:before-swap", cleanup, { once: true });
 
     try {
@@ -384,13 +436,18 @@ import SectionCornerControls from "./SectionCornerControls.astro";
           Math.min(1, width / height / MODEL_REFERENCE_ASPECT_RATIO),
           MODEL_ASPECT_SCALE_EXPONENT
         );
+        const narrowFit = Math.min(1, Math.max(0.7, (width - 70) / 320));
+        const shortFit = width < height
+          ? Math.min(1, Math.max(0.65, height / MODEL_REFERENCE_VIEWPORT_HEIGHT))
+          : Math.min(1, Math.max(0.28, (height - 250) / 510));
         const verticalMotionFit = Math.max(0.55, viewportFit);
 
         modelMotionBounds = {
           // Reduce the complete model on narrow viewports before applying any
           // layer focus, so rotation never pushes it outside the visible area.
           baseScale:
-            (MODEL_MIN_BASE_SCALE + (1 - MODEL_MIN_BASE_SCALE) * viewportFit) * aspectFit,
+            (MODEL_MIN_BASE_SCALE + (1 - MODEL_MIN_BASE_SCALE) * viewportFit) *
+            aspectFit * narrowFit * shortFit * (width < height ? 0.9 : 1),
           focusScaleDelta: MODEL_MAX_FOCUS_SCALE_DELTA * viewportFit,
           horizontalTravel:
             Math.min(MODEL_MAX_HORIZONTAL_TRAVEL, width * MODEL_HORIZONTAL_TRAVEL_RATIO) *
@@ -400,7 +457,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
             Math.min(MODEL_MAX_VERTICAL_TRAVEL, height * MODEL_VERTICAL_TRAVEL_RATIO) *
             heightFit *
             aspectFit,
-          horizontalCenterOffset: (1 - aspectFit) * MODEL_MAX_PORTRAIT_CENTER_OFFSET,
+          horizontalCenterOffset: (1 - aspectFit) * MODEL_MAX_PORTRAIT_CENTER_OFFSET * 0.2,
           layerSeparation: MODEL_MAX_LAYER_SEPARATION * verticalMotionFit,
           layerScatterX: MODEL_MAX_LAYER_SCATTER_X * viewportFit,
           layerScatterY: MODEL_MAX_LAYER_SCATTER_Y * verticalMotionFit,
@@ -419,10 +476,11 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         applyCurrentModelTransform();
 
         const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
-        const pixelBudgetRatio = Math.sqrt(MAX_RENDER_PIXELS / (cssWidth * cssHeight));
+        const pixelBudget = mobileRenderer.matches ? 1100000 : MAX_RENDER_PIXELS;
+        const pixelBudgetRatio = Math.sqrt(pixelBudget / (cssWidth * cssHeight));
         const targetPixelRatio = Math.min(
           devicePixelRatio,
-          MAX_RENDER_PIXEL_RATIO,
+          mobileRenderer.matches ? 1.35 : MAX_RENDER_PIXEL_RATIO,
           pixelBudgetRatio
         );
         const renderScale = targetPixelRatio / devicePixelRatio;
@@ -444,7 +502,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         spline.requestRender();
       };
 
-      const scheduleRenderResolutionSync = (delay = 32) => {
+      const scheduleRenderResolutionSync = (delay = 120) => {
         window.clearTimeout(renderResizeTimer);
         renderResizeTimer = window.setTimeout(syncRenderResolution, delay);
       };
@@ -649,41 +707,29 @@ import SectionCornerControls from "./SectionCornerControls.astro";
       gsap.set(canvas, { opacity: 0 });
       applySceneTransform();
 
-      const readSceneState = () => [
-        ...(objects.camera
-          ? [
-              objects.camera.position.x,
-              objects.camera.position.y,
-              objects.camera.position.z,
-              objects.camera.rotation.x,
-              objects.camera.rotation.y,
-              objects.camera.rotation.z,
-            ]
-          : []),
-        ...modelScaleConfiguration.flatMap(({ object }) => [
-          object.scale.x,
-          object.scale.y,
-          object.scale.z,
-          object.position.x,
-          object.position.y,
-          object.position.z,
-          object.rotation.x,
-          object.rotation.y,
-          object.rotation.z,
-        ]),
-      ];
-      let renderedSceneState = readSceneState();
-
-      const requestChangedSceneRender = () => {
-        const sceneState = readSceneState();
-        const hasSceneChanged = sceneState.some(
-          (value, index) => Math.abs(value - renderedSceneState[index]) > 0.000001
-        );
-
-        if (!hasSceneChanged) return;
-
-        renderedSceneState = sceneState;
-        spline.requestRender();
+      // Reuse storage on every tick instead of allocating arrays during scroll.
+      const trackedVectors = modelScaleConfiguration.flatMap(({ object }) => [
+        object.scale, object.position, object.rotation,
+      ]);
+      if (objects.camera) trackedVectors.push(objects.camera.position, objects.camera.rotation);
+      const renderedSceneState = new Float64Array(trackedVectors.length * 3).fill(NaN);
+      const vectorAxes = ["x", "y", "z"] as const;
+      const requestChangedSceneRender = (force = false) => {
+        if (sceneReady && (!isStageVisible || document.hidden)) return;
+        let changed = force;
+        let offset = 0;
+        for (const vector of trackedVectors) {
+          for (const axis of vectorAxes) {
+            const value = vector[axis];
+            if (!(Math.abs(value - renderedSceneState[offset]) <= 0.000001)) changed = true;
+            renderedSceneState[offset++] = value;
+          }
+        }
+        if (changed) spline.requestRender();
+      };
+      syncVisibleScene = () => {
+        applySceneTransform();
+        requestChangedSceneRender(true);
       };
 
       timeline = gsap.timeline({
@@ -691,7 +737,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         onUpdate: () => {
           const progress = timeline?.progress() ?? 0;
 
-          applySceneTransform();
+          if (!sceneReady || (isStageVisible && !document.hidden)) applySceneTransform();
           if (progressBar instanceof HTMLElement) {
             progressBar.style.setProperty("--flooring-progress", String(progress));
           }
@@ -895,7 +941,8 @@ import SectionCornerControls from "./SectionCornerControls.astro";
         finalMotionStart
       );
 
-      setActivePanel(0);
+      updateMotionPreference();
+      setActivePanel(getPanelIndex(timeline.progress()));
       await renderInitialFrames(spline, 2);
 
       if (isDisposed) return;
@@ -904,6 +951,8 @@ import SectionCornerControls from "./SectionCornerControls.astro";
       section.classList.remove("is-loading");
       section.classList.add("is-ready");
       section.dataset.flooringInitialized = "ready";
+      sceneReady = true;
+      updateVisibility();
 
       // Recalculate ScrollTrigger only after the two initial manual renders.
       window.requestAnimationFrame(() => {
@@ -915,6 +964,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
     } catch (error) {
       console.error("No se pudo inicializar la escena MP Systems.", error);
       showError(getMessage("mp_systems_error", "No se ha podido cargar el sistema 3D."));
+      cleanup();
       throw error;
     }
   };
@@ -928,11 +978,26 @@ import SectionCornerControls from "./SectionCornerControls.astro";
   };
 
   const prepareSplineAfterFirstPaint = () => {
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        void initializeSplineScroll().catch(() => undefined);
-      });
-    });
+    const section = document.querySelector("[data-flooring-scroll]");
+    if (!section) return;
+    let started = false;
+    let warmupObserver: IntersectionObserver;
+    const start = () => {
+      if (started) return;
+      started = true;
+      warmupObserver.disconnect();
+      void initializeSplineScroll().catch(() => undefined);
+    };
+    // Warm the GPU before the stage arrives, without blocking the hero's first paint.
+    warmupObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) start();
+    }, { rootMargin: "1600px 0px" });
+    warmupObserver.observe(section);
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(start, { timeout: 1800 });
+    } else {
+      window.setTimeout(start, 800);
+    }
   };
 
   if (document.readyState === "loading") {

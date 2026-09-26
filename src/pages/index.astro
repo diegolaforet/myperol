@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionCornerControls from "../components/SectionCornerControls.astro";
 import ServicesShowcase from "../components/ServicesShowcase.astro";
 import SplineScroll from "../components/SplineScroll.astro";
+import Calculator from "../components/Calculator.astro";
 ---
 
 <BaseLayout
@@ -23,13 +24,22 @@ import SplineScroll from "../components/SplineScroll.astro";
         aria-hidden="true"
         tabindex="-1"
       ></video>
+      <div class="hero-identity">
+        <p class="hero-identity__eyebrow">MP SYSTEM</p>
+        <h1>MyPerol</h1>
+        <p class="hero-identity__copy" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
+        <div class="hero-identity__actions">
+          <a href="#servicios" data-i18n="nav_services">Servicios</a>
+          <a href="#calculadora" data-i18n="nav_prices">Calculadora</a>
+        </div>
+      </div>
     </section>
 
     <section class="feature-cards home-primary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
       <SectionCornerControls instanceId="primary-cards" />
 
       <div class="feature-cards-header home-primary-cards-header">
-        <p class="home-primary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
+        <h2 class="home-primary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</h2>
       </div>
 
       <div class="feature-cards-shell home-primary-cards-shell">
@@ -131,7 +141,7 @@ import SplineScroll from "../components/SplineScroll.astro";
 
     <section class="feature-cards home-secondary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria">
       <div class="feature-cards-header home-secondary-cards-header">
-        <p class="home-secondary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
+        <h2 class="home-secondary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</h2>
       </div>
 
       <div class="feature-cards-shell home-secondary-cards-shell">
@@ -191,6 +201,7 @@ import SplineScroll from "../components/SplineScroll.astro";
 
     <SplineScroll />
     <ServicesShowcase />
+    <Calculator />
   </main>
 </BaseLayout>
 
@@ -253,6 +264,7 @@ import SplineScroll from "../components/SplineScroll.astro";
   };
 
   const initializeFeatureCardsCarousel = (shell) => {
+    if (shell.closest(".services-feature-cards, .home-primary-cards")) return;
     const track = shell.querySelector(".feature-cards-track");
     const prevButton = shell.querySelector("[data-carousel-prev]");
     const nextButton = shell.querySelector("[data-carousel-next]");
@@ -465,7 +477,10 @@ import SplineScroll from "../components/SplineScroll.astro";
   // Reusable transition between the video cover and the first card carousel.
   const entryScrollTarget = document.querySelector("[data-entry-scroll-target]");
 
-  if (entryScrollTarget instanceof HTMLElement) {
+  if (
+    entryScrollTarget instanceof HTMLElement &&
+    window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches
+  ) {
     const entrySectionControls = entryScrollTarget.querySelector(
       '[data-section-corner-controls="primary-cards"]'
     );
@@ -617,6 +632,7 @@ import SplineScroll from "../components/SplineScroll.astro";
     );
 
     document.addEventListener("keydown", (event) => {
+      if (event.target instanceof Element && event.target.closest("a, button, input, select, textarea, [contenteditable]")) return;
       const isSpaceKey = event.key === " " || event.key === "Spacebar";
       const isDownKey =
         event.key === "ArrowDown" ||

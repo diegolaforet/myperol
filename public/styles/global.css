@@ -75,7 +75,7 @@
   /* Fixed card carousel. */
   --color-card-bg: #ffffff;
   --color-card-muted: #6e6e73;
-  --color-card-label: #b85b22;
+  --color-card-label: #565961;
   --color-carousel-arrow-bg: rgba(var( --color-text-on-dark), var(--opacity-dark-controls));
   --color-carousel-arrow: var(--surface-dark-rgb); 
   --card-width: 420px;
@@ -1093,15 +1093,13 @@ main {
   margin-top: auto;
   margin-left: auto;
   padding: 14px 28px;
-  border: 1px solid rgba(28, 116, 166, 0.30);
+  border: 1px solid #303238;
   border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(15, 131, 209, 0.61), rgba(15, 131, 209, 0.61)),
-    rgba(15, 131, 209, 0.61);
+  background: #303238;
   color: #ffffff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.38),
-    0 10px 22px rgba(28, 86, 126, 0.10);
+    0 10px 22px rgba(23, 24, 27, 0.10);
   font: var(--font-weight-control) var(--font-size-text)/var(--line-height-control) var(--font-ui);
   cursor: pointer;
   transition:
@@ -1113,13 +1111,11 @@ main {
 
 .service-expanded-action:hover,
 .service-expanded-action:focus-visible {
-  background:
-    linear-gradient(180deg, rgba(15, 131, 209, 0.61), rgba(29, 142, 218, 0.61)),
-    rgba(49, 160, 224, 0.24);
-  border-color: rgba(28, 116, 166, 0.42);
+  background: #17181b;
+  border-color: #17181b;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.46),
-    0 12px 26px rgba(28, 86, 126, 0.14);
+    0 12px 26px rgba(23, 24, 27, 0.14);
   transform: translateY(-1px);
   outline: none;
 }
@@ -1684,11 +1680,11 @@ main {
 }
 
 .price-result-submit-status[data-status="success"] {
-  color: #2f7d55;
+  color: #303238;
 }
 
 .price-result-submit-status[data-status="error"] {
-  color: #b42f2f;
+  color: #17181b;
 }
 
 .price-space-option {
@@ -1752,19 +1748,19 @@ main {
 }
 
 .price-condition-label-excellent::before {
-  background: linear-gradient(135deg, #7af0a5, #22b56a);
+  background: #5f6167;
 }
 
 .price-condition-label-good::before {
-  background: linear-gradient(135deg, #ffe06b, #d9a322);
+  background: #92949a;
 }
 
 .price-condition-label-minor::before {
-  background: linear-gradient(135deg, #ff9966, #ef553b);
+  background: #bcbec2;
 }
 
 .price-condition-label-major::before {
-  background: linear-gradient(135deg, #ff6a86, #d8204a);
+  background: #34363b;
 }
 
 .prices-card[data-view="ceramic-removal"] .service-expanded-title {
@@ -1977,13 +1973,13 @@ main {
 }
 
 .price-surface-field input.is-out-of-range {
-  border-color: #c73333;
-  box-shadow: 0 0 0 4px rgba(199, 51, 51, 0.10);
+  border-color: #565961;
+  box-shadow: 0 0 0 4px rgba(86, 89, 97, 0.10);
 }
 
 .price-surface-error {
   margin: -10px 0 0;
-  color: #c73333;
+  color: #34363b;
   font: var(--font-weight-text) 12px/1.2 var(--font-ui);
 }
 

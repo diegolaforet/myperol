@@ -29,3 +29,7 @@ astro-inspect.out.log
 
 #codex capture files
 .codex-capture.msj
+
+# Browser verification artifacts
+test-results/
+playwright-report/
