@@ -33,3 +33,4 @@ astro-inspect.out.log
 # Browser verification artifacts
 test-results/
 playwright-report/
+performance-artifacts/

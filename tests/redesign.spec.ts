@@ -196,6 +196,7 @@ test("home video and 3D render, move, reverse and fit the viewport", async ({ pa
   await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => video.readyState)).toBeGreaterThan(1);
   await page.screenshot({ path: testInfo.outputPath("hero.png") });
   const stage = page.locator("[data-flooring-scroll]");
+  await stage.scrollIntoViewIfNeeded();
   await expect(stage).toHaveAttribute("data-flooring-initialized", "ready", { timeout: 60000 });
   await stage.evaluate(el => {
     const top = el.getBoundingClientRect().top + scrollY;

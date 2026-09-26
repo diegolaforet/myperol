@@ -1,0 +1,896 @@
+const SCENE_URL = "/assets/3d/flooring-07d94fcf.splinecode";
+const LAYER_DEPTHS = {
+  imprimacion: 134.598,
+  silice: 134.267,
+  epoxi: 133.021,
+  sellador: 134.595,
+};
+const CONCRETE_DEPTH = 364.706;
+const INTRO_DURATION = 15;
+const LAYER_BUILD_DURATION = 16;
+const LAYER_HOLD_DURATION = 4;
+const SEALER_BUILD_DURATION = 12;
+const SEALER_HOLD_DURATION = 3;
+const MODEL_SCALE_MULTIPLIER = 1.3;
+const DEGREES_TO_RADIANS = Math.PI / 180;
+const MODEL_REFERENCE_VIEWPORT_WIDTH = 1280;
+const MODEL_REFERENCE_VIEWPORT_HEIGHT = 760;
+const MODEL_REFERENCE_ASPECT_RATIO =
+  MODEL_REFERENCE_VIEWPORT_WIDTH / MODEL_REFERENCE_VIEWPORT_HEIGHT;
+const MODEL_ASPECT_SCALE_EXPONENT = 0.72;
+const MODEL_MIN_VIEWPORT_FIT = 0.38;
+const MODEL_MIN_BASE_SCALE = 0.78;
+const MODEL_MAX_FOCUS_SCALE_DELTA = 0.3;
+const MODEL_MAX_HORIZONTAL_TRAVEL = 124;
+const MODEL_HORIZONTAL_TRAVEL_RATIO = 0.082;
+const MODEL_MAX_VERTICAL_TRAVEL = 90;
+const MODEL_VERTICAL_TRAVEL_RATIO = 0.1;
+const MODEL_MAX_PORTRAIT_CENTER_OFFSET = 70;
+const MODEL_MAX_LAYER_SEPARATION = 46;
+const MODEL_MAX_LAYER_SCATTER_X = 190;
+const MODEL_MAX_LAYER_SCATTER_Y = 36;
+const MODEL_MAX_LAYER_SCATTER_Z = 64;
+const MODEL_FINAL_OVERVIEW_SCALE = 0.72;
+const MODEL_FINAL_ACCORDION_OPEN = 1.5;
+const MODEL_FINAL_ACCORDION_REST = 0.82;
+const MODEL_LAYER_SCATTER_OFFSETS = [
+  { x: 0.3, y: -0.12, z: 0.2 },
+  { x: 0.9, y: 0.08, z: -0.48 },
+  { x: -1, y: 0.16, z: 0.42 },
+  { x: 0.88, y: -0.08, z: 0.3 },
+  { x: -0.7, y: 0.14, z: -0.52 },
+];
+const MODEL_LAYER_MOTIONS = [
+  {
+    xRatio: 0.08,
+    yRatio: 0,
+    focus: 0.58,
+    rotationY: -6 * DEGREES_TO_RADIANS,
+  },
+  {
+    xRatio: 0.24,
+    yRatio: -0.28,
+    focus: 0.72,
+    rotationY: 2 * DEGREES_TO_RADIANS,
+  },
+  {
+    xRatio: 0.26,
+    yRatio: -0.3,
+    focus: 0.74,
+    rotationY: 1 * DEGREES_TO_RADIANS,
+  },
+  {
+    xRatio: 0.26,
+    yRatio: -0.3,
+    focus: 1.12,
+    rotationY: 1 * DEGREES_TO_RADIANS,
+  },
+];
+const MODEL_SILICA_MID_MOTION = {
+  xRatio: 0.14,
+  yRatio: -0.08,
+  focus: 0.7,
+  rotationY: 1 * DEGREES_TO_RADIANS,
+};
+const MODEL_SILICA_SECOND_HALF_MOTION = {
+  xRatio: 0.24,
+  yRatio: -0.28,
+  focus: 0.72,
+  rotationY: 2 * DEGREES_TO_RADIANS,
+};
+const CAMERA_LAYER_MOTIONS = [
+  { pitch: 1.2 * DEGREES_TO_RADIANS, yaw: 1.5 * DEGREES_TO_RADIANS },
+  { pitch: 1.8 * DEGREES_TO_RADIANS, yaw: 0.8 * DEGREES_TO_RADIANS },
+  { pitch: 1.9 * DEGREES_TO_RADIANS, yaw: 0.7 * DEGREES_TO_RADIANS },
+  { pitch: 1.9 * DEGREES_TO_RADIANS, yaw: 0.7 * DEGREES_TO_RADIANS },
+];
+const CAMERA_SILICA_MID_MOTION = {
+  pitch: 1.6 * DEGREES_TO_RADIANS,
+  yaw: 0,
+};
+const CAMERA_SILICA_SECOND_HALF_MOTION = {
+  pitch: 1.8 * DEGREES_TO_RADIANS,
+  yaw: 0.8 * DEGREES_TO_RADIANS,
+};
+const MODEL_FINAL_MOTION = {
+  xRatio: 1.6,
+  yRatio: -1.05,
+  focus: 0.42,
+};
+const MODEL_FINAL_CENTER_MOTION = {
+  xRatio: -0.55,
+  yRatio: 0,
+};
+const MODEL_FINAL_SCATTER_MOTION = {
+  xRatio: 0,
+  yRatio: -1.08,
+};
+const CAMERA_FINAL_MOTION = {
+  pitch: 2.5 * DEGREES_TO_RADIANS,
+  yaw: 0,
+};
+const FINAL_CENTER_DURATION = 4;
+const FINAL_SCATTER_DURATION = 12;
+const FINAL_RESOLVE_DURATION = 10;
+const FINAL_POSITION_DURATION = 6;
+const FINAL_TEXT_REVEAL_DELAY = 4;
+const FINAL_SEQUENCE_DURATION =
+  FINAL_CENTER_DURATION + FINAL_SCATTER_DURATION + FINAL_RESOLVE_DURATION;
+const STANDARD_LAYER_TOTAL_DURATION = LAYER_BUILD_DURATION + LAYER_HOLD_DURATION;
+const SEALER_TOTAL_DURATION = SEALER_BUILD_DURATION + SEALER_HOLD_DURATION;
+const PRE_FINAL_TIMELINE_DURATION =
+  INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 3 + SEALER_TOTAL_DURATION;
+const FLOORING_TIMELINE_DURATION =
+  PRE_FINAL_TIMELINE_DURATION + FINAL_SEQUENCE_DURATION;
+const FINAL_TEXT_REVEAL_PROGRESS =
+  (PRE_FINAL_TIMELINE_DURATION +
+    FINAL_CENTER_DURATION +
+    FINAL_SCATTER_DURATION +
+    FINAL_TEXT_REVEAL_DELAY) /
+  FLOORING_TIMELINE_DURATION;
+const PANEL_PROGRESS_THRESHOLDS = [
+  INTRO_DURATION,
+  INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION,
+  INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 2,
+  INTRO_DURATION + STANDARD_LAYER_TOTAL_DURATION * 3,
+  PRE_FINAL_TIMELINE_DURATION,
+].map((duration) => duration / FLOORING_TIMELINE_DURATION);
+const SCROLL_SCRUB_SECONDS = 0.35;
+const MAX_RENDER_PIXEL_RATIO = 1.75;
+const MAX_RENDER_PIXELS = 1920 * 1080;
+const OBJECT_ALIASES = {
+  hormigon: ["hormigon", "concrete", "base hormigon"],
+  imprimacion: ["imprimacion", "primer", "epoxy primer"],
+  silice: ["silice", "silica", "arido"],
+  epoxi: ["epoxi", "epoxy", "resina epoxi"],
+  sellador: ["sellador", "sealer", "sellado", "transparent sealer"],
+  camera: ["cameraPrincipal", "camera principal", "main camera", "camera"],
+};
+
+const normalizeName = (name = "") =>
+  name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+const getMessage = (key, fallback) => {
+  const language = document.documentElement.lang || "es";
+  const messages = window.I18N_MESSAGES || {};
+
+  return messages[language]?.[key] || messages.es?.[key] || fallback;
+};
+
+export const buildSplineScroll = async () => {
+  const section = document.querySelector("[data-flooring-scroll]");
+  const canvas = section?.querySelector("[data-flooring-canvas]");
+  const loader = section?.querySelector("[data-flooring-loader]");
+  const loaderMessage = section?.querySelector("[data-flooring-loader-message]");
+  const panels = Array.from(section?.querySelectorAll("[data-flooring-panel]") || []);
+  const progressBar = section?.querySelector(".flooring-progress-bar");
+
+  if (
+    !(section instanceof HTMLElement) ||
+    !(canvas instanceof HTMLCanvasElement) ||
+    section.dataset.flooringInitialized
+  ) return;
+
+  section.dataset.flooringInitialized = "loading";
+
+  let isDisposed = false;
+  const sceneRequest = new AbortController();
+  let activePanelIndex = -1;
+  let spline;
+  let timeline;
+  let ScrollTrigger;
+  let renderResizeObserver;
+  let renderResizeTimer;
+  let postLoadRenderResizeTimer;
+  let applyCurrentModelTransform = () => undefined;
+  let sceneReady = false;
+  let isStageVisible = false;
+  let syncVisibleScene = () => undefined;
+  let cancelInitialRender = () => undefined;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileRenderer = window.matchMedia("(pointer: coarse)");
+
+  const updateVisibility = () => {
+    if (!sceneReady || isDisposed) return;
+    if (isStageVisible && !document.hidden) {
+      spline.play();
+      syncVisibleScene();
+    } else {
+      spline.stop();
+    }
+  };
+  const stageObserver = new IntersectionObserver(([entry]) => {
+    isStageVisible = entry.isIntersecting;
+    updateVisibility();
+  }, { rootMargin: "160px 0px" });
+  stageObserver.observe(canvas);
+  document.addEventListener("visibilitychange", updateVisibility);
+
+  const updateMotionPreference = () => {
+    if (!timeline || isDisposed) return;
+    if (reducedMotion.matches) {
+      timeline.scrollTrigger?.disable(false);
+      timeline.progress(1).pause();
+    } else {
+      timeline.scrollTrigger?.enable();
+      timeline.scrollTrigger?.refresh();
+      timeline.scrollTrigger?.update();
+    }
+    syncVisibleScene();
+  };
+  reducedMotion.addEventListener("change", updateMotionPreference);
+
+  const showError = (message) => {
+    if (loader instanceof HTMLElement) loader.classList.add("has-error");
+    if (loaderMessage instanceof HTMLElement) loaderMessage.textContent = message;
+    section.classList.remove("is-loading");
+    section.classList.add("has-load-error");
+    section.dataset.flooringInitialized = "error";
+  };
+
+  const setActivePanel = (index) => {
+    if (index === activePanelIndex) return;
+
+    panels.forEach((panel) => {
+      if (!(panel instanceof HTMLElement)) return;
+      panel.classList.toggle("is-active", Number(panel.dataset.flooringPanel) === index);
+    });
+
+    activePanelIndex = index;
+  };
+
+  const getPanelIndex = (progress) => {
+    if (progress < PANEL_PROGRESS_THRESHOLDS[0]) return 0;
+    if (progress < PANEL_PROGRESS_THRESHOLDS[1]) return 1;
+    if (progress < PANEL_PROGRESS_THRESHOLDS[2]) return 2;
+    if (progress < PANEL_PROGRESS_THRESHOLDS[3]) return 3;
+    if (progress < PANEL_PROGRESS_THRESHOLDS[4]) return 4;
+    if (progress < FINAL_TEXT_REVEAL_PROGRESS) return -1;
+    return 5;
+  };
+
+  const renderInitialFrames = (application, frameCount = 2) =>
+    new Promise<void>((resolve, reject) => {
+      let renderedFrames = 0;
+      let nextFrame = 0;
+      const finish = (error?: Error) => {
+        window.clearTimeout(timeout);
+        window.cancelAnimationFrame(nextFrame);
+        application.removeEventListener("rendered", handleRendered);
+        cancelInitialRender = () => undefined;
+        error ? reject(error) : resolve();
+      };
+      const timeout = window.setTimeout(() => finish(new Error("3D render timed out")), 15000);
+      cancelInitialRender = () => finish();
+
+      const handleRendered = () => {
+        renderedFrames += 1;
+
+        if (renderedFrames >= frameCount) {
+          finish();
+          return;
+        }
+
+        nextFrame = window.requestAnimationFrame(() => application.requestRender());
+      };
+
+      application.addEventListener("rendered", handleRendered);
+      application.requestRender();
+    });
+
+  const cleanup = () => {
+    if (isDisposed) return;
+
+    isDisposed = true;
+    sceneRequest.abort();
+    timeline?.scrollTrigger?.kill();
+    timeline?.kill();
+    renderResizeObserver?.disconnect();
+    stageObserver.disconnect();
+    document.removeEventListener("visibilitychange", updateVisibility);
+    reducedMotion.removeEventListener("change", updateMotionPreference);
+    cancelInitialRender();
+    window.clearTimeout(renderResizeTimer);
+    window.clearTimeout(postLoadRenderResizeTimer);
+    spline?.dispose();
+  };
+
+  // A page in the back/forward cache retains its scene and observers.
+  window.addEventListener("pagehide", (event) => {
+    if (!event.persisted) cleanup();
+  });
+  document.addEventListener("astro:before-swap", cleanup, { once: true });
+
+  try {
+    const [runtimeModule, gsapModule, scrollTriggerModule, sceneBuffer] = await Promise.all([
+      import("@splinetool/runtime"),
+      import("gsap"),
+      import("gsap/ScrollTrigger"),
+      fetch(SCENE_URL, { cache: "force-cache", signal: sceneRequest.signal }).then(response => {
+        if (!response.ok) throw new Error(`Scene request failed: ${response.status}`);
+        return response.arrayBuffer();
+      }),
+    ]);
+    const { Application } = runtimeModule;
+    const { gsap } = gsapModule;
+
+    ScrollTrigger = scrollTriggerModule.ScrollTrigger;
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
+    if (isDisposed) return;
+
+    // Build once after the proximity observer starts warming the scene.
+    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+    if (isDisposed) return;
+    spline = new Application(canvas, { renderMode: "manual" });
+    await spline.start(sceneBuffer);
+
+    if (isDisposed) return;
+
+    let renderWidth = 0;
+    let renderHeight = 0;
+    let modelMotionBounds = {
+      baseScale: 1,
+      focusScaleDelta: MODEL_MAX_FOCUS_SCALE_DELTA,
+      horizontalTravel: MODEL_MAX_HORIZONTAL_TRAVEL,
+      verticalTravel: MODEL_MAX_VERTICAL_TRAVEL,
+      horizontalCenterOffset: 0,
+      layerSeparation: MODEL_MAX_LAYER_SEPARATION,
+      layerScatterX: MODEL_MAX_LAYER_SCATTER_X,
+      layerScatterY: MODEL_MAX_LAYER_SCATTER_Y,
+      layerScatterZ: MODEL_MAX_LAYER_SCATTER_Z,
+    };
+
+    const updateModelMotionBounds = (width, height) => {
+      const viewportFit = Math.min(
+        1,
+        Math.max(
+          MODEL_MIN_VIEWPORT_FIT,
+          Math.min(
+            width / MODEL_REFERENCE_VIEWPORT_WIDTH,
+            height / MODEL_REFERENCE_VIEWPORT_HEIGHT
+          )
+        )
+      );
+      const heightFit = Math.min(1, height / MODEL_REFERENCE_VIEWPORT_HEIGHT);
+      const aspectFit = Math.pow(
+        Math.min(1, width / height / MODEL_REFERENCE_ASPECT_RATIO),
+        MODEL_ASPECT_SCALE_EXPONENT
+      );
+      const narrowFit = Math.min(1, Math.max(0.7, (width - 70) / 320));
+      const shortFit = width < height
+        ? Math.min(1, Math.max(0.65, height / MODEL_REFERENCE_VIEWPORT_HEIGHT))
+        : Math.min(1, Math.max(0.28, (height - 250) / 510));
+      const verticalMotionFit = Math.max(0.55, viewportFit);
+
+      modelMotionBounds = {
+        // Reduce the complete model on narrow viewports before applying any
+        // layer focus, so rotation never pushes it outside the visible area.
+        baseScale:
+          (MODEL_MIN_BASE_SCALE + (1 - MODEL_MIN_BASE_SCALE) * viewportFit) *
+          aspectFit * narrowFit * shortFit * (width < height ? 0.9 : 1),
+        focusScaleDelta: MODEL_MAX_FOCUS_SCALE_DELTA * viewportFit,
+        horizontalTravel:
+          Math.min(MODEL_MAX_HORIZONTAL_TRAVEL, width * MODEL_HORIZONTAL_TRAVEL_RATIO) *
+          heightFit *
+          aspectFit,
+        verticalTravel:
+          Math.min(MODEL_MAX_VERTICAL_TRAVEL, height * MODEL_VERTICAL_TRAVEL_RATIO) *
+          heightFit *
+          aspectFit,
+        horizontalCenterOffset: (1 - aspectFit) * MODEL_MAX_PORTRAIT_CENTER_OFFSET * 0.2,
+        layerSeparation: MODEL_MAX_LAYER_SEPARATION * verticalMotionFit,
+        layerScatterX: MODEL_MAX_LAYER_SCATTER_X * viewportFit,
+        layerScatterY: MODEL_MAX_LAYER_SCATTER_Y * verticalMotionFit,
+        layerScatterZ: MODEL_MAX_LAYER_SCATTER_Z * viewportFit,
+      };
+    };
+
+    const syncRenderResolution = () => {
+      if (isDisposed || !spline) return;
+
+      const cssWidth = canvas.clientWidth;
+      const cssHeight = canvas.clientHeight;
+      if (cssWidth <= 0 || cssHeight <= 0) return;
+
+      updateModelMotionBounds(cssWidth, cssHeight);
+      applyCurrentModelTransform();
+
+      const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
+      const pixelBudget = mobileRenderer.matches ? 1100000 : MAX_RENDER_PIXELS;
+      const pixelBudgetRatio = Math.sqrt(pixelBudget / (cssWidth * cssHeight));
+      const targetPixelRatio = Math.min(
+        devicePixelRatio,
+        mobileRenderer.matches ? 1.35 : MAX_RENDER_PIXEL_RATIO,
+        pixelBudgetRatio
+      );
+      const renderScale = targetPixelRatio / devicePixelRatio;
+      const nextWidth = Math.max(1, Math.round(cssWidth * renderScale));
+      const nextHeight = Math.max(1, Math.round(cssHeight * renderScale));
+      const expectedBufferWidth = Math.floor(nextWidth * devicePixelRatio);
+      const expectedBufferHeight = Math.floor(nextHeight * devicePixelRatio);
+
+      if (
+        nextWidth === renderWidth &&
+        nextHeight === renderHeight &&
+        Math.abs(canvas.width - expectedBufferWidth) <= 1 &&
+        Math.abs(canvas.height - expectedBufferHeight) <= 1
+      ) return;
+
+      renderWidth = nextWidth;
+      renderHeight = nextHeight;
+      spline.setSize(renderWidth, renderHeight);
+      spline.requestRender();
+    };
+
+    const scheduleRenderResolutionSync = (delay = 120) => {
+      window.clearTimeout(renderResizeTimer);
+      renderResizeTimer = window.setTimeout(syncRenderResolution, delay);
+    };
+
+    syncRenderResolution();
+
+    if ("ResizeObserver" in window && canvas.parentElement) {
+      renderResizeObserver = new ResizeObserver(() => scheduleRenderResolutionSync());
+      renderResizeObserver.observe(canvas.parentElement);
+    }
+
+    // Spline registers its own resize observer after load. Reapply the render
+    // budget once that observer has completed its initial measurement.
+    postLoadRenderResizeTimer = window.setTimeout(syncRenderResolution, 360);
+
+    const sceneObjects = spline.getAllObjects();
+    const resolveObject = (key) => {
+      const aliases = OBJECT_ALIASES[key].map(normalizeName);
+      const matches = sceneObjects.filter((object) => aliases.includes(normalizeName(object.name)));
+
+      if (matches.length !== 1) {
+        throw new Error(`Se esperaba un único objeto Spline para "${key}" y se encontraron ${matches.length}.`);
+      }
+
+      return matches[0];
+    };
+    const resolveOptionalObject = (key) => {
+      const aliases = OBJECT_ALIASES[key].map(normalizeName);
+      return sceneObjects.find((object) => aliases.includes(normalizeName(object.name)));
+    };
+
+    const objects = {
+      hormigon: resolveObject("hormigon"),
+      imprimacion: resolveObject("imprimacion"),
+      silice: resolveObject("silice"),
+      epoxi: resolveObject("epoxi"),
+      sellador: resolveObject("sellador"),
+      camera: resolveOptionalObject("camera"),
+    };
+    const requestedCoverageRatio = Number(section.dataset.layerCoverageRatio || 0.9);
+    const layerCoverageRatio = Math.min(1, Math.max(0.1, requestedCoverageRatio));
+    const layerSources = [
+      { object: objects.imprimacion, depth: LAYER_DEPTHS.imprimacion },
+      { object: objects.silice, depth: LAYER_DEPTHS.silice },
+      { object: objects.epoxi, depth: LAYER_DEPTHS.epoxi },
+      { object: objects.sellador, depth: LAYER_DEPTHS.sellador },
+    ];
+    const modelObjects = [
+      objects.hormigon,
+      objects.imprimacion,
+      objects.silice,
+      objects.epoxi,
+      objects.sellador,
+    ];
+    const modelLayerIndexByObject = new Map(
+      modelObjects.map((object, layerIndex) => [object, layerIndex])
+    );
+    const modelScaleOrigin = modelObjects.reduce(
+      (origin, object) => ({
+        x: origin.x + object.position.x / modelObjects.length,
+        y: origin.y + object.position.y / modelObjects.length,
+        z: origin.z + object.position.z / modelObjects.length,
+      }),
+      { x: 0, y: 0, z: 0 }
+    );
+    const modelScaleConfiguration = modelObjects.map((object) => ({
+      object,
+      targetScaleX: object.scale.x * MODEL_SCALE_MULTIPLIER,
+      targetScaleY: object.scale.y * MODEL_SCALE_MULTIPLIER,
+      targetScaleZ: object.scale.z * MODEL_SCALE_MULTIPLIER,
+      targetPositionX:
+        modelScaleOrigin.x + (object.position.x - modelScaleOrigin.x) * MODEL_SCALE_MULTIPLIER,
+      targetPositionY:
+        modelScaleOrigin.y + (object.position.y - modelScaleOrigin.y) * MODEL_SCALE_MULTIPLIER,
+      targetPositionZ:
+        modelScaleOrigin.z + (object.position.z - modelScaleOrigin.z) * MODEL_SCALE_MULTIPLIER,
+    }));
+    const targetScaleByObject = new Map(
+      modelScaleConfiguration.map((configuration) => [configuration.object, configuration])
+    );
+    const concreteTargetScale = targetScaleByObject.get(objects.hormigon);
+    let previousLayerDepth = CONCRETE_DEPTH * Math.abs(concreteTargetScale.targetScaleZ);
+    const layerConfiguration = layerSources.map(({ object, depth }) => {
+      const introScale = targetScaleByObject.get(object);
+      const initialDepth = depth * Math.abs(introScale.targetScaleZ);
+      const anchoredRearEdge = introScale.targetPositionZ - initialDepth / 2;
+      const scaleDirection = Math.sign(introScale.targetScaleZ) || 1;
+      const targetLayerDepth = previousLayerDepth * layerCoverageRatio;
+
+      previousLayerDepth = targetLayerDepth;
+
+      return {
+        object,
+        targetScaleZ: scaleDirection * (targetLayerDepth / depth),
+        targetPositionZ: anchoredRearEdge + targetLayerDepth / 2,
+      };
+    });
+    const modelStateConfiguration = modelScaleConfiguration.map((configuration) => ({
+      object: configuration.object,
+      scaleX: configuration.object.scale.x,
+      scaleY: configuration.object.scale.y,
+      scaleZ: configuration.object.scale.z,
+      positionX: configuration.object.position.x,
+      positionY: configuration.object.position.y,
+      positionZ: configuration.object.position.z,
+      rotationX: configuration.object.rotation.x,
+      rotationY: configuration.object.rotation.y,
+      rotationZ: configuration.object.rotation.z,
+      introScaleX: configuration.targetScaleX,
+      introScaleY: configuration.targetScaleY,
+      introScaleZ: configuration.targetScaleZ,
+      introPositionX: configuration.targetPositionX,
+      introPositionY: configuration.targetPositionY,
+      introPositionZ: configuration.targetPositionZ,
+    }));
+    const modelStateByObject = new Map(
+      modelStateConfiguration.map((configuration) => [configuration.object, configuration])
+    );
+    const cameraOrigin = objects.camera
+      ? {
+          rotationX: objects.camera.rotation.x,
+          rotationY: objects.camera.rotation.y,
+          rotationZ: objects.camera.rotation.z,
+        }
+      : null;
+    const cameraMotion = {
+      pitch: 0,
+      yaw: 0,
+    };
+    const modelMotion = {
+      rotationY: 0,
+      focus: 0,
+      xRatio: 0,
+      yRatio: 0,
+      explode: 0,
+      scatter: 0,
+      overview: 0,
+    };
+    const applyModelTransform = () => {
+      const overviewScale =
+        1 - modelMotion.overview * (1 - MODEL_FINAL_OVERVIEW_SCALE);
+      const effectiveScale =
+        modelMotionBounds.baseScale *
+        (1 + modelMotionBounds.focusScaleDelta * modelMotion.focus) *
+        overviewScale;
+      const cosY = Math.cos(modelMotion.rotationY);
+      const sinY = Math.sin(modelMotion.rotationY);
+      const rotationWidthPenalty =
+        1 + Math.abs(Math.sin(modelMotion.rotationY)) * 0.28;
+      const horizontalPosition =
+        modelMotionBounds.horizontalCenterOffset +
+        (modelMotion.xRatio * modelMotionBounds.horizontalTravel) /
+          (Math.max(1, effectiveScale) * rotationWidthPenalty);
+      const verticalPosition =
+        (modelMotion.yRatio * modelMotionBounds.verticalTravel) /
+        Math.max(1, effectiveScale);
+
+      modelStateConfiguration.forEach((state) => {
+        const layerIndex = modelLayerIndexByObject.get(state.object) ?? 0;
+        const scatterOffset = MODEL_LAYER_SCATTER_OFFSETS[layerIndex];
+        const verticalOffset =
+          layerIndex * modelMotion.explode * modelMotionBounds.layerSeparation;
+        const scatterX =
+          scatterOffset.x * modelMotion.scatter * modelMotionBounds.layerScatterX;
+        const scatterY =
+          scatterOffset.y * modelMotion.scatter * modelMotionBounds.layerScatterY;
+        const scatterZ =
+          scatterOffset.z * modelMotion.scatter * modelMotionBounds.layerScatterZ;
+        const relativeX =
+          (state.positionX + scatterX - modelScaleOrigin.x) * effectiveScale;
+        const relativeY =
+          (state.positionY + verticalOffset + scatterY - modelScaleOrigin.y) * effectiveScale;
+        const relativeZ =
+          (state.positionZ + scatterZ - modelScaleOrigin.z) * effectiveScale;
+
+        state.object.position.x =
+          modelScaleOrigin.x + relativeX * cosY + relativeZ * sinY + horizontalPosition;
+        state.object.position.y = modelScaleOrigin.y + relativeY + verticalPosition;
+        state.object.position.z =
+          modelScaleOrigin.z - relativeX * sinY + relativeZ * cosY;
+        state.object.scale.x = state.scaleX * effectiveScale;
+        state.object.scale.y = state.scaleY * effectiveScale;
+        state.object.scale.z = state.scaleZ * effectiveScale;
+        state.object.rotation.x = state.rotationX;
+        state.object.rotation.y = state.rotationY + modelMotion.rotationY;
+        state.object.rotation.z = state.rotationZ;
+      });
+    };
+    const applyCameraTransform = () => {
+      if (!objects.camera || !cameraOrigin) return;
+
+      objects.camera.rotation.x = cameraOrigin.rotationX + cameraMotion.pitch;
+      objects.camera.rotation.y = cameraOrigin.rotationY + cameraMotion.yaw;
+      objects.camera.rotation.z = cameraOrigin.rotationZ;
+    };
+    const applySceneTransform = () => {
+      applyModelTransform();
+      applyCameraTransform();
+    };
+    applyCurrentModelTransform = applySceneTransform;
+
+    gsap.set(canvas, { opacity: 0 });
+    applySceneTransform();
+
+    // Reuse storage on every tick instead of allocating arrays during scroll.
+    const trackedVectors = modelScaleConfiguration.flatMap(({ object }) => [
+      object.scale, object.position, object.rotation,
+    ]);
+    if (objects.camera) trackedVectors.push(objects.camera.position, objects.camera.rotation);
+    const renderedSceneState = new Float64Array(trackedVectors.length * 3).fill(NaN);
+    const vectorAxes = ["x", "y", "z"] as const;
+    const requestChangedSceneRender = (force = false) => {
+      if (sceneReady && (!isStageVisible || document.hidden)) return;
+      let changed = force;
+      let offset = 0;
+      for (const vector of trackedVectors) {
+        for (const axis of vectorAxes) {
+          const value = vector[axis];
+          if (!(Math.abs(value - renderedSceneState[offset]) <= 0.000001)) changed = true;
+          renderedSceneState[offset++] = value;
+        }
+      }
+      if (changed) spline.requestRender();
+    };
+    syncVisibleScene = () => {
+      applySceneTransform();
+      requestChangedSceneRender(true);
+    };
+
+    timeline = gsap.timeline({
+      defaults: { ease: "power2.inOut" },
+      onUpdate: () => {
+        const progress = timeline?.progress() ?? 0;
+
+        if (!sceneReady || (isStageVisible && !document.hidden)) applySceneTransform();
+        if (progressBar instanceof HTMLElement) {
+          progressBar.style.setProperty("--flooring-progress", String(progress));
+        }
+        setActivePanel(getPanelIndex(progress));
+        requestChangedSceneRender();
+      },
+      scrollTrigger: {
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: SCROLL_SCRUB_SECONDS,
+      },
+    });
+
+    timeline.to(
+      canvas,
+      {
+        opacity: 1,
+        duration: INTRO_DURATION,
+        ease: "power1.out",
+      },
+      0
+    );
+
+    modelStateConfiguration.forEach((state) => {
+      timeline.to(
+        state,
+        {
+          scaleX: state.introScaleX,
+          scaleY: state.introScaleY,
+          scaleZ: state.introScaleZ,
+          positionX: state.introPositionX,
+          positionY: state.introPositionY,
+          positionZ: state.introPositionZ,
+          duration: INTRO_DURATION,
+          ease: "power1.inOut",
+        },
+        0
+      );
+    });
+
+    layerConfiguration.forEach(({ object, targetScaleZ, targetPositionZ }, index) => {
+      const isSealer = index === layerConfiguration.length - 1;
+      const movementDuration = isSealer ? SEALER_BUILD_DURATION : LAYER_BUILD_DURATION;
+      const holdDuration = isSealer ? SEALER_HOLD_DURATION : LAYER_HOLD_DURATION;
+      const movementStart = timeline.duration();
+      const activeLayerState = modelStateByObject.get(object);
+      const layerMotion = MODEL_LAYER_MOTIONS[index];
+      const cameraLayerMotion = CAMERA_LAYER_MOTIONS[index];
+
+      timeline.to(
+        activeLayerState,
+        {
+          scaleZ: targetScaleZ,
+          positionZ: targetPositionZ,
+          duration: movementDuration,
+        },
+        movementStart
+      );
+      if (index === 1) {
+        const halfDuration = movementDuration / 2;
+        const secondHalfStart = movementStart + halfDuration;
+
+        timeline.to(
+          modelMotion,
+          {
+            xRatio: MODEL_SILICA_MID_MOTION.xRatio,
+            yRatio: MODEL_SILICA_MID_MOTION.yRatio,
+            focus: MODEL_SILICA_MID_MOTION.focus,
+            rotationY: MODEL_SILICA_MID_MOTION.rotationY,
+            duration: halfDuration,
+            ease: "sine.inOut",
+          },
+          movementStart
+        );
+        timeline.to(
+          cameraMotion,
+          {
+            pitch: CAMERA_SILICA_MID_MOTION.pitch,
+            yaw: CAMERA_SILICA_MID_MOTION.yaw,
+            duration: halfDuration,
+            ease: "sine.inOut",
+          },
+          movementStart
+        );
+        timeline.to(
+          modelMotion,
+          {
+            xRatio: MODEL_SILICA_SECOND_HALF_MOTION.xRatio,
+            yRatio: MODEL_SILICA_SECOND_HALF_MOTION.yRatio,
+            focus: MODEL_SILICA_SECOND_HALF_MOTION.focus,
+            rotationY: MODEL_SILICA_SECOND_HALF_MOTION.rotationY,
+            duration: halfDuration,
+            ease: "sine.inOut",
+          },
+          secondHalfStart
+        );
+        timeline.to(
+          cameraMotion,
+          {
+            pitch: CAMERA_SILICA_SECOND_HALF_MOTION.pitch,
+            yaw: CAMERA_SILICA_SECOND_HALF_MOTION.yaw,
+            duration: halfDuration,
+            ease: "sine.inOut",
+          },
+          secondHalfStart
+        );
+      } else {
+        timeline.to(
+          modelMotion,
+          {
+            xRatio: layerMotion.xRatio,
+            yRatio: layerMotion.yRatio,
+            focus: layerMotion.focus,
+            rotationY: layerMotion.rotationY,
+            duration: movementDuration,
+            ease: "sine.inOut",
+          },
+          movementStart
+        );
+        timeline.to(
+          cameraMotion,
+          {
+            pitch: cameraLayerMotion.pitch,
+            yaw: cameraLayerMotion.yaw,
+            duration: movementDuration,
+            ease: "sine.inOut",
+          },
+          movementStart
+        );
+      }
+
+      timeline.to({}, { duration: holdDuration });
+    });
+
+    const finalMotionStart = timeline.duration();
+    const finalScatterStart = finalMotionStart + FINAL_CENTER_DURATION;
+    const finalResolveStart = finalScatterStart + FINAL_SCATTER_DURATION;
+
+    timeline.to(
+      modelMotion,
+      {
+        xRatio: MODEL_FINAL_CENTER_MOTION.xRatio,
+        yRatio: MODEL_FINAL_CENTER_MOTION.yRatio,
+        rotationY: 0,
+        duration: FINAL_CENTER_DURATION,
+        ease: "sine.inOut",
+      },
+      finalMotionStart
+    );
+    timeline.to(
+      modelMotion,
+      {
+        focus: MODEL_FINAL_MOTION.focus,
+        overview: 1,
+        duration: FINAL_SEQUENCE_DURATION,
+        ease: "sine.inOut",
+      },
+      finalMotionStart
+    );
+    timeline.to(
+      modelMotion,
+      {
+        xRatio: MODEL_FINAL_SCATTER_MOTION.xRatio,
+        yRatio: MODEL_FINAL_SCATTER_MOTION.yRatio,
+        explode: MODEL_FINAL_ACCORDION_OPEN,
+        scatter: 1,
+        duration: FINAL_SCATTER_DURATION,
+        ease: "sine.inOut",
+      },
+      finalScatterStart
+    );
+    timeline.to(
+      modelMotion,
+      {
+        xRatio: MODEL_FINAL_MOTION.xRatio,
+        yRatio: MODEL_FINAL_MOTION.yRatio,
+        duration: FINAL_POSITION_DURATION,
+        ease: "sine.inOut",
+      },
+      finalResolveStart
+    );
+    timeline.to(
+      modelMotion,
+      {
+        explode: MODEL_FINAL_ACCORDION_REST,
+        scatter: 0,
+        duration: FINAL_RESOLVE_DURATION,
+        ease: "sine.inOut",
+      },
+      finalResolveStart
+    );
+    timeline.to(
+      cameraMotion,
+      {
+        pitch: CAMERA_FINAL_MOTION.pitch,
+        yaw: CAMERA_FINAL_MOTION.yaw,
+        duration: FINAL_SEQUENCE_DURATION,
+        ease: "sine.inOut",
+      },
+      finalMotionStart
+    );
+
+    updateMotionPreference();
+    setActivePanel(getPanelIndex(timeline.progress()));
+    await renderInitialFrames(spline, 2);
+
+    if (isDisposed) return;
+
+    if (loader instanceof HTMLElement) loader.classList.add("is-hidden");
+    section.classList.remove("is-loading");
+    section.classList.add("is-ready");
+    section.dataset.flooringInitialized = "ready";
+    sceneReady = true;
+    updateVisibility();
+
+    // Recalculate ScrollTrigger only after the two initial manual renders.
+    window.requestAnimationFrame(() => {
+      if (isDisposed) return;
+      ScrollTrigger.refresh();
+      timeline.scrollTrigger?.update();
+    });
+
+  } catch (error) {
+    console.error("No se pudo inicializar la escena MP Systems.", error);
+    showError(getMessage("mp_systems_error", "No se ha podido cargar el sistema 3D."));
+    cleanup();
+    throw error;
+  }
+};

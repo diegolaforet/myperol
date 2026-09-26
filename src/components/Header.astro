@@ -1,4 +1,5 @@
 ---
+import LanguageControl from "./LanguageControl.astro";
 const { currentPath = "/" } = Astro.props;
 const isHome = currentPath === "/";
 const isServices = currentPath === "/servicios";
@@ -8,47 +9,11 @@ const isPrices = currentPath === "/precios";
 <header class="site-header" aria-label="Navegación principal" data-i18n-aria-label="nav_main_aria">
   <div class="mobile-header-bar">
     <a href="/" class="mobile-logo" aria-label="MyPerol">
-      <img src="/assets/logo/logo-blanco.png" alt="MyPerol" />
+      <img src="/assets/logo/logo-blanco.webp" width="512" height="84" decoding="async" alt="MyPerol" />
     </a>
 
     <div class="mobile-header-actions">
-      <div class="language-control">
-        <div class="lang-dropdown">
-          <button
-            class="lang-button"
-            id="langToggle"
-            type="button"
-            onclick="toggleLangMenu()"
-            aria-haspopup="true"
-            aria-expanded="false"
-            aria-controls="langMenu"
-          >
-            <span id="currentLang">ES</span>
-            <span class="lang-arrow">▾</span>
-          </button>
-
-          <ul class="lang-menu floating-dropdown" id="langMenu" hidden>
-            <li>
-              <button type="button" class="lang-option" data-lang="es" data-i18n="lang_es" onclick="selectLang('es')">Español</button>
-            </li>
-            <li>
-              <button type="button" class="lang-option" data-lang="en" data-i18n="lang_en" onclick="selectLang('en')">English</button>
-            </li>
-            <li>
-              <button type="button" class="lang-option" data-lang="de" data-i18n="lang_de" onclick="selectLang('de')">Deutsch</button>
-            </li>
-            <li>
-              <button type="button" class="lang-option" data-lang="fr" data-i18n="lang_fr" onclick="selectLang('fr')">Français</button>
-            </li>
-            <li>
-              <button type="button" class="lang-option" data-lang="ru" data-i18n="lang_ru" onclick="selectLang('ru')">Русский</button>
-            </li>
-            <li>
-              <button type="button" class="lang-option" data-lang="uk" data-i18n="lang_uk" onclick="selectLang('uk')">Українська</button>
-            </li>
-          </ul>
-        </div>
-      </div>
+      <LanguageControl primary />
 
       <div class="mobile-nav-dropdown">
         <button
@@ -77,7 +42,7 @@ const isPrices = currentPath === "/precios";
 
   <nav class="floating-nav desktop-nav" aria-label="Secciones principales" data-i18n-aria-label="nav_sections_aria">
     <a href="/" class="floating-nav-link floating-nav-home" aria-label="Home" aria-current={isHome ? "page" : undefined} onclick="closeMobileMenu()">
-      <img class="floating-nav-home-logo" src="/assets/logo/logo-myperol-gota.png" alt="" aria-hidden="true" />
+      <img class="floating-nav-home-logo" src="/assets/logo/logo-myperol-gota.webp" width="160" height="160" decoding="async" alt="" aria-hidden="true" />
     </a>
     <a href="/#servicios" class="floating-nav-link" aria-current={isServices ? "page" : undefined} onclick="closeMobileMenu()"><span class="floating-nav-label" data-i18n="nav_services">Servicios</span></a>
     <a href="/#mp-systems" class="floating-nav-link" onclick="closeMobileMenu()"><span class="floating-nav-label" data-i18n="nav_mp_systems">MP Systems</span></a>

@@ -1,0 +1,980 @@
+    const priceCard = document.querySelector("[data-price-card]");
+
+  if (priceCard instanceof HTMLElement) {
+    const media = priceCard.querySelector("[data-price-media]");
+    const label = priceCard.querySelector("[data-price-label]");
+    const title = priceCard.querySelector("[data-price-title]");
+    const copy = priceCard.querySelector("[data-price-copy]");
+    const options = priceCard.querySelector("[data-price-options]");
+    const surfaceStep = priceCard.querySelector("[data-price-surface-step]");
+    const surfaceInput = priceCard.querySelector("[data-price-surface-input]");
+    const surfaceError = priceCard.querySelector("[data-price-surface-error]");
+    const supportOptions = priceCard.querySelector("[data-price-support-options]");
+    const ceramicStep = priceCard.querySelector("[data-price-ceramic-step]");
+    const conditionStep = priceCard.querySelector("[data-price-condition-step]");
+    const resultStep = priceCard.querySelector("[data-price-result-step]");
+    const resultSpace = priceCard.querySelector("[data-price-result-space]");
+    const resultAmount = priceCard.querySelector("[data-price-result-amount]");
+    const helpOpenButton = priceCard.querySelector("[data-price-help-open]");
+    const conditionHelpOpenButton = priceCard.querySelector("[data-price-condition-help-open]");
+    const helpOverlay = document.querySelector("[data-price-help-overlay]");
+    const helpTitle = document.querySelector("[data-price-help-title]");
+    const helpBody = document.querySelector("[data-price-help-body]");
+    const action = priceCard.querySelector("[data-price-action]");
+    const actionLabel = priceCard.querySelector("[data-price-action-label]");
+    const backButton = priceCard.querySelector("[data-price-back]");
+    const backLabel = backButton?.querySelector(".price-back-label");
+    const progress = priceCard.querySelector("[data-price-progress]");
+    const dots = priceCard.querySelectorAll("[data-price-dot]");
+    const extraDot = priceCard.querySelector("[data-price-extra-dot]");
+    const estimateCard = document.querySelector("[data-price-estimate]");
+    const estimateAmount = document.querySelector("[data-price-estimate-amount]");
+    const resultNameInput = priceCard.querySelector("[data-price-result-name]");
+    const resultPhoneInput = priceCard.querySelector("[data-price-result-phone]");
+    const resultSubmit = priceCard.querySelector("[data-price-result-submit]");
+    const resultStatus = priceCard.querySelector("[data-price-result-status]");
+    const storageKey = "myperol-price-calculator";
+    const whatsappUrl = "https://wa.me/34663108027";
+    let surfaceErrorTimeout = 0;
+    let actionLabelTimeout = 0;
+    let estimateTimeout = 0;
+    let stepAnimationFrame = 0;
+    const formatEuros = (value) => `${value} €`;
+    const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
+    const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
+    const phonePrefixMenu = priceCard.querySelector("[data-phone-prefix-menu]");
+    const phonePrefixCurrent = priceCard.querySelector("[data-phone-prefix-current]");
+    const phonePrefixValue = priceCard.querySelector("[data-phone-prefix-value]");
+    const phonePrefixes = [
+      ["ES", "+34"], ["FR", "+33"], ["DE", "+49"], ["GB", "+44"], ["UA", "+380"], ["RU", "+7"],
+      ["AD", "+376"], ["AL", "+355"], ["AM", "+374"], ["AT", "+43"], ["BE", "+32"], ["BG", "+359"],
+      ["CH", "+41"], ["CY", "+357"], ["CZ", "+420"], ["DK", "+45"], ["EE", "+372"], ["FI", "+358"],
+      ["GR", "+30"], ["HR", "+385"], ["HU", "+36"], ["IE", "+353"], ["IS", "+354"], ["IT", "+39"],
+      ["LT", "+370"], ["LU", "+352"], ["LV", "+371"], ["MC", "+377"], ["MD", "+373"], ["MT", "+356"],
+      ["NL", "+31"], ["NO", "+47"], ["PL", "+48"], ["PT", "+351"], ["RO", "+40"], ["RS", "+381"],
+      ["SE", "+46"], ["SI", "+386"], ["SK", "+421"], ["TR", "+90"],
+      ["US", "+1"], ["CA", "+1"], ["MX", "+52"], ["AR", "+54"], ["BR", "+55"], ["CL", "+56"],
+      ["CO", "+57"], ["CR", "+506"], ["CU", "+53"], ["DO", "+1"], ["EC", "+593"], ["PE", "+51"],
+      ["UY", "+598"], ["VE", "+58"], ["PA", "+507"], ["PY", "+595"], ["BO", "+591"],
+      ["AE", "+971"], ["CN", "+86"], ["HK", "+852"], ["ID", "+62"], ["IN", "+91"], ["IL", "+972"],
+      ["JP", "+81"], ["KR", "+82"], ["MY", "+60"], ["PH", "+63"], ["SA", "+966"], ["SG", "+65"],
+      ["TH", "+66"], ["VN", "+84"], ["AU", "+61"], ["NZ", "+64"],
+      ["DZ", "+213"], ["EG", "+20"], ["GH", "+233"], ["KE", "+254"], ["MA", "+212"], ["NG", "+234"],
+      ["SN", "+221"], ["ZA", "+27"], ["TN", "+216"],
+    ];
+    const getCountryFlag = (countryCode) => countryCode
+      .toUpperCase()
+      .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+    const getCountryName = (countryCode) => {
+      try {
+        return new Intl.DisplayNames(["es"], { type: "region" }).of(countryCode) || countryCode;
+      } catch {
+        return countryCode;
+      }
+    };
+
+    const closePhonePrefixMenu = () => {
+      if (phonePrefixMenu instanceof HTMLElement) phonePrefixMenu.hidden = true;
+      if (phonePrefixButton instanceof HTMLButtonElement) phonePrefixButton.setAttribute("aria-expanded", "false");
+    };
+
+    const setPhonePrefix = (countryCode, code) => {
+      const flag = getCountryFlag(countryCode);
+      const country = getCountryName(countryCode);
+
+      if (phonePrefixCurrent) phonePrefixCurrent.textContent = `${flag} ${code}`;
+      if (phonePrefixValue instanceof HTMLInputElement) phonePrefixValue.value = code;
+
+      phonePrefixMenu?.querySelectorAll(".phone-prefix-option").forEach((option) => {
+        if (option instanceof HTMLElement) {
+          option.classList.toggle("is-selected", option.dataset.code === code && option.dataset.country === countryCode);
+        }
+      });
+    };
+
+    const renderPhonePrefixes = () => {
+      if (!(phonePrefixMenu instanceof HTMLElement)) return;
+
+      phonePrefixMenu.textContent = "";
+      phonePrefixes.forEach(([countryCode, code]) => {
+        const flag = getCountryFlag(countryCode);
+        const country = getCountryName(countryCode);
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "phone-prefix-option";
+        option.dataset.code = code;
+        option.dataset.country = countryCode;
+        option.setAttribute("role", "option");
+        option.innerHTML = `<span aria-hidden="true">${flag}</span><span class="phone-prefix-option-country">${country}</span><span class="phone-prefix-option-code">${code}</span>`;
+        option.addEventListener("click", () => {
+          setPhonePrefix(countryCode, code);
+          closePhonePrefixMenu();
+        });
+        phonePrefixMenu.append(option);
+      });
+
+      const selectedCode = phonePrefixValue instanceof HTMLInputElement ? phonePrefixValue.value : "+34";
+      const selected = phonePrefixes.find(([, code]) => code === selectedCode) || phonePrefixes[0];
+      setPhonePrefix(selected[0], selected[1]);
+    };
+
+    renderPhonePrefixes();
+
+    phonePrefixButton?.addEventListener("click", () => {
+      if (!(phonePrefixMenu instanceof HTMLElement) || !(phonePrefixButton instanceof HTMLButtonElement)) return;
+
+      const willOpen = phonePrefixMenu.hidden;
+      phonePrefixMenu.hidden = !willOpen;
+      phonePrefixButton.setAttribute("aria-expanded", String(willOpen));
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!(phonePrefixSelect instanceof HTMLElement)) return;
+      if (event.target instanceof Node && !phonePrefixSelect.contains(event.target)) closePhonePrefixMenu();
+    });
+
+    const getState = () => ({
+      step: priceCard.dataset.step || "1",
+      selectedSpace: priceCard.dataset.selectedSpace || "",
+      surface: surfaceInput instanceof HTMLInputElement ? surfaceInput.value : "",
+      selectedSupport: priceCard.dataset.selectedSupport || "",
+      selectedCeramicRemoval: priceCard.dataset.selectedCeramicRemoval || "",
+      selectedCondition: priceCard.dataset.selectedCondition || "",
+      estimatedPrice: priceCard.dataset.estimatedPrice || "",
+    });
+
+    const saveState = () => {
+      sessionStorage.setItem(storageKey, JSON.stringify(getState()));
+    };
+
+    const animatePriceCardStep = () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (priceCard.hidden) return;
+
+      window.cancelAnimationFrame(stepAnimationFrame);
+      priceCard.classList.remove("is-step-entering");
+
+      stepAnimationFrame = window.requestAnimationFrame(() => {
+        priceCard.classList.add("is-step-entering");
+      });
+    };
+
+    priceCard.addEventListener("animationend", (event) => {
+      if (event.animationName === "price-card-enter") {
+        priceCard.classList.remove("is-step-entering");
+      }
+    });
+
+    const updateBackButton = () => {
+      if (backButton instanceof HTMLButtonElement) {
+        const isResultStep = priceCard.dataset.step === "result";
+        backButton.hidden = !isResultStep && Number(priceCard.dataset.step || "1") <= 1;
+        backButton.setAttribute("aria-label", isResultStep ? "Reiniciar" : "Atras");
+      }
+
+      if (backLabel instanceof HTMLElement) {
+        backLabel.textContent = priceCard.dataset.step === "result" ? "Reiniciar" : "Atras";
+      }
+    };
+
+    const setActiveDots = (step) => {
+      updateExtraProgressDot();
+
+      const hasCeramicExtraStep = priceCard.dataset.selectedSupport === "ceramica-baldosa";
+      const baseActiveStep = hasCeramicExtraStep && step >= 5
+        ? (step >= 6 ? 5 : 4)
+        : step;
+
+      dots.forEach((dot, index) => {
+        dot.classList.toggle("is-active", index < baseActiveStep);
+      });
+
+      if (progress) {
+        const totalSteps = hasCeramicExtraStep ? 6 : 5;
+        progress.setAttribute("aria-label", `Paso ${step} de ${totalSteps}`);
+      }
+    };
+
+    const updateExtraProgressDot = () => {
+      if (!(extraDot instanceof HTMLElement)) return;
+
+      const shouldShowExtraDot = priceCard.dataset.selectedSupport === "ceramica-baldosa";
+      extraDot.hidden = !shouldShowExtraDot;
+      extraDot.classList.toggle("is-visible", shouldShowExtraDot);
+      extraDot.classList.toggle("is-active", shouldShowExtraDot && Number(priceCard.dataset.step || "1") >= 5);
+    };
+
+    const setActionEnabled = (enabled) => {
+      if (action instanceof HTMLButtonElement) action.disabled = !enabled;
+    };
+
+    const updateResultSubmitState = () => {
+      if (!(resultSubmit instanceof HTMLButtonElement)) return;
+
+      const hasName = resultNameInput instanceof HTMLInputElement && resultNameInput.value.trim().length > 0;
+      const hasPhone = resultPhoneInput instanceof HTMLInputElement && resultPhoneInput.value.trim().length > 0;
+      resultSubmit.disabled = !(hasName && hasPhone);
+    };
+
+    const setActionLabel = (text) => {
+      if (!actionLabel) return;
+
+      window.clearTimeout(actionLabelTimeout);
+
+      if (actionLabel.textContent === text) return;
+
+      actionLabel.classList.add("is-changing");
+
+      actionLabelTimeout = window.setTimeout(() => {
+        actionLabel.textContent = text;
+        actionLabel.classList.remove("is-changing");
+      }, 120);
+    };
+
+    const updateSupportActionLabel = () => {
+      setActionLabel(priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "otro"
+        ? "Consultar en chat"
+        : "Continuar");
+    };
+
+    const updateSelectedOption = (container, selectedValue, dataName) => {
+      if (!(container instanceof HTMLElement)) return;
+
+      container.querySelectorAll(".price-space-option").forEach((item) => {
+        if (!(item instanceof HTMLButtonElement)) return;
+
+        item.classList.toggle("is-selected", item.dataset[dataName] === selectedValue);
+      });
+    };
+
+    const setBaseStepChromeHidden = (hidden) => {
+      [media, label, title, copy].forEach((element) => {
+        if (element instanceof HTMLElement) element.hidden = hidden;
+      });
+    };
+
+    const getSpaceLabel = () => {
+      const labels = {
+        "vivienda": "Vivienda",
+        "garaje": "Garaje",
+        "local-comercial": "Local comercial",
+        "industria": "Industria",
+        "exterior": "Exterior",
+      };
+
+      return labels[priceCard.dataset.selectedSpace || "vivienda"] || "Vivienda";
+    };
+
+    const getSupportLabel = () => {
+      const labels = {
+        "hormigon": "Hormigon",
+        "mortero-autonivelante": "Mortero autonivelante",
+        "ceramica-baldosa": "Ceramica/Baldosa",
+        "otro": "Otro",
+      };
+
+      return labels[priceCard.dataset.selectedSupport || ""] || "Sin seleccionar";
+    };
+
+    const getCeramicRemovalLabel = () => {
+      if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") return "No aplica";
+
+      const labels = {
+        "no": "No, instalar sobre la ceramica existente",
+        "si": "Si, retirar la ceramica antes de la instalacion",
+      };
+
+      return labels[priceCard.dataset.selectedCeramicRemoval || ""] || "Sin seleccionar";
+    };
+
+    const getConditionLabel = () => {
+      const labels = {
+        "excelente": "Excelente",
+        "buen-estado": "Buen estado",
+        "pequenas-reparaciones": "Necesita pequenas reparaciones",
+        "reparacion-importante": "Necesita una reparacion importante",
+      };
+
+      return labels[priceCard.dataset.selectedCondition || ""] || "Sin seleccionar";
+    };
+
+    const priceMultipliers = {
+      space: {
+        "vivienda": 1,
+        "garaje": 1.06,
+        "local-comercial": 1.10,
+        "industria": 1.20,
+        "exterior": 1.15,
+      },
+      condition: {
+        "excelente": 1,
+        "buen-estado": 1.1,
+        "pequenas-reparaciones": 1.2,
+        "reparacion-importante": 1.5,
+      },
+    };
+
+    const getSupportMultiplier = () => {
+      if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") return 1;
+
+      return priceCard.dataset.selectedCeramicRemoval === "si" ? 1.4 : 1;
+    };
+
+    const calculateEstimatedPrice = () => {
+      const squareMeters = Number(surfaceInput instanceof HTMLInputElement ? surfaceInput.value : "0");
+
+      if (!Number.isInteger(squareMeters) || squareMeters <= 0) return 0;
+
+      const selectedSpace = priceCard.dataset.selectedSpace || "vivienda";
+      const selectedCondition = priceCard.dataset.selectedCondition || "excelente";
+      const spaceMultiplier = priceMultipliers.space[selectedSpace] ?? 1;
+      const conditionMultiplier = priceMultipliers.condition[selectedCondition] ?? 1;
+
+      return Math.round(squareMeters * 10 * spaceMultiplier * getSupportMultiplier() * conditionMultiplier);
+    };
+
+    const updateResultAmount = () => {
+      const estimate = calculateEstimatedPrice();
+      const lowerEstimate = Math.round(estimate * 0.9);
+      const upperEstimate = Math.round(estimate * 1.1);
+
+      priceCard.dataset.estimatedPrice = String(estimate);
+
+      if (resultAmount) {
+        resultAmount.textContent = `${formatEuros(lowerEstimate)} a ${formatEuros(upperEstimate)}`;
+      }
+    };
+
+    const getResultRange = () => {
+      const estimate = calculateEstimatedPrice();
+      const lowerEstimate = Math.round(estimate * 0.9);
+      const upperEstimate = Math.round(estimate * 1.1);
+
+      return `${formatEuros(lowerEstimate)} a ${formatEuros(upperEstimate)}`;
+    };
+
+    const getPriceRequestPayload = () => {
+      const fullName = resultNameInput instanceof HTMLInputElement ? resultNameInput.value.trim() : "";
+      const phone = resultPhoneInput instanceof HTMLInputElement ? resultPhoneInput.value.trim() : "";
+      const prefix = phonePrefixValue instanceof HTMLInputElement ? phonePrefixValue.value : "";
+      const squareMeters = surfaceInput instanceof HTMLInputElement ? surfaceInput.value.trim() : "";
+
+      return {
+        fullName,
+        phone,
+        phonePrefix: prefix,
+        priceRange: getResultRange(),
+        space: getSpaceLabel(),
+        squareMeters,
+        support: getSupportLabel(),
+        ceramicRemoval: getCeramicRemovalLabel(),
+        condition: getConditionLabel(),
+      };
+    };
+
+    const setResultStatus = (message, type = "") => {
+      if (!(resultStatus instanceof HTMLElement)) return;
+
+      resultStatus.textContent = message;
+      resultStatus.dataset.status = type;
+    };
+
+    const submitPriceRequest = async () => {
+      if (!(resultSubmit instanceof HTMLButtonElement) || resultSubmit.disabled) return;
+
+      const payload = getPriceRequestPayload();
+      if (!payload.fullName || !payload.phone) {
+        updateResultSubmitState();
+        return;
+      }
+
+      resultSubmit.disabled = true;
+      resultSubmit.classList.add("is-loading");
+      setResultStatus("Enviando solicitud...", "loading");
+
+      try {
+        const response = await fetch("/.netlify/functions/price-request", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result.error || "No se pudo enviar la solicitud.");
+        }
+
+        setResultStatus("Solicitud enviada. Te contactaremos lo antes posible.", "success");
+      } catch (error) {
+        setResultStatus(error instanceof Error ? error.message : "No se pudo enviar la solicitud.", "error");
+        updateResultSubmitState();
+      } finally {
+        resultSubmit.classList.remove("is-loading");
+      }
+    };
+
+    const helpContent = {
+      ceramic: {
+        title: "Que opcion es la mas adecuada?",
+        body: [
+          "En la mayoria de los casos, no es necesario retirar la ceramica. Los sistemas MyPerol pueden aplicarse directamente sobre baldosas correctamente adheridas y un preparado exhaustivo de la superficie, reduciendo los tiempos de ejecucion, los escombros y el coste de la obra.",
+          "La retirada del pavimento solo se recomienda cuando existen problemas estructurales, piezas sueltas, humedades o un soporte que no garantice una correcta adherencia del sistema.",
+        ],
+      },
+      condition: {
+        title: "Como describiria el estado actual de la superficie?",
+        body: [
+          "El estado del soporte es determinante para garantizar una correcta aplicacion y la maxima durabilidad del sistema MyPerol.",
+        ],
+      },
+    };
+
+    const openHelpModal = (contentType = "ceramic") => {
+      const content = helpContent[contentType] || helpContent.ceramic;
+
+      if (helpTitle) helpTitle.textContent = content.title;
+      if (helpBody instanceof HTMLElement) {
+        helpBody.innerHTML = content.body.map((text) => `<p>${text}</p>`).join("");
+      }
+
+      if (helpOverlay instanceof HTMLElement) {
+        helpOverlay.hidden = false;
+        window.requestAnimationFrame(() => helpOverlay.classList.add("is-open"));
+      }
+    };
+
+    const closeHelpModal = () => {
+      if (!(helpOverlay instanceof HTMLElement)) return;
+
+      helpOverlay.classList.remove("is-open");
+      window.setTimeout(() => {
+        if (!helpOverlay.classList.contains("is-open")) helpOverlay.hidden = true;
+      }, 160);
+    };
+
+    const setStepOne = ({ animate = false } = {}) => {
+      priceCard.dataset.step = "1";
+      priceCard.dataset.view = "intro";
+
+      setBaseStepChromeHidden(false);
+      if (title) title.textContent = "APROXIMACION DE PRECIO";
+      if (copy) copy.textContent = "Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.";
+      if (options instanceof HTMLElement) options.hidden = true;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      closeHelpModal();
+      setActionLabel("Comenzar");
+
+      setActiveDots(1);
+      setActionEnabled(true);
+      updateBackButton();
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const setStepTwo = ({ animate = false } = {}) => {
+      priceCard.dataset.step = "2";
+      priceCard.dataset.view = "space";
+
+      setBaseStepChromeHidden(false);
+      if (title) title.textContent = "TIPO DE ESPACIO";
+      if (copy) copy.textContent = "";
+      if (options instanceof HTMLElement) options.hidden = false;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      closeHelpModal();
+      setActionLabel("Continuar");
+
+      setActiveDots(2);
+      setActionEnabled(Boolean(priceCard.dataset.selectedSpace));
+      updateBackButton();
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const setStepThree = ({ animate = false } = {}) => {
+      priceCard.dataset.step = "3";
+      priceCard.dataset.view = "surface";
+
+      setBaseStepChromeHidden(false);
+      if (title) title.textContent = "SUPERFICIE";
+      if (copy) copy.textContent = "";
+      if (options instanceof HTMLElement) options.hidden = true;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = false;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      closeHelpModal();
+      if (animate && surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
+      setActionLabel("Continuar");
+
+      setActiveDots(3);
+      setActionEnabled(isValidSurfaceValue());
+      updateBackButton();
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const setStepFour = ({ animate = false } = {}) => {
+      priceCard.dataset.step = "4";
+      priceCard.dataset.view = "support";
+
+      setBaseStepChromeHidden(false);
+      if (title) title.textContent = "SOPORTE EXISTENTE";
+      if (copy) copy.textContent = "";
+      if (options instanceof HTMLElement) options.hidden = true;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = false;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      closeHelpModal();
+
+      setActiveDots(4);
+      updateSupportActionLabel();
+      setActionEnabled(Boolean(priceCard.dataset.selectedSupport));
+      updateBackButton();
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const setStepFive = ({ animate = false } = {}) => {
+      priceCard.dataset.step = "5";
+      priceCard.dataset.view = "ceramic-removal";
+
+      setBaseStepChromeHidden(false);
+      if (title) title.textContent = "DESEA RETIRAR LA CERAMICA?";
+      if (copy) copy.textContent = "";
+      if (options instanceof HTMLElement) options.hidden = true;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = false;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      setActionLabel("Continuar");
+
+      setActiveDots(5);
+      setActionEnabled(Boolean(priceCard.dataset.selectedCeramicRemoval));
+      updateBackButton();
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const setConditionStep = ({ animate = false } = {}) => {
+      priceCard.dataset.step = priceCard.dataset.selectedSupport === "ceramica-baldosa" ? "6" : "5";
+      priceCard.dataset.view = "condition";
+
+      setBaseStepChromeHidden(false);
+      if (title) title.textContent = "ESTADO DEL SOPORTE";
+      if (copy) copy.textContent = "";
+      if (options instanceof HTMLElement) options.hidden = true;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = false;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      closeHelpModal();
+      setActionLabel("Finalizar");
+
+      setActiveDots(Number(priceCard.dataset.step || "5"));
+      setActionEnabled(Boolean(priceCard.dataset.selectedCondition));
+      updateBackButton();
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const setResultStep = ({ animate = false } = {}) => {
+      priceCard.dataset.step = "result";
+      priceCard.dataset.view = "result";
+
+      setBaseStepChromeHidden(true);
+      if (options instanceof HTMLElement) options.hidden = true;
+      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
+      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
+      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
+      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
+      if (resultStep instanceof HTMLElement) resultStep.hidden = false;
+      if (resultSpace) resultSpace.textContent = getSpaceLabel();
+      updateResultAmount();
+      updateResultSubmitState();
+      closeHelpModal();
+
+      updateBackButton();
+      setActionLabel("Comenzar");
+      setActionEnabled(true);
+      if (animate) animatePriceCardStep();
+      saveState();
+    };
+
+    const resetCalculator = () => {
+      window.clearTimeout(estimateTimeout);
+      sessionStorage.removeItem(storageKey);
+
+      delete priceCard.dataset.selectedSpace;
+      delete priceCard.dataset.selectedSupport;
+      delete priceCard.dataset.selectedCeramicRemoval;
+      delete priceCard.dataset.selectedCondition;
+      delete priceCard.dataset.estimatedPrice;
+
+      if (surfaceInput instanceof HTMLInputElement) {
+        surfaceInput.value = "";
+        surfaceInput.classList.remove("is-out-of-range");
+      }
+
+      if (surfaceError instanceof HTMLElement) surfaceError.hidden = true;
+      updateSelectedOption(options, "", "space");
+      updateSelectedOption(supportOptions, "", "support");
+      updateSelectedOption(ceramicStep, "", "ceramicRemoval");
+      updateSelectedOption(conditionStep, "", "condition");
+
+      if (estimateCard instanceof HTMLElement) {
+        estimateCard.classList.remove("is-visible");
+        estimateCard.hidden = true;
+      }
+
+      priceCard.hidden = false;
+      setStepOne({ animate: true });
+      priceCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    const runEstimateLoading = () => {
+      window.clearTimeout(estimateTimeout);
+
+      priceCard.hidden = true;
+
+      if (estimateCard instanceof HTMLElement) {
+        estimateCard.hidden = false;
+        requestAnimationFrame(() => estimateCard.classList.add("is-visible"));
+      }
+
+      const estimateDuration = 2500;
+      const frames = [130, 280, 420, 690, 930, 1180, 1410, 1600];
+      const frameDuration = estimateDuration / frames.length;
+
+      frames.forEach((value, index) => {
+        window.setTimeout(() => {
+          if (estimateAmount) estimateAmount.textContent = formatEuros(value);
+        }, index * frameDuration);
+      });
+
+      estimateTimeout = window.setTimeout(() => {
+        if (estimateCard instanceof HTMLElement) {
+          estimateCard.classList.remove("is-visible");
+
+          window.setTimeout(() => {
+            estimateCard.hidden = true;
+            priceCard.hidden = false;
+            setResultStep();
+          }, 160);
+        } else {
+          priceCard.hidden = false;
+          setResultStep();
+        }
+      }, estimateDuration);
+    };
+
+    const isValidSurfaceValue = () => {
+      if (!(surfaceInput instanceof HTMLInputElement)) return false;
+
+      const value = Number(surfaceInput.value);
+      return Number.isInteger(value) && value > 0 && value <= 9999999999;
+    };
+
+    const setSurfaceLimitError = (hasError) => {
+      window.clearTimeout(surfaceErrorTimeout);
+
+      if (surfaceInput instanceof HTMLInputElement) {
+        surfaceInput.classList.toggle("is-out-of-range", hasError);
+      }
+
+      if (surfaceError instanceof HTMLElement) {
+        surfaceError.hidden = !hasError;
+      }
+
+      if (hasError) {
+        surfaceErrorTimeout = window.setTimeout(() => {
+          if (surfaceInput instanceof HTMLInputElement) {
+            surfaceInput.classList.remove("is-out-of-range");
+          }
+
+          if (surfaceError instanceof HTMLElement) {
+            surfaceError.hidden = true;
+          }
+        }, 2000);
+      }
+    };
+
+    action?.addEventListener("click", () => {
+      if (priceCard.dataset.step === "1") {
+        setStepTwo();
+        return;
+      }
+
+      if (priceCard.dataset.step === "2") {
+        setStepThree();
+        return;
+      }
+
+      if (priceCard.dataset.step === "3" && isValidSurfaceValue()) {
+        setStepFour();
+        return;
+      }
+
+      if (priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "otro") {
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      if (priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
+        setStepFive();
+        return;
+      }
+
+      if (priceCard.dataset.step === "4" && (
+        priceCard.dataset.selectedSupport === "hormigon" ||
+        priceCard.dataset.selectedSupport === "mortero-autonivelante"
+      )) {
+        setConditionStep();
+        return;
+      }
+
+      if (priceCard.dataset.step === "5" && priceCard.dataset.selectedSupport === "ceramica-baldosa" && priceCard.dataset.selectedCeramicRemoval) {
+        setConditionStep();
+        return;
+      }
+
+      if ((priceCard.dataset.step === "5" || priceCard.dataset.step === "6") && priceCard.dataset.view === "condition" && priceCard.dataset.selectedCondition) {
+        runEstimateLoading();
+      }
+    });
+
+    backButton?.addEventListener("click", () => {
+      if (priceCard.dataset.step === "result") {
+        resetCalculator();
+        return;
+      }
+
+      const currentStep = Number(priceCard.dataset.step || "1");
+
+      if (currentStep === 6) {
+        setStepFive();
+        return;
+      }
+
+      if (currentStep === 5) {
+        if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") {
+          setStepFour();
+          return;
+        }
+
+        setStepFour();
+        return;
+      }
+
+      if (currentStep === 4) {
+        setStepThree();
+        return;
+      }
+
+      if (currentStep === 3) {
+        setStepTwo();
+        return;
+      }
+
+      if (currentStep === 2) {
+        setStepOne();
+      }
+    });
+
+    options?.querySelectorAll(".price-space-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        if (!(option instanceof HTMLButtonElement)) return;
+
+        priceCard.dataset.selectedSpace = option.dataset.space || "";
+        updateSelectedOption(options, priceCard.dataset.selectedSpace, "space");
+
+        setActionEnabled(true);
+        saveState();
+      });
+    });
+
+    supportOptions?.querySelectorAll(".price-space-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        if (!(option instanceof HTMLButtonElement)) return;
+
+        priceCard.dataset.selectedSupport = option.dataset.support || "";
+        updateSelectedOption(supportOptions, priceCard.dataset.selectedSupport, "support");
+
+        if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") {
+          delete priceCard.dataset.selectedCeramicRemoval;
+          updateSelectedOption(ceramicStep, "", "ceramicRemoval");
+        }
+
+        delete priceCard.dataset.selectedCondition;
+        updateSelectedOption(conditionStep, "", "condition");
+
+        updateExtraProgressDot();
+        setActiveDots(Number(priceCard.dataset.step || "4"));
+        updateSupportActionLabel();
+        setActionEnabled(true);
+        saveState();
+      });
+    });
+
+    ceramicStep?.querySelectorAll(".price-space-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        if (!(option instanceof HTMLButtonElement)) return;
+
+        priceCard.dataset.selectedCeramicRemoval = option.dataset.ceramicRemoval || "";
+        updateSelectedOption(ceramicStep, priceCard.dataset.selectedCeramicRemoval, "ceramicRemoval");
+
+        setActionEnabled(true);
+        saveState();
+      });
+    });
+
+    conditionStep?.querySelectorAll(".price-space-option").forEach((option) => {
+      option.addEventListener("click", () => {
+        if (!(option instanceof HTMLButtonElement)) return;
+
+        priceCard.dataset.selectedCondition = option.dataset.condition || "";
+        updateSelectedOption(conditionStep, priceCard.dataset.selectedCondition, "condition");
+
+        setActionEnabled(true);
+        saveState();
+      });
+    });
+
+    helpOpenButton?.addEventListener("click", () => openHelpModal("ceramic"));
+    conditionHelpOpenButton?.addEventListener("click", () => openHelpModal("condition"));
+
+    helpOverlay?.addEventListener("click", (event) => {
+      if (event.target === helpOverlay) closeHelpModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeHelpModal();
+        closePhonePrefixMenu();
+      }
+    });
+
+    surfaceInput?.addEventListener("input", () => {
+      if (!(surfaceInput instanceof HTMLInputElement)) return;
+
+      const numericValue = surfaceInput.value.replace(/\D/g, "");
+      const isOutOfRange = numericValue.length > 10 || Number(numericValue) > 9999999999;
+
+      surfaceInput.value = numericValue.slice(0, 10);
+      setSurfaceLimitError(isOutOfRange);
+      setActionEnabled(isValidSurfaceValue());
+      saveState();
+    });
+
+    resultNameInput?.addEventListener("input", updateResultSubmitState);
+    resultPhoneInput?.addEventListener("input", updateResultSubmitState);
+
+    resultSubmit?.addEventListener("click", () => {
+      submitPriceRequest();
+    });
+
+    const restoreState = () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestedReset = urlParams.get("reset") === "1";
+        const requestedSpace = urlParams.get("space") || "";
+        const validSpaces = ["vivienda", "garaje", "local-comercial", "industria", "exterior"];
+
+        if (requestedReset) {
+          sessionStorage.removeItem(storageKey);
+
+          if (validSpaces.includes(requestedSpace)) {
+            priceCard.dataset.selectedSpace = requestedSpace;
+            updateSelectedOption(options, requestedSpace, "space");
+          }
+
+          setStepOne({ animate: true });
+          return;
+        }
+
+        const storedState = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+
+        if (typeof storedState.selectedSpace === "string") {
+          priceCard.dataset.selectedSpace = storedState.selectedSpace;
+          updateSelectedOption(options, storedState.selectedSpace, "space");
+        }
+
+        if (surfaceInput instanceof HTMLInputElement && typeof storedState.surface === "string") {
+          surfaceInput.value = storedState.surface.replace(/\D/g, "").slice(0, 10);
+        }
+
+        if (typeof storedState.selectedSupport === "string") {
+          priceCard.dataset.selectedSupport = storedState.selectedSupport;
+          updateSelectedOption(supportOptions, storedState.selectedSupport, "support");
+          updateExtraProgressDot();
+        }
+
+        if (typeof storedState.selectedCeramicRemoval === "string") {
+          priceCard.dataset.selectedCeramicRemoval = storedState.selectedCeramicRemoval;
+          updateSelectedOption(ceramicStep, storedState.selectedCeramicRemoval, "ceramicRemoval");
+        }
+
+        if (typeof storedState.selectedCondition === "string") {
+          priceCard.dataset.selectedCondition = storedState.selectedCondition;
+          updateSelectedOption(conditionStep, storedState.selectedCondition, "condition");
+        }
+
+        if (storedState.step === "result") {
+          setResultStep({ animate: true });
+          return;
+        }
+
+        const restoredStep = Number(storedState.step || 1);
+
+        if (restoredStep >= 6 && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
+          setConditionStep({ animate: true });
+          return;
+        }
+
+        if (restoredStep >= 5 && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
+          setStepFive({ animate: true });
+          return;
+        }
+
+        if (restoredStep >= 5) {
+          setConditionStep({ animate: true });
+          return;
+        }
+
+        if (restoredStep >= 4) {
+          setStepFour({ animate: true });
+          return;
+        }
+
+        if (restoredStep === 3) {
+          setStepThree({ animate: true });
+          return;
+        }
+
+        if (restoredStep === 2) {
+          setStepTwo({ animate: true });
+          return;
+        }
+      } catch {
+        sessionStorage.removeItem(storageKey);
+      }
+
+      setStepOne({ animate: true });
+    };
+
+    restoreState();
+  }

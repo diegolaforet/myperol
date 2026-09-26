@@ -1,0 +1,28 @@
+---
+const { menuId = "langMenu", primary = false } = Astro.props;
+---
+<div class="language-control">
+    <div class="lang-dropdown">
+      <button
+        class="lang-button"
+        id={primary ? "langToggle" : undefined}
+        type="button"
+        onclick="toggleLangMenu(this)"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls={menuId}
+      >
+        <span id={primary ? "currentLang" : undefined} data-current-lang>ES</span>
+        <span class="lang-arrow">&#9662;</span>
+      </button>
+
+      <ul class="lang-menu floating-dropdown" id={menuId} hidden>
+        <li><button type="button" class="lang-option" data-lang="es" data-i18n="lang_es" onclick="selectLang('es')">Español</button></li>
+        <li><button type="button" class="lang-option" data-lang="en" data-i18n="lang_en" onclick="selectLang('en')">English</button></li>
+        <li><button type="button" class="lang-option" data-lang="de" data-i18n="lang_de" onclick="selectLang('de')">Deutsch</button></li>
+        <li><button type="button" class="lang-option" data-lang="fr" data-i18n="lang_fr" onclick="selectLang('fr')">Français</button></li>
+        <li><button type="button" class="lang-option" data-lang="ru" data-i18n="lang_ru" onclick="selectLang('ru')">Русский</button></li>
+        <li><button type="button" class="lang-option" data-lang="uk" data-i18n="lang_uk" onclick="selectLang('uk')">Українська</button></li>
+      </ul>
+    </div>
+  </div>
