@@ -2,6 +2,7 @@
 
   if (priceCard instanceof HTMLElement) {
     const media = priceCard.querySelector("[data-price-media]");
+    const stepContent = priceCard.querySelector(".prices-step-content");
     const label = priceCard.querySelector("[data-price-label]");
     const title = priceCard.querySelector("[data-price-title]");
     const copy = priceCard.querySelector("[data-price-copy]");
@@ -471,6 +472,10 @@
       }, 160);
     };
 
+    const resetStepScroll = () => {
+      if (stepContent instanceof HTMLElement) stepContent.scrollTop = 0;
+    };
+
     const setStepOne = ({ animate = false } = {}) => {
       priceCard.dataset.step = "1";
       priceCard.dataset.view = "intro";
@@ -484,6 +489,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      resetStepScroll();
       closeHelpModal();
       setActionLabel("Comenzar");
 
@@ -507,6 +513,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      resetStepScroll();
       closeHelpModal();
       setActionLabel("Continuar");
 
@@ -530,6 +537,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      resetStepScroll();
       closeHelpModal();
       if (animate && surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
       setActionLabel("Continuar");
@@ -554,6 +562,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      resetStepScroll();
       closeHelpModal();
 
       setActiveDots(4);
@@ -577,6 +586,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = false;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      resetStepScroll();
       setActionLabel("Continuar");
 
       setActiveDots(5);
@@ -599,6 +609,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = false;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      resetStepScroll();
       closeHelpModal();
       setActionLabel("Finalizar");
 
@@ -620,6 +631,7 @@
       if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = false;
+      resetStepScroll();
       if (resultSpace) resultSpace.textContent = getSpaceLabel();
       updateResultAmount();
       updateResultSubmitState();

@@ -38,10 +38,10 @@ test("section controls reveal and hide through intersection, with unique menus",
   test.skip(testInfo.project.name === "mobile", "Mobile retains its shared compact header without duplicate controls.");
   await page.goto("/");
   const controls = page.locator("[data-section-corner-controls]");
-  await expect(controls).toHaveCount(5);
+  await expect(controls).toHaveCount(4);
   const ids = await page.locator(".lang-menu").evaluateAll(menus => menus.map(menu => menu.id));
   expect(new Set(ids).size).toBe(ids.length);
-  for (const id of ["primary-cards", "secondary-cards", "services", "calculator"]) {
+  for (const id of ["primary-cards", "services", "calculator"]) {
     const control = page.locator(`[data-section-corner-controls="${id}"]`);
     await control.evaluate(el => el.closest("section")!.scrollIntoView());
     await expect(control).toHaveClass(/is-visible/);
@@ -56,4 +56,21 @@ test("section controls reveal and hide through intersection, with unique menus",
     await expect(control).toHaveJSProperty("inert", true);
     await expect(control.locator(".lang-menu")).toBeHidden();
   }
+});
+
+test("dark carousel suppresses floating contact and language controls", async ({ page }) => {
+  await page.goto("/");
+  const darkSection = page.locator("[data-floating-controls-exclusion]");
+  await expect(darkSection.locator("[data-section-corner-controls]")).toHaveCount(0);
+  await darkSection.scrollIntoViewIfNeeded();
+  await expect(page.locator("body")).toHaveClass(/floating-controls-suppressed/);
+  for (const selector of [".site-header .language-control", "body > .social-float"]) {
+    const control = page.locator(selector);
+    await expect(control).toHaveCSS("opacity", "0");
+    await expect(control).toHaveJSProperty("inert", true);
+  }
+  await page.locator(".hero-placeholder").scrollIntoViewIfNeeded();
+  await expect(page.locator("body")).not.toHaveClass(/floating-controls-suppressed/);
+  await expect(page.locator(".site-header .language-control")).toHaveJSProperty("inert", false);
+  await expect(page.locator("body > .social-float")).toHaveJSProperty("inert", false);
 });

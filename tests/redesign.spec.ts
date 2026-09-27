@@ -66,7 +66,22 @@ test("service cards keep their copy in an editorial dialog on both routes", asyn
     await expect(dialog.locator(".service-expanded-summary")).toHaveText(summary);
     await expect(dialog.locator(".service-expanded-copy")).toHaveText(technical);
     await expect.poll(() => dialog.locator(".service-expanded-media-frame img").evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-    await expect.poll(() => page.locator(".service-expanded-overlay").evaluate(el => getComputedStyle(el).backdropFilter)).toContain("blur(18px)");
+    const animation = await page.locator(".service-expanded-overlay").evaluate(el => {
+      const overlayStyle = getComputedStyle(el);
+      const cardStyle = getComputedStyle(el.querySelector(".service-expanded-card")!);
+      return {
+        overlayTransition: overlayStyle.transitionProperty,
+        overlayFilter: overlayStyle.backdropFilter,
+        cardTransition: cardStyle.transitionProperty,
+        cardFilter: cardStyle.backdropFilter,
+        cardDuration: cardStyle.transitionDuration,
+      };
+    });
+    expect(animation.overlayTransition).toBe("opacity");
+    expect(animation.overlayFilter).toBe("none");
+    expect(animation.cardTransition.split(",").map(value => value.trim()).sort()).toEqual(["opacity", "transform"]);
+    expect(animation.cardFilter).toBe("none");
+    expect(animation.cardDuration.split(",").every(value => Number.parseFloat(value) <= .22)).toBe(true);
 
     const layout = await dialog.evaluate(el => {
       const media = el.querySelector(".service-expanded-media")!.getBoundingClientRect();
@@ -501,23 +516,188 @@ test("navigation reaches the calculator in the home scroll", async ({ page }, te
   await expect(page.locator("#calculadora")).toBeInViewport();
 });
 
-test("carousel starts flush left and services use an asymmetric grid", async ({ page }, testInfo) => {
+test("hero cue and navbar animate internal navigation with a fixed-header offset", async ({ page }, testInfo) => {
   await page.goto("/");
+  await page.evaluate(() => {
+    const samples: number[] = [];
+    const recordPosition = () => samples.push(window.scrollY);
+    (window as typeof window & { __smoothScrollSamples?: number[] }).__smoothScrollSamples = samples;
+    window.addEventListener("scroll", recordPosition, { passive: true });
+    window.setTimeout(() => window.removeEventListener("scroll", recordPosition), 3000);
+  });
+
+  await page.locator(".hero-scroll-cue").click();
+  await expect(page).toHaveURL(/#experiencia$/);
+  const headerSelector = testInfo.project.name === "mobile" ? ".mobile-header-bar" : ".desktop-nav";
+  await expect.poll(async () => page.evaluate(({ targetSelector, navigationSelector }) => {
+    const target = document.querySelector(targetSelector)!;
+    const navigation = document.querySelector(navigationSelector)!;
+    const expectedTop = navigation.getBoundingClientRect().bottom + 12;
+    return Math.abs(target.getBoundingClientRect().top - expectedTop);
+  }, { targetSelector: "#experiencia", navigationSelector: headerSelector })).toBeLessThan(3);
+
+  const sampledPositions = await page.evaluate(() =>
+    (window as typeof window & { __smoothScrollSamples?: number[] }).__smoothScrollSamples ?? []
+  );
+  expect(new Set(sampledPositions.map(position => Math.round(position))).size).toBeGreaterThan(2);
+
+  if (testInfo.project.name === "mobile") {
+    await page.locator(".mobile-menu-button").click();
+    await page.locator('#primaryNav a[href="/#servicios"]').click();
+  } else {
+    await page.locator('.desktop-nav a[href="/#servicios"]').click();
+  }
+  await expect(page).toHaveURL(/#servicios$/);
+  await expect.poll(async () => page.evaluate((navigationSelector) => {
+    const target = document.querySelector("#servicios")!;
+    const navigation = document.querySelector(navigationSelector)!;
+    return Math.abs(target.getBoundingClientRect().top - navigation.getBoundingClientRect().bottom - 12);
+  }, headerSelector)).toBeLessThan(3);
+});
+
+test("dark carousel centers when space allows and services use an asymmetric grid", async ({ page }, testInfo) => {
+  await page.goto("/");
+  if (testInfo.project.name === "desktop") await page.setViewportSize({ width: 2100, height: 1000 });
   const track = page.locator(".home-secondary-cards-track");
   const first = track.locator(".home-secondary-card").first();
-  const geometry = await first.evaluate(el => ({
-    left: el.getBoundingClientRect().left,
-    width: el.getBoundingClientRect().width,
-    trackScrollWidth: el.parentElement!.scrollWidth,
-    trackClientWidth: el.parentElement!.clientWidth,
-  }));
-  expect(Math.abs(geometry.left)).toBeLessThan(1);
-  expect(geometry.trackScrollWidth).toBeGreaterThan(geometry.trackClientWidth);
-  await track.evaluate(el => el.scrollBy({ left: 250, behavior: "instant" }));
-  await expect.poll(() => track.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+  const geometry = await track.evaluate(el => {
+    const firstCard = el.querySelector(".home-secondary-card")!.getBoundingClientRect();
+    const lastCard = el.querySelector(".home-secondary-card:last-child")!.getBoundingClientRect();
+    return {
+      left: firstCard.left,
+      right: innerWidth - lastCard.right,
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    };
+  });
   if (testInfo.project.name === "desktop") {
+    expect(Math.abs(geometry.left - geometry.right)).toBeLessThan(3);
+    expect(geometry.left).toBeGreaterThan(20);
     const widths = await page.locator("#servicios .feature-card").evaluateAll(cards => cards.slice(0, 3).map(card => card.getBoundingClientRect().width));
     expect(widths[0]).toBeGreaterThan(widths[1]);
     expect(widths[1]).toBeGreaterThan(widths[2]);
+  } else {
+    expect(geometry.scrollWidth).toBeGreaterThan(geometry.clientWidth);
+    await track.evaluate(el => el.scrollBy({ left: 250, behavior: "instant" }));
+    await expect.poll(() => track.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+  }
+});
+
+test("calculator intro and steps fit within one viewport", async ({ page }, testInfo) => {
+  await page.goto("/precios?reset=1");
+  const section = page.locator("#calculadora");
+  const card = page.locator("[data-price-card]");
+  const assertFits = async () => {
+    const geometry = await section.evaluate(el => {
+      const heading = el.querySelector(".prices-section-heading")!.getBoundingClientRect();
+      const calculator = el.querySelector("[data-price-card]")!.getBoundingClientRect();
+      const sectionRect = el.getBoundingClientRect();
+      return {
+        sectionTop: sectionRect.top,
+        sectionHeight: sectionRect.height,
+        headingTop: heading.top,
+        headingBottom: heading.bottom,
+        cardTop: calculator.top,
+        cardBottom: calculator.bottom,
+        viewportHeight: innerHeight,
+      };
+    });
+    expect(Math.abs(geometry.sectionTop)).toBeLessThan(2);
+    expect(Math.abs(geometry.sectionHeight - geometry.viewportHeight)).toBeLessThan(2);
+    expect(geometry.headingTop).toBeGreaterThanOrEqual(0);
+    expect(geometry.cardTop).toBeGreaterThanOrEqual(geometry.headingBottom);
+    expect(geometry.cardBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1);
+  };
+  await assertFits();
+  const next = page.locator("[data-price-action]");
+  await next.click();
+  await page.locator('[data-space="vivienda"]').click();
+  await next.click();
+  await page.locator("[data-price-surface-input]").fill("100");
+  await next.click();
+  await page.locator('[data-support="hormigon"]').click();
+  await page.locator(".prices-step-content").evaluate(el => { el.scrollTop = el.scrollHeight; });
+  await next.click();
+  await expect(card).toHaveAttribute("data-view", "condition");
+  await expect.poll(() => page.locator(".prices-step-content").evaluate(el => el.scrollTop)).toBe(0);
+  const conditionLayout = await card.evaluate(el => {
+    const content = el.querySelector<HTMLElement>(".prices-step-content")!;
+    const options = el.querySelector<HTMLElement>("[data-price-condition-step]")!;
+    const footer = el.querySelector<HTMLElement>(".prices-card-footer")!;
+    const image = el.querySelector<HTMLImageElement>(".service-expanded-media-frame img")!;
+    return {
+      contentClientHeight: content.clientHeight,
+      contentScrollHeight: content.scrollHeight,
+      optionsBottom: options.getBoundingClientRect().bottom,
+      footerTop: footer.getBoundingClientRect().top,
+      objectFit: getComputedStyle(image).objectFit,
+      imageHeight: image.getBoundingClientRect().height,
+      frameHeight: image.parentElement!.getBoundingClientRect().height,
+    };
+  });
+  expect(conditionLayout.contentScrollHeight).toBeLessThanOrEqual(conditionLayout.contentClientHeight + 1);
+  expect(conditionLayout.optionsBottom).toBeLessThanOrEqual(conditionLayout.footerTop + 1);
+  expect(conditionLayout.objectFit).toBe("cover");
+  if (page.viewportSize()!.width > 902) {
+    expect(Math.abs(conditionLayout.imageHeight - conditionLayout.frameHeight)).toBeLessThan(1);
+  }
+  await assertFits();
+  await page.screenshot({ path: testInfo.outputPath("calculator-condition.png") });
+});
+
+test("final polish reuses carousel pagination and exposes premium navigation cues", async ({ page }, testInfo) => {
+  await page.goto("/");
+  const cue = page.locator(".hero-scroll-cue");
+  await expect(cue).toBeVisible();
+  await expect(cue).toHaveAttribute("href", "#experiencia");
+  await page.screenshot({ path: testInfo.outputPath("hero-scroll-cue.png") });
+
+  const secondaryArrow = page.locator(".home-secondary-cards-next");
+  await expect(secondaryArrow.locator("svg path")).toHaveCount(1);
+  const arrowStyle = await secondaryArrow.evaluate(el => ({
+    borderRadius: getComputedStyle(el).borderRadius,
+    backdropFilter: getComputedStyle(el).backdropFilter,
+  }));
+  expect(arrowStyle.borderRadius).toBe("999px");
+  expect(arrowStyle.backdropFilter).toContain("blur");
+
+  const carouselDot = page.locator(".home-secondary-cards-dots .feature-cards-dot.is-active");
+  await expect(carouselDot).toHaveCount(1);
+  const carouselDotStyle = await carouselDot.evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      width: style.width,
+      height: style.height,
+      background: style.backgroundColor,
+      opacity: style.opacity,
+      transition: style.transition,
+      transform: style.transform,
+    };
+  });
+
+  await page.goto("/precios?reset=1");
+  const calculatorDot = page.locator(".prices-progress-dots .feature-cards-dot.is-active");
+  const calculatorDotStyle = await calculatorDot.evaluate(el => {
+    const style = getComputedStyle(el);
+    return {
+      width: style.width,
+      height: style.height,
+      background: style.backgroundColor,
+      opacity: style.opacity,
+      transition: style.transition,
+      transform: style.transform,
+    };
+  });
+  expect(calculatorDotStyle.width).toBe(carouselDotStyle.width);
+  expect(calculatorDotStyle.height).toBe(carouselDotStyle.height);
+  expect(calculatorDotStyle.background).toBe(carouselDotStyle.background);
+  expect(calculatorDotStyle.transition).toBe(carouselDotStyle.transition);
+  expect(Number(calculatorDotStyle.opacity)).toBeCloseTo(Number(carouselDotStyle.opacity), 2);
+  expect(Number(calculatorDotStyle.transform.match(/[\d.]+/)?.[0])).toBeCloseTo(Number(carouselDotStyle.transform.match(/[\d.]+/)?.[0]), 2);
+
+  if (testInfo.project.name === "desktop") {
+    await expect(page.locator('[data-section-corner-controls="calculator"] .language-control')).toBeVisible();
+  } else {
+    await expect(page.locator(".mobile-header-bar .language-control")).toBeVisible();
   }
 });

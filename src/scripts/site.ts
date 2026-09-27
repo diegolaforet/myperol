@@ -3,6 +3,7 @@ import esMessages from "../i18n/json/es.json";
 import { initializeScrollReveal } from "./scroll-reveal";
 import { initializeSectionControls } from "./section-controls";
 import { initializeHeroVideo } from "./hero-video";
+import { initializeSmoothNavigation } from "./smooth-navigation";
 
 const i18nMessages: Record<string, Record<string, string>> = { es: esMessages };
 const languageLoaders = {
@@ -266,3 +267,4 @@ window.addEventListener("language-change", handleLanguageChange);
 initializeScrollReveal();
 initializeSectionControls();
 initializeHeroVideo();
+initializeSmoothNavigation();

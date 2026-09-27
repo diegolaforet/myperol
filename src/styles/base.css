@@ -58,6 +58,20 @@ body.controls-over-light .language-control {
   --color-dropdown-hover: var(--color-dropdown-hover-on-dark);
 }
 
+.site-header .language-control,
+body > .social-float {
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+body.floating-controls-suppressed .site-header .language-control,
+body.floating-controls-suppressed > .social-float {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+  pointer-events: none;
+}
+
 /* ==========================================================================
    Page layout
    ========================================================================== */

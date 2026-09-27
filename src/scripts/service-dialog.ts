@@ -51,7 +51,7 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
 
     isClosing = true;
     overlay.classList.add("is-closing");
-    overlay.classList.remove("is-open", "is-blurred");
+    overlay.classList.remove("is-open");
 
     let finished = false;
     const finish = () => {
@@ -68,7 +68,7 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
       if (event.target === overlay && event.propertyName === "opacity") finish();
     });
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) finish();
-    else window.setTimeout(finish, 420);
+    else window.setTimeout(finish, 240);
   };
 
   const openExpandedCard = (card: HTMLElement) => {
@@ -130,7 +130,7 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
     restoreBackground = () => background.forEach((element) => { element.inert = false; });
     restoreDialog = enhanceServiceDialog(overlay, card, closeExpandedCard);
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-      if (activeOverlay === overlay) overlay.classList.add("is-open", "is-blurred");
+      if (activeOverlay === overlay) overlay.classList.add("is-open");
     }));
   };
 

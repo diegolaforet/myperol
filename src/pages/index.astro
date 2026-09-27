@@ -36,9 +36,15 @@ import Calculator from "../components/Calculator.astro";
           <a href="#calculadora" data-i18n="nav_prices">Calculadora</a>
         </div>
       </div>
+      <a class="hero-scroll-cue" href="#experiencia" aria-label="Descubrir MyPerol">
+        <span class="hero-scroll-cue__line" aria-hidden="true"></span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m7 10 5 5 5-5"></path>
+        </svg>
+      </a>
     </section>
 
-    <section class="feature-cards home-primary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
+    <section id="experiencia" class="feature-cards home-primary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
       <SectionCornerControls instanceId="primary-cards" />
 
       <div class="feature-cards-header home-primary-cards-header">
@@ -142,8 +148,7 @@ import Calculator from "../components/Calculator.astro";
       </div>
     </section>
 
-    <section class="feature-cards home-secondary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria">
-      <SectionCornerControls instanceId="secondary-cards" tone="dark" />
+    <section class="feature-cards home-secondary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-floating-controls-exclusion>
       <div class="feature-cards-header home-secondary-cards-header">
         <h2 class="home-secondary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</h2>
       </div>
@@ -185,7 +190,9 @@ import Calculator from "../components/Calculator.astro";
           data-carousel-prev
           hidden
         >
-          <span aria-hidden="true">&lsaquo;</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
         </button>
 
         <button
@@ -196,7 +203,9 @@ import Calculator from "../components/Calculator.astro";
           data-carousel-next
           hidden
         >
-          <span aria-hidden="true">&rsaquo;</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9 6 6 6-6 6"></path>
+          </svg>
         </button>
 
         <div class="feature-cards-dots home-secondary-cards-dots home-carousel-dots-on-light" aria-hidden="true" data-carousel-dots></div>
