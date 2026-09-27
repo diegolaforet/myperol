@@ -277,6 +277,10 @@ test("3D rendering sleeps offscreen and records scroll frame intervals", async (
     const distance = stage.clientHeight - innerHeight;
     scrollTo(0, start + distance * .2);
     await new Promise(resolve => setTimeout(resolve, 600));
+    const canvas = stage.querySelector<HTMLCanvasElement>("canvas")!;
+    const renderedAt: number[] = [];
+    const recordRender = () => renderedAt.push(performance.now());
+    canvas.addEventListener("rendered", recordRender);
     const intervals: number[] = [];
     let first = 0;
     let previous = 0;
@@ -292,10 +296,40 @@ test("3D rendering sleeps offscreen and records scroll frame intervals", async (
       requestAnimationFrame(tick);
     });
     intervals.sort((a, b) => a - b);
-    return { frames: intervals.length, medianMs: intervals[Math.floor(intervals.length / 2)], p95Ms: intervals[Math.floor(intervals.length * .95)] };
+    canvas.removeEventListener("rendered", recordRender);
+    const drawIntervals = renderedAt.slice(1).map((time, i) => time - renderedAt[i]).sort((a, b) => a - b);
+    return {
+      frames: intervals.length,
+      medianMs: intervals[Math.floor(intervals.length / 2)],
+      p95Ms: intervals[Math.floor(intervals.length * .95)],
+      renderedFrames: renderedAt.length,
+      renderMedianMs: drawIntervals[Math.floor(drawIntervals.length / 2)],
+      renderP95Ms: drawIntervals[Math.floor(drawIntervals.length * .95)],
+      bufferPixels: canvas.width * canvas.height,
+    };
   });
   await testInfo.attach("scroll-frame-intervals", { body: JSON.stringify(frameMetrics), contentType: "application/json" });
   console.log(testInfo.project.name, "Scroll frame intervals:", frameMetrics);
+  expect(frameMetrics.renderedFrames).toBeGreaterThan(0);
+  expect(frameMetrics.renderedFrames).toBeLessThanOrEqual(125);
+  expect(frameMetrics.bufferPixels).toBeLessThanOrEqual(testInfo.project.name === "mobile" ? 1105000 : 2080000);
+  if (testInfo.project.name === "mobile") {
+    await page.locator("[data-flooring-canvas]").evaluate((canvas: HTMLCanvasElement) => {
+      canvas.width = canvas.clientWidth * devicePixelRatio;
+      canvas.height = canvas.clientHeight * devicePixelRatio;
+    });
+    await expect.poll(() => page.locator("[data-flooring-canvas]").evaluate((canvas: HTMLCanvasElement) => canvas.width * canvas.height)).toBeLessThanOrEqual(1105000);
+  }
+  await page.waitForTimeout(1000);
+  const idleRenders = await page.locator("[data-flooring-canvas]").evaluate(async canvas => {
+    let count = 0;
+    const rendered = () => count++;
+    canvas.addEventListener("rendered", rendered);
+    await new Promise(resolve => setTimeout(resolve, 400));
+    canvas.removeEventListener("rendered", rendered);
+    return count;
+  });
+  expect(idleRenders).toBe(0);
   await page.locator("#servicios").scrollIntoViewIfNeeded();
   await page.waitForTimeout(800);
   const draws = () => page.evaluate(() => (window as unknown as { gpuMetrics: { draws: number } }).gpuMetrics.draws);

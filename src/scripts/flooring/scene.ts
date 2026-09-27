@@ -1,3 +1,5 @@
+import { createRenderController } from "./render-controller";
+
 const SCENE_URL = "/assets/3d/flooring-07d94fcf.splinecode";
 const LAYER_DEPTHS = {
   imprimacion: 134.598,
@@ -184,10 +186,11 @@ export const buildSplineScroll = async () => {
   let timeline;
   let ScrollTrigger;
   let renderResizeObserver;
+  let renderBufferObserver;
   let renderResizeTimer;
-  let postLoadRenderResizeTimer;
   let applyCurrentModelTransform = () => undefined;
   let sceneReady = false;
+  let renderController: ReturnType<typeof createRenderController> | undefined;
   let isStageVisible = false;
   let syncVisibleScene = () => undefined;
   let cancelInitialRender = () => undefined;
@@ -196,17 +199,14 @@ export const buildSplineScroll = async () => {
 
   const updateVisibility = () => {
     if (!sceneReady || isDisposed) return;
-    if (isStageVisible && !document.hidden) {
-      spline.play();
-      syncVisibleScene();
-    } else {
-      spline.stop();
-    }
+    const visible = isStageVisible && !document.hidden;
+    section.classList.toggle("is-render-active", visible);
+    renderController?.setVisible(visible);
   };
   const stageObserver = new IntersectionObserver(([entry]) => {
     isStageVisible = entry.isIntersecting;
     updateVisibility();
-  }, { rootMargin: "160px 0px" });
+  }, { threshold: 0 });
   stageObserver.observe(canvas);
   document.addEventListener("visibilitychange", updateVisibility);
 
@@ -287,15 +287,16 @@ export const buildSplineScroll = async () => {
 
     isDisposed = true;
     sceneRequest.abort();
+    renderController?.dispose();
     timeline?.scrollTrigger?.kill();
     timeline?.kill();
     renderResizeObserver?.disconnect();
+    renderBufferObserver?.disconnect();
     stageObserver.disconnect();
     document.removeEventListener("visibilitychange", updateVisibility);
     reducedMotion.removeEventListener("change", updateMotionPreference);
     cancelInitialRender();
     window.clearTimeout(renderResizeTimer);
-    window.clearTimeout(postLoadRenderResizeTimer);
     spline?.dispose();
   };
 
@@ -328,12 +329,17 @@ export const buildSplineScroll = async () => {
     await new Promise<void>(resolve => window.setTimeout(resolve, 0));
     if (isDisposed) return;
     spline = new Application(canvas, { renderMode: "manual" });
-    await spline.start(sceneBuffer);
+    // Scroll owns all transforms. Spline's pointer/orbit event machinery is unused.
+    await spline.start(sceneBuffer, { interactive: false });
 
     if (isDisposed) return;
 
     let renderWidth = 0;
     let renderHeight = 0;
+    let expectedBufferWidth = 0;
+    let expectedBufferHeight = 0;
+    // An export can use a fixed DPR rather than window.devicePixelRatio.
+    const runtimePixelRatio = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth));
     let modelMotionBounds = {
       baseScale: 1,
       focusScaleDelta: MODEL_MAX_FOCUS_SCALE_DELTA,
@@ -409,11 +415,11 @@ export const buildSplineScroll = async () => {
         mobileRenderer.matches ? 1.35 : MAX_RENDER_PIXEL_RATIO,
         pixelBudgetRatio
       );
-      const renderScale = targetPixelRatio / devicePixelRatio;
+      const renderScale = targetPixelRatio / runtimePixelRatio;
       const nextWidth = Math.max(1, Math.round(cssWidth * renderScale));
       const nextHeight = Math.max(1, Math.round(cssHeight * renderScale));
-      const expectedBufferWidth = Math.floor(nextWidth * devicePixelRatio);
-      const expectedBufferHeight = Math.floor(nextHeight * devicePixelRatio);
+      expectedBufferWidth = Math.floor(nextWidth * runtimePixelRatio);
+      expectedBufferHeight = Math.floor(nextHeight * runtimePixelRatio);
 
       if (
         nextWidth === renderWidth &&
@@ -425,7 +431,15 @@ export const buildSplineScroll = async () => {
       renderWidth = nextWidth;
       renderHeight = nextHeight;
       spline.setSize(renderWidth, renderHeight);
-      spline.requestRender();
+      // The renderer caches its logical size. If only canvas attributes were
+      // reset, invalidate that cache through the public API before restoring.
+      if (Math.abs(canvas.width - expectedBufferWidth) > 1 ||
+          Math.abs(canvas.height - expectedBufferHeight) > 1) {
+        spline.setSize(renderWidth + 1, renderHeight);
+        spline.setSize(renderWidth, renderHeight);
+      }
+      if (renderController) renderController.request(true);
+      else spline.requestRender();
     };
 
     const scheduleRenderResolutionSync = (delay = 120) => {
@@ -440,9 +454,15 @@ export const buildSplineScroll = async () => {
       renderResizeObserver.observe(canvas.parentElement);
     }
 
-    // Spline registers its own resize observer after load. Reapply the render
-    // budget once that observer has completed its initial measurement.
-    postLoadRenderResizeTimer = window.setTimeout(syncRenderResolution, 360);
+    // Spline can reset the backing buffer after its delayed ResizeObserver or
+    // asset initialization. Observe actual dimensions, not a guessed timeout.
+    renderBufferObserver = new MutationObserver(() => {
+      if (Math.abs(canvas.width - expectedBufferWidth) > 1 ||
+          Math.abs(canvas.height - expectedBufferHeight) > 1) {
+        scheduleRenderResolutionSync(0);
+      }
+    });
+    renderBufferObserver.observe(canvas, { attributes: true, attributeFilter: ["width", "height"] });
 
     const sceneObjects = spline.getAllObjects();
     const resolveObject = (key) => {
@@ -640,8 +660,8 @@ export const buildSplineScroll = async () => {
     if (objects.camera) trackedVectors.push(objects.camera.position, objects.camera.rotation);
     const renderedSceneState = new Float64Array(trackedVectors.length * 3).fill(NaN);
     const vectorAxes = ["x", "y", "z"] as const;
-    const requestChangedSceneRender = (force = false) => {
-      if (sceneReady && (!isStageVisible || document.hidden)) return;
+    const commitScene = (force = false) => {
+      applySceneTransform();
       let changed = force;
       let offset = 0;
       for (const vector of trackedVectors) {
@@ -651,10 +671,13 @@ export const buildSplineScroll = async () => {
           renderedSceneState[offset++] = value;
         }
       }
-      if (changed) spline.requestRender();
+      return changed;
+    };
+    const requestChangedSceneRender = (force = false) => {
+      if (sceneReady) renderController?.request(force);
+      else if (commitScene(force)) spline.requestRender();
     };
     syncVisibleScene = () => {
-      applySceneTransform();
       requestChangedSceneRender(true);
     };
 
@@ -663,7 +686,6 @@ export const buildSplineScroll = async () => {
       onUpdate: () => {
         const progress = timeline?.progress() ?? 0;
 
-        if (!sceneReady || (isStageVisible && !document.hidden)) applySceneTransform();
         if (progressBar instanceof HTMLElement) {
           progressBar.style.setProperty("--flooring-progress", String(progress));
         }
@@ -877,6 +899,7 @@ export const buildSplineScroll = async () => {
     section.classList.remove("is-loading");
     section.classList.add("is-ready");
     section.dataset.flooringInitialized = "ready";
+    renderController = createRenderController(spline, commitScene);
     sceneReady = true;
     updateVisibility();
 

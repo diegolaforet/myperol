@@ -168,6 +168,7 @@ img { max-width: 100%; }
 .flooring-sticky { min-height: 0; height: 100svh; background: var(--palette-white); }
 .flooring-shade { display: none; }
 .flooring-canvas { pointer-events: none; will-change: auto; }
+.flooring-scroll.is-render-active .flooring-canvas { will-change: transform, opacity; }
 .flooring-copy-panel { left: var(--model-edge-gutter); bottom: 6svh; width: min(600px, 44%); }
 .flooring-copy-panel h2 { font-size: var(--text-64); font-weight: 500; line-height: 1.08; margin-bottom: var(--space-20); }
 .flooring-copy-panel > p:last-child { font-size: var(--text-18); line-height: 1.6; max-width: 48ch; }

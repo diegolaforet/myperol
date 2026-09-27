@@ -17,7 +17,7 @@ export function initializeSectionControls() {
         }
       }
     }
-  }, { rootMargin: "0px 0px -24px 0px", threshold: 0 });
+  }, { rootMargin: "0px 0px -100px 0px", threshold: 0 });
   for (const control of controls) {
     control.inert = true;
     const sentinel = document.createElement("span");
