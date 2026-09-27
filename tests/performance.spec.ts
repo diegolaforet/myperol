@@ -46,6 +46,9 @@ test("section controls reveal and hide through intersection, with unique menus",
     await control.evaluate(el => el.closest("section")!.scrollIntoView());
     await expect(control).toHaveClass(/is-visible/);
     await expect(control).toHaveJSProperty("inert", false);
+    // Let the IO-driven entrance finish before Playwright tries to autoscroll it.
+    await expect(control.locator(".language-control")).toHaveCSS("opacity", "1");
+    await expect(control.locator(".language-control")).toHaveCSS("transform", "matrix(1, 0, 0, 1, 0, 0)");
     await control.locator(".lang-button").click();
     await expect(control.locator(".lang-menu")).toBeVisible();
     await page.evaluate(() => scrollTo(0, 0));

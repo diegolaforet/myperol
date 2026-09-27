@@ -180,6 +180,14 @@ img { max-width: 100%; }
 .flooring-copy-panel:not(.is-active) { visibility: hidden; }
 
 /* Services share the same grid on the home page and the dedicated route. */
+/* Remember measured heights offscreen; never contain the sticky 3D stage. */
+.services-feature-cards, .prices-page {
+  content-visibility: auto;
+  contain-intrinsic-size: none auto var(--section-intrinsic-height, 930px);
+}
+.services-feature-cards { --section-intrinsic-height: 880px; }
+/* An open popup may extend beyond the section's paint containment. */
+.prices-page:has(.phone-prefix-menu:not([hidden])) { content-visibility: visible; }
 .services-page { padding: 0; }
 .services-page .services-hero { display: none; }
 .services-feature-cards, .services-feature-cards.home-services-showcase {
@@ -262,7 +270,7 @@ img { max-width: 100%; }
   -webkit-backdrop-filter: var(--filter-glass-9);
   color: var(--palette-white);
   font: 20px/1 Arial, sans-serif;
-  transition: background-color 220ms ease, transform 220ms ease;
+  transition: transform 220ms ease;
   pointer-events: none;
 }
 .services-feature-cards .feature-card:is(:hover, :focus-visible)::after { background: var(--palette-tone-83); transform: translate(2px, -2px); }
@@ -307,7 +315,7 @@ img { max-width: 100%; }
 .service-card-image-cover { transition: transform 600ms ease; }
 .service-card-expandable:is(:hover, :focus-visible) .service-card-image-cover { transform: scale(1.035); }
 .services-feature-cards .service-card-expandable:focus-visible { outline: 2px solid var(--palette-graphite); outline-offset: 4px; }
-.reveal-enabled .services-feature-cards .feature-card.is-visible:is(:hover, :focus-visible) { transform: translateY(-4px); }
+.reveal-enabled .services-feature-cards .feature-card.is-visible:is(:hover, :focus-visible) { transform: translate3d(0, -4px, 0); }
 .services-feature-cards .feature-cards-arrow, .services-feature-cards .feature-cards-dots { display: none; }
 
 /* Detailed views and calculator: shared surfaces, deliberately readable type. */
@@ -341,6 +349,7 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
 .service-expanded-close:hover { background: var(--palette-white); }
 .service-expanded-overlay.is-blurred { backdrop-filter: var(--filter-glass-11); -webkit-backdrop-filter: var(--filter-glass-11); }
 .service-expanded-card {
+  backface-visibility: hidden;
   border: 1px solid var(--palette-tone-91);
   border-radius: var(--radius-8);
   box-shadow: 0 24px 80px var(--palette-tone-75);
@@ -447,6 +456,7 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
 .prices-hero { display: none; }
 .prices-route .site-header, .prices-route .social-float, .prices-route .language-control { --color-fixed-control: var(--palette-white); --color-fixed-control-hover: var(--palette-silver); text-shadow: none; }
 .prices-page .prices-card {
+  transform: translateZ(0);
   grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
   width: 100%;
   height: auto;
@@ -541,6 +551,8 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
   .prices-page .prices-card { gap: var(--space-28); padding: var(--space-32); }
 }
 @media (max-width: 902px) {
+  .services-feature-cards { --section-intrinsic-height: 1240px; }
+  .prices-page { --section-intrinsic-height: 900px; }
   :root { --page-gutter: 24px; }
   .mobile-header-bar { background: var(--palette-tone-118); border-bottom: 1px solid var(--palette-tone-119); box-shadow: 0 14px 34px var(--palette-tone-90); backdrop-filter: var(--filter-glass-14); -webkit-backdrop-filter: var(--filter-glass-14); }
   .mobile-header-bar .language-control, .mobile-header-bar .mobile-menu-button { color: var(--palette-white); --color-fixed-control: var(--palette-white); }
@@ -579,6 +591,8 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
   .prices-page .prices-step-content { padding-top: 0; }
 }
 @media (max-width: 560px) {
+  .services-feature-cards { --section-intrinsic-height: 1870px; }
+  .prices-page { --section-intrinsic-height: 872px; }
   :root { --page-gutter: 20px; }
   .hero-identity { bottom: 44px; }
   .hero-identity h1 { font-size: var(--text-64); }

@@ -330,13 +330,17 @@ test("3D rendering sleeps offscreen and records scroll frame intervals", async (
     return count;
   });
   expect(idleRenders).toBe(0);
-  await page.locator("#servicios").scrollIntoViewIfNeeded();
-  await page.waitForTimeout(800);
   const draws = () => page.evaluate(() => (window as unknown as { gpuMetrics: { draws: number } }).gpuMetrics.draws);
-  const before = await draws();
-  expect(before).toBeGreaterThan(0);
-  await page.waitForTimeout(500);
-  expect(await draws()).toBe(before);
+  for (const selector of ["#servicios", "#calculadora"]) {
+    await page.locator(selector).scrollIntoViewIfNeeded();
+    await expect(page.locator("[data-flooring-scroll]")).not.toHaveClass(/is-render-active/);
+    await page.waitForTimeout(800);
+    const before = await draws();
+    expect(before).toBeGreaterThan(0);
+    await page.evaluate(() => scrollBy({ top: 60, behavior: "instant" }));
+    await page.waitForTimeout(500);
+    expect(await draws()).toBe(before);
+  }
 });
 
 test("small portrait and landscape layouts keep controls and 3D copy in view", async ({ page }, testInfo) => {

@@ -182,13 +182,14 @@ import SectionCornerControls from "./SectionCornerControls.astro";
       <div class="price-estimate-amount" data-price-estimate-amount>130 €</div>
     </section>
 
-    <div class="price-help-overlay" data-price-help-overlay hidden>
-      <article class="price-help-modal" role="dialog" aria-modal="true" aria-labelledby="priceHelpTitle">
-        <h2 id="priceHelpTitle" data-price-help-title></h2>
-        <div data-price-help-body></div>
-      </article>
-    </div>
   </section>
+
+  <div class="price-help-overlay" data-price-help-overlay hidden>
+    <article class="price-help-modal" role="dialog" aria-modal="true" aria-labelledby="priceHelpTitle">
+      <h2 id="priceHelpTitle" data-price-help-title></h2>
+      <div data-price-help-body></div>
+    </article>
+  </div>
 
   <script>
     import "../scripts/calculator";

@@ -16,7 +16,7 @@ if (
   let touchStartY = 0;
   let entryAnimationFrame = 0;
   let lastObservedScrollY = window.scrollY;
-  let canDetectNativeScroll = false;
+  let isScrollbarDragging = false;
   const entryScrollDuration = 1200;
   const entryScrollTargetOffset = 0;
   const entryScrollTolerance = 12;
@@ -37,14 +37,22 @@ if (
     const startTop = window.scrollY;
     const distance = targetTop - startTop;
     const startTime = performance.now();
+    let lastWrittenScrollY = startTop;
     isEntryScrollAnimating = true;
 
     const step = (currentTime) => {
+      // An anchor, focus change or scroll restoration takes priority over this tween.
+      if (Math.abs(window.scrollY - lastWrittenScrollY) > 2) {
+        isEntryScrollAnimating = false;
+        entryAnimationFrame = 0;
+        return;
+      }
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / entryScrollDuration, 1);
       const easedProgress = easeInOutCubic(progress);
 
       window.scrollTo(0, startTop + distance * easedProgress);
+      lastWrittenScrollY = window.scrollY;
 
       if (progress < 1) {
         entryAnimationFrame = window.requestAnimationFrame(step);
@@ -138,14 +146,24 @@ if (
     { passive: false, capture: true }
   );
 
+  // Wheel, touch and keys are handled above/below. Only a scrollbar drag needs
+  // native scroll detection; layout anchoring and programmatic jumps do not.
+  document.addEventListener("pointerdown", (event) => {
+    isScrollbarDragging = event.clientX >= document.documentElement.clientWidth;
+    lastObservedScrollY = window.scrollY;
+  }, { passive: true });
+  const stopScrollbarDetection = () => { isScrollbarDragging = false; };
+  window.addEventListener("pointerup", stopScrollbarDetection, { passive: true });
+  window.addEventListener("pointercancel", stopScrollbarDetection, { passive: true });
+
   document.addEventListener(
     "scroll",
     () => {
+      if (!isScrollbarDragging || isEntryScrollAnimating) return;
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastObservedScrollY;
       lastObservedScrollY = currentScrollY;
 
-      if (!canDetectNativeScroll || isEntryScrollAnimating) return;
       if (Math.abs(scrollDelta) < 1) return;
 
       scrollBetweenEntryFrames(scrollDelta > 0 ? "down" : "up");
@@ -173,9 +191,4 @@ if (
     event.preventDefault();
   });
 
-  window.setTimeout(() => {
-    lastObservedScrollY = window.scrollY;
-    canDetectNativeScroll = true;
-
-  }, 0);
 }

@@ -143,9 +143,26 @@
       estimatedPrice: priceCard.dataset.estimatedPrice || "",
     });
 
+    let saveStateTimeout = 0;
     const saveState = () => {
+      window.clearTimeout(saveStateTimeout);
+      saveStateTimeout = 0;
       sessionStorage.setItem(storageKey, JSON.stringify(getState()));
     };
+
+    // Validation stays synchronous; coalesce only the blocking storage write.
+    const scheduleSaveState = () => {
+      window.clearTimeout(saveStateTimeout);
+      saveStateTimeout = window.setTimeout(saveState, 50);
+    };
+    const flushPendingState = () => {
+      if (saveStateTimeout) saveState();
+    };
+    surfaceInput?.addEventListener("blur", flushPendingState);
+    window.addEventListener("pagehide", flushPendingState);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) flushPendingState();
+    });
 
     const animatePriceCardStep = () => {
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -877,7 +894,7 @@
       surfaceInput.value = numericValue.slice(0, 10);
       setSurfaceLimitError(isOutOfRange);
       setActionEnabled(isValidSurfaceValue());
-      saveState();
+      scheduleSaveState();
     });
 
     resultNameInput?.addEventListener("input", updateResultSubmitState);
