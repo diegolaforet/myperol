@@ -1,5 +1,7 @@
 import type { Application } from "@splinetool/runtime";
 import { loadFlooringResources } from "./spline/resources";
+import { observeSceneVisibility } from "./spline/visibility";
+import { getScenePixelRatio } from "./spline/resolution";
 
 const LAYER_SEPARATION = 34;
 const LOOP_DURATION = 2200;
@@ -39,6 +41,7 @@ export function mountCalculatorEstimateSpline(canvas: HTMLCanvasElement) {
   let sizeFrame = 0;
   const modelHost = canvas.closest<HTMLElement>("[data-price-estimate-model]");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileRenderer = window.matchMedia("(pointer: coarse)");
 
   const dispose = () => {
     if (disposed) return;
@@ -48,11 +51,9 @@ export function mountCalculatorEstimateSpline(canvas: HTMLCanvasElement) {
     window.cancelAnimationFrame(sizeFrame);
     resizeObserver?.disconnect();
     bufferObserver?.disconnect();
-    visibilityObserver.disconnect();
-    document.removeEventListener("visibilitychange", updatePlayback);
+    visibility.dispose();
     reducedMotion.removeEventListener("change", updatePlayback);
     window.removeEventListener("pagehide", handlePageHide);
-    window.removeEventListener("pageshow", updatePlayback);
     // start() can still be decoding; release its resources after it settles.
     spline?.stop();
     if (!initializing) {
@@ -81,16 +82,17 @@ export function mountCalculatorEstimateSpline(canvas: HTMLCanvasElement) {
     if (event.persisted) pause();
     else dispose();
   };
-  const visibilityObserver = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
+  const visibility = observeSceneVisibility(canvas, next => {
+    visible = next;
     updatePlayback();
   });
-  visibilityObserver.observe(canvas);
 
   let renderFrame: (time: number) => void = () => {};
 
   const initialize = async () => {
+    await visibility.whenVisible();
     const [runtimeModule, sceneBuffer] = await loadFlooringResources();
+    await visibility.whenVisible();
     if (disposed) return;
 
     spline = new runtimeModule.Application(canvas, { renderMode: "manual" });
@@ -144,8 +146,9 @@ export function mountCalculatorEstimateSpline(canvas: HTMLCanvasElement) {
       if (!spline || disposed || canvas.clientWidth <= 0 || canvas.clientHeight <= 0) return;
       const cssWidth = canvas.clientWidth;
       const cssHeight = canvas.clientHeight;
-      const nextWidth = cssWidth;
-      const nextHeight = cssHeight;
+      const scale = getScenePixelRatio(cssWidth, cssHeight, mobileRenderer.matches) / runtimePixelRatio;
+      const nextWidth = Math.max(1, Math.round(cssWidth * scale));
+      const nextHeight = Math.max(1, Math.round(cssHeight * scale));
       expectedBufferWidth = Math.floor(nextWidth * runtimePixelRatio);
       expectedBufferHeight = Math.floor(nextHeight * runtimePixelRatio);
       if (nextWidth === renderWidth && nextHeight === renderHeight && bufferMatches()) return;
@@ -229,10 +232,8 @@ export function mountCalculatorEstimateSpline(canvas: HTMLCanvasElement) {
     updatePlayback();
   };
 
-  document.addEventListener("visibilitychange", updatePlayback);
   reducedMotion.addEventListener("change", updatePlayback);
   window.addEventListener("pagehide", handlePageHide);
-  window.addEventListener("pageshow", updatePlayback);
   void initialize().catch((error) => {
     if (!disposed && error?.name !== "AbortError") {
       console.error("No se pudo cargar la escena Spline de estimación.", error);

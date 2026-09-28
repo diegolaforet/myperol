@@ -1,5 +1,7 @@
 import { createRenderController } from "./render-controller";
 import { loadFlooringResources } from "../spline/resources";
+import { observeSceneVisibility } from "../spline/visibility";
+import { getScenePixelRatio } from "../spline/resolution";
 
 const LAYER_DEPTHS = {
   imprimacion: 134.598,
@@ -138,8 +140,6 @@ const PANEL_PROGRESS_THRESHOLDS = [
   PRE_FINAL_TIMELINE_DURATION,
 ].map((duration) => duration / FLOORING_TIMELINE_DURATION);
 const SCROLL_SCRUB_SECONDS = 0.35;
-const MAX_RENDER_PIXEL_RATIO = 1.75;
-const MAX_RENDER_PIXELS = 1920 * 1080;
 const OBJECT_ALIASES = {
   hormigon: ["hormigon", "concrete", "base hormigon"],
   imprimacion: ["imprimacion", "primer", "epoxy primer"],
@@ -182,6 +182,7 @@ export const buildSplineScroll = async () => {
   let isDisposed = false;
   let activePanelIndex = -1;
   let spline;
+  let initializing = false;
   let timeline;
   let ScrollTrigger;
   let renderResizeObserver;
@@ -193,21 +194,25 @@ export const buildSplineScroll = async () => {
   let isStageVisible = false;
   let syncVisibleScene = () => undefined;
   let cancelInitialRender = () => undefined;
+  let syncInitialRender = () => undefined;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mobileRenderer = window.matchMedia("(pointer: coarse)");
 
   const updateVisibility = () => {
-    if (!sceneReady || isDisposed) return;
+    if (isDisposed) return;
     const visible = isStageVisible && !document.hidden;
+    if (!sceneReady) {
+      syncInitialRender();
+      if (!visible && !initializing) spline?.stop();
+      return;
+    }
     section.classList.toggle("is-render-active", visible);
     renderController?.setVisible(visible);
   };
-  const stageObserver = new IntersectionObserver(([entry]) => {
-    isStageVisible = entry.isIntersecting;
+  const visibility = observeSceneVisibility(canvas, visible => {
+    isStageVisible = visible;
     updateVisibility();
-  }, { threshold: 0 });
-  stageObserver.observe(canvas);
-  document.addEventListener("visibilitychange", updateVisibility);
+  });
 
   const updateMotionPreference = () => {
     if (!timeline || isDisposed) return;
@@ -256,15 +261,24 @@ export const buildSplineScroll = async () => {
     new Promise<void>((resolve, reject) => {
       let renderedFrames = 0;
       let nextFrame = 0;
+      let timeout = 0;
       const finish = (error?: Error) => {
         window.clearTimeout(timeout);
         window.cancelAnimationFrame(nextFrame);
         application.removeEventListener("rendered", handleRendered);
         cancelInitialRender = () => undefined;
+        syncInitialRender = () => undefined;
         error ? reject(error) : resolve();
       };
-      const timeout = window.setTimeout(() => finish(new Error("3D render timed out")), 15000);
       cancelInitialRender = () => finish();
+      syncInitialRender = () => {
+        window.clearTimeout(timeout);
+        window.cancelAnimationFrame(nextFrame);
+        if (!isStageVisible || document.hidden || isDisposed) return;
+        timeout = window.setTimeout(() => finish(new Error("3D render timed out")), 15000);
+        application.play();
+        application.requestRender();
+      };
 
       const handleRendered = () => {
         renderedFrames += 1;
@@ -274,11 +288,11 @@ export const buildSplineScroll = async () => {
           return;
         }
 
-        nextFrame = window.requestAnimationFrame(() => application.requestRender());
+        nextFrame = window.requestAnimationFrame(syncInitialRender);
       };
 
       application.addEventListener("rendered", handleRendered);
-      application.requestRender();
+      syncInitialRender();
     });
 
   const cleanup = () => {
@@ -290,18 +304,24 @@ export const buildSplineScroll = async () => {
     timeline?.kill();
     renderResizeObserver?.disconnect();
     renderBufferObserver?.disconnect();
-    stageObserver.disconnect();
-    document.removeEventListener("visibilitychange", updateVisibility);
+    visibility.dispose();
     reducedMotion.removeEventListener("change", updateMotionPreference);
     cancelInitialRender();
     window.clearTimeout(renderResizeTimer);
-    spline?.dispose();
+    window.removeEventListener("pagehide", handlePageHide);
+    document.removeEventListener("astro:before-swap", cleanup);
+    spline?.stop();
+    if (!initializing) {
+      spline?.dispose();
+      spline = undefined;
+    }
   };
 
   // A page in the back/forward cache retains its scene and observers.
-  window.addEventListener("pagehide", (event) => {
+  const handlePageHide = (event: PageTransitionEvent) => {
     if (!event.persisted) cleanup();
-  });
+  };
+  window.addEventListener("pagehide", handlePageHide);
   document.addEventListener("astro:before-swap", cleanup, { once: true });
 
   try {
@@ -319,13 +339,25 @@ export const buildSplineScroll = async () => {
 
     if (isDisposed) return;
 
-    // Build once after the proximity observer starts warming the scene.
-    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+    // Download near the section, but defer decoding and GPU allocation until visible.
+    await visibility.whenVisible();
     if (isDisposed) return;
     spline = new Application(canvas, { renderMode: "manual" });
     // Scroll owns all transforms. Spline's pointer/orbit event machinery is unused.
-    await spline.start(sceneBuffer.slice(0), { interactive: false });
+    initializing = true;
+    try {
+      await spline.start(sceneBuffer.slice(0), { interactive: false });
+    } finally {
+      initializing = false;
+      spline.stop();
+      if (isDisposed) {
+        spline.dispose();
+        spline = undefined;
+      }
+    }
 
+    if (isDisposed) return;
+    await visibility.whenVisible();
     if (isDisposed) return;
 
     let renderWidth = 0;
@@ -401,14 +433,7 @@ export const buildSplineScroll = async () => {
       updateModelMotionBounds(cssWidth, cssHeight);
       applyCurrentModelTransform();
 
-      const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
-      const pixelBudget = mobileRenderer.matches ? 1100000 : MAX_RENDER_PIXELS;
-      const pixelBudgetRatio = Math.sqrt(pixelBudget / (cssWidth * cssHeight));
-      const targetPixelRatio = Math.min(
-        devicePixelRatio,
-        mobileRenderer.matches ? 1.35 : MAX_RENDER_PIXEL_RATIO,
-        pixelBudgetRatio
-      );
+      const targetPixelRatio = getScenePixelRatio(cssWidth, cssHeight, mobileRenderer.matches);
       const renderScale = targetPixelRatio / runtimePixelRatio;
       const nextWidth = Math.max(1, Math.round(cssWidth * renderScale));
       const nextHeight = Math.max(1, Math.round(cssHeight * renderScale));
@@ -433,7 +458,7 @@ export const buildSplineScroll = async () => {
         spline.setSize(renderWidth, renderHeight);
       }
       if (renderController) renderController.request(true);
-      else spline.requestRender();
+      else if (isStageVisible && !document.hidden) spline.requestRender();
     };
 
     const scheduleRenderResolutionSync = (delay = 120) => {
@@ -669,7 +694,7 @@ export const buildSplineScroll = async () => {
     };
     const requestChangedSceneRender = (force = false) => {
       if (sceneReady) renderController?.request(force);
-      else if (commitScene(force)) spline.requestRender();
+      else if (isStageVisible && !document.hidden && commitScene(force)) spline.requestRender();
     };
     syncVisibleScene = () => {
       requestChangedSceneRender(true);
@@ -905,6 +930,7 @@ export const buildSplineScroll = async () => {
     });
 
   } catch (error) {
+    if (isDisposed) return;
     console.error("No se pudo inicializar la escena MP Systems.", error);
     showError(getMessage("mp_systems_error", "No se ha podido cargar el sistema 3D."));
     cleanup();
