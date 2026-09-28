@@ -174,12 +174,23 @@ import SectionCornerControls from "./SectionCornerControls.astro";
       </div>
     </section>
 
-    <section class="price-estimate-card" aria-live="polite" data-price-estimate hidden>
-      <p>Estimando precio</p>
-      <div class="price-estimate-model" aria-label="Modelo 3D pendiente">
-        <span></span>
+    <section class="price-estimate-stage" aria-live="polite" data-price-estimate hidden>
+      <article class="price-estimate-card">
+        <span class="price-estimate-kicker">MYPEROL / CÁLCULO</span>
+        <p>Estimando precio</p>
+        <span class="price-estimate-status">Analizando las necesidades de tu superficie.</span>
+        <div class="price-estimate-amount" data-price-estimate-amount>130 €</div>
+      </article>
+      <div class="price-estimate-model" data-price-estimate-model>
+        <canvas
+          class="price-estimate-canvas"
+          data-price-estimate-canvas
+          aria-label="Modelo tridimensional del sistema MyPerol abriendo y cerrando sus capas"
+        ></canvas>
+        <div class="price-estimate-model-fallback" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
       </div>
-      <div class="price-estimate-amount" data-price-estimate-amount>130 €</div>
     </section>
 
   </section>

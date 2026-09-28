@@ -30,6 +30,7 @@
     const extraDot = priceCard.querySelector("[data-price-extra-dot]");
     const estimateCard = document.querySelector("[data-price-estimate]");
     const estimateAmount = document.querySelector("[data-price-estimate-amount]");
+    const estimateCanvas = document.querySelector("[data-price-estimate-canvas]");
     const resultNameInput = priceCard.querySelector("[data-price-result-name]");
     const resultPhoneInput = priceCard.querySelector("[data-price-result-phone]");
     const resultSubmit = priceCard.querySelector("[data-price-result-submit]");
@@ -39,6 +40,25 @@
     let surfaceErrorTimeout = 0;
     let actionLabelTimeout = 0;
     let estimateTimeout = 0;
+    let estimateSplineGeneration = 0;
+    let disposeEstimateSpline = () => undefined;
+    let estimateSplineModulePromise: Promise<typeof import("./calculator-estimate-spline")> | undefined;
+    const loadEstimateSplineModule = () => {
+      estimateSplineModulePromise ||= import("./calculator-estimate-spline");
+      return estimateSplineModulePromise;
+    };
+
+    const calculatorSection = priceCard.closest(".prices-page");
+    if (calculatorSection) {
+      const estimatePreloadObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        estimatePreloadObserver.disconnect();
+        void loadEstimateSplineModule()
+          .then(({ preloadCalculatorEstimateSpline }) => preloadCalculatorEstimateSpline())
+          .catch(() => undefined);
+      }, { rootMargin: "700px 0px" });
+      estimatePreloadObserver.observe(calculatorSection);
+    }
     let stepAnimationFrame = 0;
     const formatEuros = (value) => `${value} €`;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
@@ -646,6 +666,7 @@
 
     const resetCalculator = () => {
       window.clearTimeout(estimateTimeout);
+      stopEstimateSpline();
       sessionStorage.removeItem(storageKey);
 
       delete priceCard.dataset.selectedSpace;
@@ -675,8 +696,34 @@
       priceCard.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
+    const stopEstimateSpline = () => {
+      estimateSplineGeneration += 1;
+      disposeEstimateSpline();
+      disposeEstimateSpline = () => undefined;
+    };
+
+    const startEstimateSpline = async () => {
+      if (!(estimateCanvas instanceof HTMLCanvasElement)) return;
+
+      const generation = ++estimateSplineGeneration;
+      try {
+        const { mountCalculatorEstimateSpline } = await loadEstimateSplineModule();
+        if (
+          generation !== estimateSplineGeneration ||
+          !(estimateCard instanceof HTMLElement) ||
+          estimateCard.hidden
+        ) return;
+
+        disposeEstimateSpline();
+        disposeEstimateSpline = mountCalculatorEstimateSpline(estimateCanvas);
+      } catch (error) {
+        console.error("No se pudo iniciar el modelo 3D de estimación.", error);
+      }
+    };
+
     const runEstimateLoading = () => {
       window.clearTimeout(estimateTimeout);
+      stopEstimateSpline();
 
       priceCard.hidden = true;
 
@@ -684,6 +731,7 @@
         estimateCard.hidden = false;
         requestAnimationFrame(() => estimateCard.classList.add("is-visible"));
       }
+      void startEstimateSpline();
 
       const estimateDuration = 2500;
       const frames = [130, 280, 420, 690, 930, 1180, 1410, 1600];
@@ -696,6 +744,7 @@
       });
 
       estimateTimeout = window.setTimeout(() => {
+        stopEstimateSpline();
         if (estimateCard instanceof HTMLElement) {
           estimateCard.classList.remove("is-visible");
 
