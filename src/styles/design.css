@@ -839,16 +839,18 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .service-expanded-overlay .service-expanded-content { padding: var(--space-32); }
   .service-expanded-overlay .service-expanded-summary { padding: 52px 28px 22px; font-size: var(--text-16); }
   .prices-page, .home-page > .prices-page {
+    justify-content: flex-start;
     gap: 14px;
     height: 100svh;
     height: 100dvh;
-    padding: 76px var(--model-edge-gutter) 16px;
+    padding: 42px var(--model-edge-gutter) 16px;
   }
   .prices-page:has(.prices-card[data-view="result"]),
   .home-page > .prices-page:has(.prices-card[data-view="result"]) {
+    justify-content: flex-start;
     height: 100svh;
     height: 100dvh;
-    padding: 76px var(--model-edge-gutter) 16px;
+    padding: 42px var(--model-edge-gutter) 16px;
     overflow: hidden;
   }
   .prices-page .prices-card { grid-template-columns: 1fr; min-height: 0; padding: var(--space-24); }
@@ -927,8 +929,16 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .service-expanded-overlay .service-expanded-copy { font-size: var(--text-14); line-height: 1.68; }
   .service-expanded-overlay .service-expanded-summary { padding: 48px 22px 18px; font-size: var(--text-14); line-height: 1.45; }
   .service-expanded-overlay .service-expanded-composition { width: 100%; }
-  .prices-page, .home-page > .prices-page { gap: 12px; padding: 72px var(--model-edge-gutter) 12px; }
-  .prices-page:has(.prices-card[data-view="result"]), .home-page > .prices-page:has(.prices-card[data-view="result"]) { gap: 12px; padding: 72px var(--model-edge-gutter) 12px; }
+  .prices-page, .home-page > .prices-page {
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 42px var(--model-edge-gutter) 12px;
+  }
+  .prices-page:has(.prices-card[data-view="result"]), .home-page > .prices-page:has(.prices-card[data-view="result"]) {
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 42px var(--model-edge-gutter) 12px;
+  }
   .prices-section-eyebrow { margin-bottom: 6px; }
   .prices-section-heading h2 { font-size: var(--text-36); }
   .prices-section-intro { margin-top: 7px; font-size: var(--text-13); }
