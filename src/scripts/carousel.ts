@@ -1,175 +1,139 @@
-export const initializeFeatureCardsCarousel = (shell) => {
+export const initializeFeatureCardsCarousel = (shell: HTMLElement) => {
   if (shell.closest(".services-feature-cards, .home-primary-cards")) return;
-  const track = shell.querySelector(".feature-cards-track");
-  const prevButton = shell.querySelector("[data-carousel-prev]");
-  const nextButton = shell.querySelector("[data-carousel-next]");
-  const dotsContainer = shell.querySelector("[data-carousel-dots]");
+  const track = shell.querySelector<HTMLElement>(".feature-cards-track");
+  const prevButton = shell.querySelector<HTMLButtonElement>("[data-carousel-prev]");
+  const nextButton = shell.querySelector<HTMLButtonElement>("[data-carousel-next]");
+  const dotsContainer = shell.querySelector<HTMLElement>("[data-carousel-dots]");
+  if (!track || !prevButton || !nextButton || !dotsContainer || shell.classList.contains("is-carousel-ready")) return;
 
-  if (
-    !(track instanceof HTMLElement) ||
-    !(prevButton instanceof HTMLButtonElement) ||
-    !(nextButton instanceof HTMLButtonElement) ||
-    !(dotsContainer instanceof HTMLElement)
-  ) return;
-
-  const cards = Array.from(track.querySelectorAll(".feature-card")).filter(
-    (card) => card instanceof HTMLElement
-  );
-
+  const cards = Array.from(track.querySelectorAll<HTMLElement>(".feature-card"));
   const dots = cards.map((_, index) => {
     const dot = document.createElement("span");
     dot.className = "feature-cards-dot";
     dot.dataset.cardIndex = String(index);
-    dotsContainer.append(dot);
     return dot;
   });
-  let hoveredCardIndex = null;
-  let hasInitializedArrowVisibility = false;
+  dotsContainer.replaceChildren(...dots);
 
-  const updateArrowCenter = () => {
-    const referenceCard = cards[0];
-    if (!referenceCard) return;
+  const listeners = new AbortController();
+  const { signal } = listeners;
+  const arrowVisibility = new Map<HTMLButtonElement, boolean>();
+  const hideTimers = new Map<HTMLButtonElement, number>();
+  let hoveredCardIndex: number | null = null;
+  let activeDotIndex = -1;
+  let updateFrame = 0;
+  let geometryDirty = true;
+  let scrollStep = 460;
+  let arrowCenter = "";
 
-    const centerY = referenceCard.offsetTop + referenceCard.offsetHeight / 2;
-    shell.style.setProperty("--carousel-arrow-center-y", `${centerY}px`);
+  const setActiveDot = (index: number) => {
+    const nextIndex = Math.max(0, Math.min(index, dots.length - 1));
+    if (activeDotIndex === nextIndex) return;
+    dots[activeDotIndex]?.classList.remove("is-active");
+    dots[nextIndex]?.classList.add("is-active");
+    activeDotIndex = nextIndex;
   };
 
-  const arrowResizeObserver = new ResizeObserver(() => requestUpdate());
-  arrowResizeObserver.observe(track);
-  cards.forEach((card) => arrowResizeObserver.observe(card));
+  const setArrowVisible = (button: HTMLButtonElement, visible: boolean) => {
+    const previous = arrowVisibility.get(button);
+    if (previous === visible) return;
+    arrowVisibility.set(button, visible);
+    window.clearTimeout(hideTimers.get(button));
+    hideTimers.delete(button);
+    button.classList.remove("is-hiding");
 
-  const getScrollStep = () => {
-    const firstCard = track.querySelector(".feature-card");
-    if (!(firstCard instanceof HTMLElement)) return 460;
-
-    const styles = window.getComputedStyle(track);
-    const gap = Number.parseFloat(styles.columnGap || styles.gap || "0");
-    return firstCard.offsetWidth + gap;
+    if (visible) {
+      button.hidden = false;
+      button.dataset.arrowVisible = "true";
+    } else {
+      delete button.dataset.arrowVisible;
+      if (previous === undefined || button.hidden) {
+        button.hidden = true;
+      } else {
+        button.classList.add("is-hiding");
+        hideTimers.set(button, window.setTimeout(() => {
+          button.hidden = true;
+          button.classList.remove("is-hiding");
+          hideTimers.delete(button);
+        }, 220));
+      }
+    }
   };
 
-  const updateButtons = () => {
+  const update = () => {
+    updateFrame = 0;
+    // Read all geometry before changing classes or custom properties.
     const maxScroll = track.scrollWidth - track.clientWidth;
     const scrollLeft = Math.max(0, track.scrollLeft);
-    const previousArrowThreshold = 24;
+    let nextCenter = arrowCenter;
+    if (geometryDirty && cards[0]) {
+      const card = cards[0];
+      const styles = getComputedStyle(track);
+      scrollStep = card.offsetWidth + (Number.parseFloat(styles.columnGap || styles.gap) || 0);
+      nextCenter = `${card.offsetTop + card.offsetHeight / 2}px`;
+      geometryDirty = false;
+    }
 
-    setArrowVisible(prevButton, scrollLeft > previousArrowThreshold);
+    let nextDot = hoveredCardIndex ?? 0;
+    if (hoveredCardIndex === null && cards.length) {
+      const trackRect = track.getBoundingClientRect();
+      let mostVisibleWidth = 0;
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const visibleWidth = Math.max(0, Math.min(rect.right, trackRect.right) - Math.max(rect.left, trackRect.left));
+        if (visibleWidth > mostVisibleWidth) {
+          mostVisibleWidth = visibleWidth;
+          nextDot = index;
+        }
+      });
+    }
+
+    setArrowVisible(prevButton, scrollLeft > 24);
     setArrowVisible(nextButton, scrollLeft < maxScroll - 1);
-  };
-
-  const setActiveDot = (index) => {
-    const activeIndex = Math.max(0, Math.min(index, dots.length - 1));
-
-    dots.forEach((dot, dotIndex) => {
-      dot.classList.toggle("is-active", dotIndex === activeIndex);
-    });
-  };
-
-  const updateActiveDotFromScroll = () => {
-    if (!cards.length) return;
-    if (hoveredCardIndex !== null) {
-      setActiveDot(hoveredCardIndex);
-      return;
+    setActiveDot(nextDot);
+    if (nextCenter !== arrowCenter) {
+      arrowCenter = nextCenter;
+      shell.style.setProperty("--carousel-arrow-center-y", arrowCenter);
     }
-
-    const trackRect = track.getBoundingClientRect();
-    let mostVisibleIndex = 0;
-    let mostVisibleWidth = 0;
-
-    cards.forEach((card, index) => {
-      const cardRect = card.getBoundingClientRect();
-      const visibleLeft = Math.max(cardRect.left, trackRect.left);
-      const visibleRight = Math.min(cardRect.right, trackRect.right);
-      const visibleWidth = Math.max(0, visibleRight - visibleLeft);
-
-      if (visibleWidth > mostVisibleWidth) {
-        mostVisibleWidth = visibleWidth;
-        mostVisibleIndex = index;
-      }
-    });
-
-    setActiveDot(mostVisibleIndex);
   };
-
-  const setArrowVisible = (button, isVisible) => {
-    window.clearTimeout(Number(button.dataset.hideTimeout || 0));
-    const wasVisible = button.dataset.arrowVisible === "true";
-
-    if (isVisible) {
-      button.hidden = false;
-      button.classList.remove("is-hiding");
-      button.dataset.arrowVisible = "true";
-      return;
-    }
-
-    delete button.dataset.arrowVisible;
-
-    if (button.hidden || button.classList.contains("is-hiding")) return;
-
-    if (!hasInitializedArrowVisibility || !wasVisible) {
-      button.hidden = true;
-      button.classList.remove("is-hiding");
-      delete button.dataset.hideTimeout;
-      return;
-    }
-
-    button.classList.add("is-hiding");
-    button.dataset.hideTimeout = String(
-      window.setTimeout(() => {
-        if (!button.classList.contains("is-hiding")) return;
-
-        button.hidden = true;
-        button.classList.remove("is-hiding");
-        delete button.dataset.hideTimeout;
-      }, 220)
-    );
-  };
-
-  prevButton.addEventListener("click", () => {
-    track.scrollBy({ left: -getScrollStep(), behavior: "smooth" });
-  });
-
-  nextButton.addEventListener("click", () => {
-    track.scrollBy({ left: getScrollStep(), behavior: "smooth" });
-  });
-
-  cards.forEach((card, index) => {
-    card.addEventListener("mouseenter", () => {
-      hoveredCardIndex = index;
-      setActiveDot(index);
-    });
-
-    card.addEventListener("mouseleave", () => {
-      hoveredCardIndex = null;
-      updateActiveDotFromScroll();
-    });
-
-    card.addEventListener("focusin", () => {
-      hoveredCardIndex = index;
-      setActiveDot(index);
-    });
-
-    card.addEventListener("focusout", () => {
-      hoveredCardIndex = null;
-      updateActiveDotFromScroll();
-    });
-  });
-
-  let updateFrame = 0;
   const requestUpdate = () => {
-    if (updateFrame) return;
-    updateFrame = requestAnimationFrame(() => {
-      updateFrame = 0;
-      updateButtons();
-      updateActiveDotFromScroll();
-      updateArrowCenter();
-    });
+    if (!updateFrame) updateFrame = requestAnimationFrame(update);
   };
-  track.addEventListener("scroll", requestUpdate, { passive: true });
-  window.addEventListener("resize", requestUpdate);
+  const invalidateGeometry = () => {
+    geometryDirty = true;
+    requestUpdate();
+  };
+  const resizeObserver = new ResizeObserver(invalidateGeometry);
+  resizeObserver.observe(track);
+  cards.forEach(card => resizeObserver.observe(card));
 
-  updateArrowCenter();
-  updateButtons();
-  hasInitializedArrowVisibility = true;
+  prevButton.addEventListener("click", () => track.scrollBy({ left: -scrollStep, behavior: "smooth" }), { signal });
+  nextButton.addEventListener("click", () => track.scrollBy({ left: scrollStep, behavior: "smooth" }), { signal });
+  cards.forEach((card, index) => {
+    const activate = () => {
+      hoveredCardIndex = index;
+      setActiveDot(index);
+    };
+    const deactivate = () => {
+      hoveredCardIndex = null;
+      requestUpdate();
+    };
+    card.addEventListener("mouseenter", activate, { signal });
+    card.addEventListener("focusin", activate, { signal });
+    card.addEventListener("mouseleave", deactivate, { signal });
+    card.addEventListener("focusout", deactivate, { signal });
+  });
+  track.addEventListener("scroll", requestUpdate, { passive: true, signal });
+  window.addEventListener("resize", invalidateGeometry, { passive: true, signal });
+
+  const dispose = () => {
+    listeners.abort();
+    resizeObserver.disconnect();
+    cancelAnimationFrame(updateFrame);
+    hideTimers.forEach(timer => window.clearTimeout(timer));
+  };
+  window.addEventListener("pagehide", event => { if (!event.persisted) dispose(); }, { signal });
+  document.addEventListener("astro:before-swap", dispose, { once: true, signal });
+  update();
   shell.classList.add("is-carousel-ready");
-  updateActiveDotFromScroll();
 };

@@ -22,9 +22,10 @@ function normalizeLang(lang) {
 }
 
 function getLang() {
-  const lang = normalizeLang(localStorage.getItem("lang"));
+  const storedLang = localStorage.getItem("lang");
+  const lang = normalizeLang(storedLang);
 
-  if (lang !== localStorage.getItem("lang")) {
+  if (lang !== storedLang) {
     localStorage.setItem("lang", lang);
   }
 
@@ -35,9 +36,9 @@ function setLang(lang) {
   localStorage.setItem("lang", normalizeLang(lang));
 }
 
-function updateLangLabel() {
+function updateLangLabel(lang: string) {
   document.querySelectorAll("#currentLang, [data-current-lang]").forEach((label) => {
-    label.textContent = getLang().toUpperCase();
+    label.textContent = lang.toUpperCase();
   });
 }
 
@@ -55,6 +56,7 @@ function setFloatingMenuOpen(menu, toggle, isOpen) {
     menu.classList.remove("is-closing");
     menu.classList.add("is-opening");
     window.requestAnimationFrame(() => {
+      if (toggle?.getAttribute("aria-expanded") !== "true") return;
       menu.classList.add("open");
       menu.classList.remove("is-opening");
     });
@@ -101,7 +103,7 @@ function toggleLangMenu(toggle = document.getElementById("langToggle")) {
 }
 
 function closeLangMenu() {
-  document.querySelectorAll(".lang-button[aria-controls]").forEach((toggle) => {
+  document.querySelectorAll('.lang-button[aria-controls][aria-expanded="true"]').forEach((toggle) => {
     setLangMenuOpen(toggle, false);
   });
 }
@@ -122,6 +124,7 @@ function toggleMobileMenu() {
 }
 
 function closeMobileMenu() {
+  if (document.getElementById("mobileMenuToggle")?.getAttribute("aria-expanded") !== "true") return;
   setMobileMenuOpen(false);
 }
 
@@ -142,14 +145,6 @@ function markActiveLang(lang) {
       item.classList.remove("active");
       item.setAttribute("aria-pressed", "false");
     }
-  });
-}
-
-function updateWhatsappText(lang = getLang()) {
-  document.querySelectorAll("#whatsappText, [data-whatsapp-text]").forEach((el) => {
-    el.textContent =
-      i18nMessages[lang]?.whatsapp_cta ||
-      i18nMessages.es.whatsapp_cta;
   });
 }
 
@@ -219,7 +214,7 @@ async function syncLanguageUI(lang) {
     if (getLang() !== lang) return;
   }
   updateDocumentLang(lang);
-  updateLangLabel();
+  updateLangLabel(lang);
   markActiveLang(lang);
   translatePage(lang);
 }

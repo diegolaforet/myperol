@@ -12,6 +12,14 @@ try {
     await page.addInitScript(() => {
       window.auditLongTasks = [];
       new PerformanceObserver(list => window.auditLongTasks.push(...list.getEntries().map(e => e.duration))).observe({ type: "longtask", buffered: true });
+      window.auditDisplayNames = 0;
+      const DisplayNames = Intl.DisplayNames;
+      Intl.DisplayNames = class extends DisplayNames {
+        constructor(...args) {
+          super(...args);
+          window.auditDisplayNames++;
+        }
+      };
     });
     const session = await page.context().newCDPSession(page);
     await session.send("Network.enable");
@@ -38,6 +46,15 @@ try {
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(1200);
       await page.screenshot({ path: new URL(`${device}-${name}.png`, directory).pathname.replace(/^\/(\w:)/, "$1") });
+      const routeMetrics = await page.evaluate(() => ({
+        longTasks: window.auditLongTasks,
+        displayNamesConstructed: window.auditDisplayNames,
+        phoneOptions: document.querySelectorAll(".phone-prefix-option").length,
+        resources: performance.getEntriesByType("resource").map(e => ({
+          name: new URL(e.name).pathname, bytes: e.encodedBodySize, duration: e.duration,
+        })),
+      }));
+      await writeFile(new URL(`${device}-${name}.json`, directory), JSON.stringify(routeMetrics, null, 2));
     }
     await page.close();
   }

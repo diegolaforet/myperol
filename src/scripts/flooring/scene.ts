@@ -1,6 +1,6 @@
 import { createRenderController } from "./render-controller";
+import { loadFlooringResources } from "../spline/resources";
 
-const SCENE_URL = "/assets/3d/flooring-07d94fcf.splinecode";
 const LAYER_DEPTHS = {
   imprimacion: 134.598,
   silice: 134.267,
@@ -180,7 +180,6 @@ export const buildSplineScroll = async () => {
   section.dataset.flooringInitialized = "loading";
 
   let isDisposed = false;
-  const sceneRequest = new AbortController();
   let activePanelIndex = -1;
   let spline;
   let timeline;
@@ -286,7 +285,6 @@ export const buildSplineScroll = async () => {
     if (isDisposed) return;
 
     isDisposed = true;
-    sceneRequest.abort();
     renderController?.dispose();
     timeline?.scrollTrigger?.kill();
     timeline?.kill();
@@ -307,14 +305,10 @@ export const buildSplineScroll = async () => {
   document.addEventListener("astro:before-swap", cleanup, { once: true });
 
   try {
-    const [runtimeModule, gsapModule, scrollTriggerModule, sceneBuffer] = await Promise.all([
-      import("@splinetool/runtime"),
+    const [[runtimeModule, sceneBuffer], gsapModule, scrollTriggerModule] = await Promise.all([
+      loadFlooringResources(),
       import("gsap"),
       import("gsap/ScrollTrigger"),
-      fetch(SCENE_URL, { cache: "force-cache", signal: sceneRequest.signal }).then(response => {
-        if (!response.ok) throw new Error(`Scene request failed: ${response.status}`);
-        return response.arrayBuffer();
-      }),
     ]);
     const { Application } = runtimeModule;
     const { gsap } = gsapModule;
@@ -330,7 +324,7 @@ export const buildSplineScroll = async () => {
     if (isDisposed) return;
     spline = new Application(canvas, { renderMode: "manual" });
     // Scroll owns all transforms. Spline's pointer/orbit event machinery is unused.
-    await spline.start(sceneBuffer, { interactive: false });
+    await spline.start(sceneBuffer.slice(0), { interactive: false });
 
     if (isDisposed) return;
 

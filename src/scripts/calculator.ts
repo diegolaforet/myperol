@@ -44,21 +44,24 @@
     let disposeEstimateSpline = () => undefined;
     let estimateSplineModulePromise: Promise<typeof import("./calculator-estimate-spline")> | undefined;
     const loadEstimateSplineModule = () => {
-      estimateSplineModulePromise ||= import("./calculator-estimate-spline");
+      estimateSplineModulePromise ||= import("./calculator-estimate-spline").catch(error => {
+        estimateSplineModulePromise = undefined;
+        throw error;
+      });
       return estimateSplineModulePromise;
     };
 
-    const calculatorSection = priceCard.closest(".prices-page");
-    if (calculatorSection) {
-      const estimatePreloadObserver = new IntersectionObserver((entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        estimatePreloadObserver.disconnect();
-        void loadEstimateSplineModule()
-          .then(({ preloadCalculatorEstimateSpline }) => preloadCalculatorEstimateSpline())
-          .catch(() => undefined);
-      }, { rootMargin: "700px 0px" });
-      estimatePreloadObserver.observe(calculatorSection);
-    }
+    // Warm the estimate on intent, not simply by scrolling past the calculator.
+    const preloadEstimate = () => {
+      if (priceCard.dataset.view === "result") return;
+      priceCard.removeEventListener("pointerdown", preloadEstimate);
+      priceCard.removeEventListener("focusin", preloadEstimate);
+      void loadEstimateSplineModule()
+        .then(({ preloadCalculatorEstimateSpline }) => preloadCalculatorEstimateSpline())
+        .catch(() => undefined);
+    };
+    priceCard.addEventListener("pointerdown", preloadEstimate, { passive: true });
+    priceCard.addEventListener("focusin", preloadEstimate);
     let stepAnimationFrame = 0;
     const formatEuros = (value) => `${value} €`;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
@@ -86,9 +89,11 @@
     const getCountryFlag = (countryCode) => countryCode
       .toUpperCase()
       .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+    let countryNames: Intl.DisplayNames | undefined;
     const getCountryName = (countryCode) => {
       try {
-        return new Intl.DisplayNames(["es"], { type: "region" }).of(countryCode) || countryCode;
+        countryNames ||= new Intl.DisplayNames(["es"], { type: "region" });
+        return countryNames.of(countryCode) || countryCode;
       } catch {
         return countryCode;
       }
@@ -101,7 +106,6 @@
 
     const setPhonePrefix = (countryCode, code) => {
       const flag = getCountryFlag(countryCode);
-      const country = getCountryName(countryCode);
 
       if (phonePrefixCurrent) phonePrefixCurrent.textContent = `${flag} ${code}`;
       if (phonePrefixValue instanceof HTMLInputElement) phonePrefixValue.value = code;
@@ -113,10 +117,11 @@
       });
     };
 
+    let phonePrefixesReady = false;
     const renderPhonePrefixes = () => {
-      if (!(phonePrefixMenu instanceof HTMLElement)) return;
+      if (phonePrefixesReady || !(phonePrefixMenu instanceof HTMLElement)) return;
 
-      phonePrefixMenu.textContent = "";
+      const fragment = document.createDocumentFragment();
       phonePrefixes.forEach(([countryCode, code]) => {
         const flag = getCountryFlag(countryCode);
         const country = getCountryName(countryCode);
@@ -127,24 +132,30 @@
         option.dataset.country = countryCode;
         option.setAttribute("role", "option");
         option.innerHTML = `<span aria-hidden="true">${flag}</span><span class="phone-prefix-option-country">${country}</span><span class="phone-prefix-option-code">${code}</span>`;
-        option.addEventListener("click", () => {
-          setPhonePrefix(countryCode, code);
-          closePhonePrefixMenu();
-        });
-        phonePrefixMenu.append(option);
+        fragment.append(option);
       });
+      phonePrefixMenu.replaceChildren(fragment);
+      phonePrefixesReady = true;
 
       const selectedCode = phonePrefixValue instanceof HTMLInputElement ? phonePrefixValue.value : "+34";
       const selected = phonePrefixes.find(([, code]) => code === selectedCode) || phonePrefixes[0];
       setPhonePrefix(selected[0], selected[1]);
     };
 
-    renderPhonePrefixes();
+    phonePrefixMenu?.addEventListener("click", (event) => {
+      const option = event.target instanceof Element
+        ? event.target.closest<HTMLElement>(".phone-prefix-option")
+        : null;
+      if (!option?.dataset.country || !option.dataset.code) return;
+      setPhonePrefix(option.dataset.country, option.dataset.code);
+      closePhonePrefixMenu();
+    });
 
     phonePrefixButton?.addEventListener("click", () => {
       if (!(phonePrefixMenu instanceof HTMLElement) || !(phonePrefixButton instanceof HTMLButtonElement)) return;
 
       const willOpen = phonePrefixMenu.hidden;
+      if (willOpen) renderPhonePrefixes();
       phonePrefixMenu.hidden = !willOpen;
       phonePrefixButton.setAttribute("aria-expanded", String(willOpen));
     });
