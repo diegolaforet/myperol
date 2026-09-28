@@ -36,8 +36,10 @@ img { max-width: 100%; }
 
 /* The video remains full bleed; its identity and navigation sit directly on it. */
 .hero-placeholder.home-video-hero {
-  height: 94svh;
-  min-height: min(650px, 94svh);
+  height: 100svh;
+  height: 100dvh;
+  min-height: 100svh;
+  min-height: 100dvh;
   isolation: isolate;
 }
 .home-video-hero::before { background: var(--palette-tone-61); }
