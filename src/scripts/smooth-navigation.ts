@@ -44,15 +44,6 @@ function scrollToPageStart() {
   window.scrollTo({ top: 0, behavior: getScrollBehavior() });
 }
 
-function updateLocationHash(hash: string) {
-  if (window.location.hash === hash) {
-    window.history.replaceState(window.history.state, "", hash);
-    return;
-  }
-
-  window.history.pushState(window.history.state, "", hash);
-}
-
 function updateLocationPath(pathname: string, search: string) {
   const nextPath = `${pathname}${search}`;
   const currentPath = `${window.location.pathname}${window.location.search}`;
@@ -60,6 +51,16 @@ function updateLocationPath(pathname: string, search: string) {
   if (currentPath === nextPath && !window.location.hash) return;
 
   window.history.pushState(window.history.state, "", nextPath);
+}
+
+function replaceCurrentHash() {
+  if (!window.location.hash) return;
+
+  window.history.replaceState(
+    window.history.state,
+    "",
+    `${window.location.pathname}${window.location.search}`
+  );
 }
 
 function handleAnchorNavigation(event: MouseEvent) {
@@ -80,8 +81,9 @@ function handleAnchorNavigation(event: MouseEvent) {
   const destination = new URL(anchor.href, window.location.href);
   if (destination.origin !== window.location.origin) return;
 
+  const isSamePath = destination.pathname === window.location.pathname;
   const isSameDocument =
-    destination.pathname === window.location.pathname &&
+    isSamePath &&
     destination.search === window.location.search;
 
   if (!destination.hash) {
@@ -93,7 +95,7 @@ function handleAnchorNavigation(event: MouseEvent) {
     return;
   }
 
-  if (!isSameDocument) {
+  if (!isSamePath) {
     sessionStorage.setItem(NAVIGATION_HANDOFF_KEY, destination.hash);
     return;
   }
@@ -102,13 +104,13 @@ function handleAnchorNavigation(event: MouseEvent) {
   if (!target) return;
 
   event.preventDefault();
-  updateLocationHash(destination.hash);
+  updateLocationPath(destination.pathname, destination.search);
   scrollToTarget(target);
 }
 
 function resumeCrossPageNavigation() {
   const targetHash = sessionStorage.getItem(NAVIGATION_HANDOFF_KEY);
-  if (!targetHash || targetHash !== window.location.hash) return;
+  if (!targetHash || targetHash !== window.location.hash) return false;
 
   sessionStorage.removeItem(NAVIGATION_HANDOFF_KEY);
 
@@ -117,14 +119,36 @@ function resumeCrossPageNavigation() {
     if (!target) return;
 
     window.scrollTo({ top: 0, behavior: "auto" });
-    window.requestAnimationFrame(() => scrollToTarget(target));
+    window.requestAnimationFrame(() => {
+      scrollToTarget(target);
+      window.requestAnimationFrame(replaceCurrentHash);
+    });
   };
 
   if (document.readyState === "complete") navigate();
   else window.addEventListener("load", navigate, { once: true });
+
+  return true;
+}
+
+function cleanInitialSectionHash() {
+  const target = getTargetFromHash(window.location.hash);
+  if (!target) return;
+
+  const cleanUrl = () => {
+    scrollToTarget(target);
+    window.requestAnimationFrame(replaceCurrentHash);
+  };
+
+  if (document.readyState === "complete") {
+    window.requestAnimationFrame(cleanUrl);
+    return;
+  }
+
+  window.addEventListener("load", () => window.requestAnimationFrame(cleanUrl), { once: true });
 }
 
 export function initializeSmoothNavigation() {
   document.addEventListener("click", handleAnchorNavigation);
-  resumeCrossPageNavigation();
+  if (!resumeCrossPageNavigation()) cleanInitialSectionHash();
 }
