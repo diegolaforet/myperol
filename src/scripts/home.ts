@@ -103,48 +103,48 @@ if (
     return true;
   };
 
-  document.addEventListener(
-    "wheel",
-    (event) => {
-      if (preventInputDuringEntryScroll(event)) return;
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+  const handleEntryWheel = (event: WheelEvent) => {
+    if (event.defaultPrevented || event.ctrlKey) return;
+    if (preventInputDuringEntryScroll(event)) return;
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
 
-      const direction = event.deltaY > 0 ? "down" : "up";
-      if (!scrollBetweenEntryFrames(direction)) return;
+    const direction = event.deltaY > 0 ? "down" : "up";
+    if (!scrollBetweenEntryFrames(direction)) return;
 
-      event.preventDefault();
-    },
-    { passive: false, capture: true }
-  );
+    event.preventDefault();
+  };
 
-  document.addEventListener(
-    "touchstart",
-    (event) => {
-      touchStartX = event.touches[0]?.clientX ?? 0;
-      touchStartY = event.touches[0]?.clientY ?? 0;
-    },
-    { passive: true, capture: true }
-  );
+  const handleEntryTouchStart = (event: TouchEvent) => {
+    touchStartX = event.touches[0]?.clientX ?? 0;
+    touchStartY = event.touches[0]?.clientY ?? 0;
+  };
 
-  document.addEventListener(
-    "touchmove",
-    (event) => {
-      if (preventInputDuringEntryScroll(event)) return;
+  const handleEntryTouchMove = (event: TouchEvent) => {
+    if (event.defaultPrevented || event.touches.length !== 1) return;
+    if (preventInputDuringEntryScroll(event)) return;
 
-      const touchX = event.touches[0]?.clientX ?? touchStartX;
-      const touchY = event.touches[0]?.clientY ?? touchStartY;
-      const deltaX = touchStartX - touchX;
-      const deltaY = touchStartY - touchY;
+    const touchX = event.touches[0]?.clientX ?? touchStartX;
+    const touchY = event.touches[0]?.clientY ?? touchStartY;
+    const deltaX = touchStartX - touchX;
+    const deltaY = touchStartY - touchY;
 
-      if (Math.abs(deltaY) <= 12 || Math.abs(deltaY) <= Math.abs(deltaX)) return;
+    if (Math.abs(deltaY) <= 12 || Math.abs(deltaY) <= Math.abs(deltaX)) return;
 
-      const direction = deltaY > 0 ? "down" : "up";
-      if (!scrollBetweenEntryFrames(direction)) return;
+    const direction = deltaY > 0 ? "down" : "up";
+    if (!scrollBetweenEntryFrames(direction)) return;
 
-      event.preventDefault();
-    },
-    { passive: false, capture: true }
-  );
+    event.preventDefault();
+  };
+
+  // Only these two sections need cancellable input for the entry transition.
+  // Keeping handlers off document lets the rest of the page scroll natively.
+  const entryInputRegions = [document.querySelector(".home-video-hero"), entryScrollTarget];
+  for (const region of entryInputRegions) {
+    if (!(region instanceof HTMLElement)) continue;
+    region.addEventListener("wheel", handleEntryWheel, { passive: false, capture: true });
+    region.addEventListener("touchstart", handleEntryTouchStart, { passive: true, capture: true });
+    region.addEventListener("touchmove", handleEntryTouchMove, { passive: false, capture: true });
+  }
 
   // Wheel, touch and keys are handled above/below. Only a scrollbar drag needs
   // native scroll detection; layout anchoring and programmatic jumps do not.

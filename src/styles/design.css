@@ -423,9 +423,9 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
   padding: var(--space-40);
   gap: var(--space-40);
   overflow-y: auto;
-  overscroll-behavior: contain;
 }
 .service-expanded-overlay .service-expanded-card {
+  overscroll-behavior: contain;
   grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr);
   gap: 0;
   width: min(1260px, calc(100vw - 64px));
@@ -581,7 +581,8 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   -webkit-backdrop-filter: var(--filter-glass-13);
   box-shadow: 0 32px 96px var(--palette-tone-66), inset 0 1px 0 var(--palette-tone-106);
 }
-.prices-page .prices-card:not([data-view="result"]) .prices-step-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+/* Let wheel and touch gestures continue into the page at the panel boundaries. */
+.prices-page .prices-card:not([data-view="result"]) .prices-step-content { min-height: 0; overflow-y: auto; overscroll-behavior-y: auto; }
 .prices-page .prices-card[data-view="result"] {
   flex: 1 1 auto;
   height: min(620px, calc(100dvh - 238px)) !important;
@@ -864,7 +865,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
     grid-template-columns: 1fr;
     gap: var(--space-18);
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
     padding-right: 4px;
   }
   .prices-page .service-expanded-media { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
