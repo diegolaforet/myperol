@@ -1,39 +1,28 @@
-import esMessages from "../i18n/json/es.json";
+import { messages as i18nMessages, normalizeLanguage, loadLanguage, applyTranslations } from "../i18n/client";
 
 import { initializeScrollReveal } from "./scroll-reveal";
 import { initializeSectionControls } from "./section-controls";
 import { initializeHeroVideo } from "./hero-video";
 import { initializeSmoothNavigation } from "./smooth-navigation";
 
-const i18nMessages: Record<string, Record<string, string>> = { es: esMessages };
-const languageLoaders = {
-  en: () => import("../i18n/json/en.json"),
-  de: () => import("../i18n/json/de.json"),
-  fr: () => import("../i18n/json/fr.json"),
-  ru: () => import("../i18n/json/ru.json"),
-  uk: () => import("../i18n/json/uk.json"),
-};
-
-const DEFAULT_LANG = "es";
-const SUPPORTED_LANGS = ["es", "en", "de", "fr", "ru", "uk"];
-
-function normalizeLang(lang) {
-  return SUPPORTED_LANGS.includes(lang) ? lang : DEFAULT_LANG;
-}
+const normalizeLang = normalizeLanguage;
+let selectedLanguage = "es";
 
 function getLang() {
-  const storedLang = localStorage.getItem("lang");
-  const lang = normalizeLang(storedLang);
+  let storedLang: string | null = null;
+  try { storedLang = localStorage.getItem("lang"); } catch { /* Storage may be disabled. */ }
+  const lang = normalizeLang(storedLang ?? selectedLanguage);
 
   if (lang !== storedLang) {
-    localStorage.setItem("lang", lang);
+    setLang(lang);
   }
 
   return lang;
 }
 
 function setLang(lang) {
-  localStorage.setItem("lang", normalizeLang(lang));
+  selectedLanguage = normalizeLang(lang);
+  try { localStorage.setItem("lang", selectedLanguage); } catch { /* Keep the selection in memory. */ }
 }
 
 function updateLangLabel(lang: string) {
@@ -148,75 +137,23 @@ function markActiveLang(lang) {
   });
 }
 
-function getMessage(lang, key) {
-  return i18nMessages[lang]?.[key] || i18nMessages.es?.[key] || "";
-}
-
-function translateTextNodes(lang) {
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    const value = key ? getMessage(lang, key) : "";
-
-    if (value) el.textContent = value;
-  });
-}
-
-function translateHtmlNodes(lang) {
-  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-html");
-    const value = key ? getMessage(lang, key) : "";
-
-    if (value) el.innerHTML = value;
-  });
-}
-
-function translateAttributes(lang) {
-  document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-aria-label");
-    const value = key ? getMessage(lang, key) : "";
-
-    if (value) el.setAttribute("aria-label", value);
-  });
-}
-
-function updateDocumentMeta(lang) {
-  const title = getMessage(lang, "page_title");
-  const description = getMessage(lang, "page_description");
-
-  if (title) document.title = title;
-
-  if (description) {
-    const descriptionMeta = document.querySelector('meta[name="description"]');
-    const ogDescription = document.querySelector('meta[property="og:description"]');
-    const twitterDescription = document.querySelector('meta[name="twitter:description"]');
-
-    descriptionMeta?.setAttribute("content", description);
-    ogDescription?.setAttribute("content", description);
-    twitterDescription?.setAttribute("content", description);
+let languageRequest = 0;
+async function syncLanguageUI(value: string) {
+  const lang = normalizeLang(value);
+  const request = ++languageRequest;
+  try {
+    await loadLanguage(lang);
+  } catch (error) {
+    if (request === languageRequest) setLang(document.documentElement.lang);
+    console.error("Unable to load language", lang, error);
+    return;
   }
-}
-
-function translatePage(lang) {
-  translateTextNodes(lang);
-  translateHtmlNodes(lang);
-  translateAttributes(lang);
-  updateDocumentMeta(lang);
-}
-
-async function syncLanguageUI(lang) {
-  if (!i18nMessages[lang]) {
-    try {
-      i18nMessages[lang] = (await languageLoaders[lang]()).default;
-    } catch {
-      return;
-    }
-    // Ignore a stale import when another language was selected meanwhile.
-    if (getLang() !== lang) return;
-  }
+  if (request !== languageRequest) return;
   updateDocumentLang(lang);
   updateLangLabel(lang);
   markActiveLang(lang);
-  translatePage(lang);
+  applyTranslations();
+  window.dispatchEvent(new Event("i18n:updated"));
 }
 
 function initializePage() {

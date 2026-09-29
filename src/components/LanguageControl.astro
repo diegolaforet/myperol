@@ -9,6 +9,8 @@ const { menuId = "langMenu", primary = false } = Astro.props;
         type="button"
         onclick="toggleLangMenu(this)"
         aria-haspopup="true"
+        aria-label="Seleccionar idioma"
+        data-i18n-aria-label="language_select"
         aria-expanded="false"
         aria-controls={menuId}
       >

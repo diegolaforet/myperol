@@ -75,7 +75,7 @@ export const handler = async (event) => {
 
   const missingField = requiredFields.find((field) => !sanitizeText(data[field]));
   if (missingField) {
-    return jsonResponse(400, { error: "Faltan datos obligatorios." });
+    return jsonResponse(400, { code: "MISSING_FIELDS", error: "Faltan datos obligatorios." });
   }
 
   const resendApiKey = process.env.RESEND_API_KEY;

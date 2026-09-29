@@ -1,107 +1,109 @@
 ---
 import SectionCornerControls from "./SectionCornerControls.astro";
+import messages from "../i18n/json/es.json";
 ---
-<section id="calculadora" class="prices-page" aria-label="Calculadora MyPerol">
+<section id="calculadora" class="prices-page" aria-label={messages.calculator_aria} data-i18n-aria-label="calculator_aria">
     <SectionCornerControls instanceId="calculator" tone="dark" />
     <header class="prices-section-heading">
-      <p class="prices-section-eyebrow">MYPEROL / ESTIMACIÓN</p>
-      <h2>Tu espacio, tu proyecto.</h2>
-      <p class="prices-section-intro">El acabado perfecto empieza por conocer la superficie.</p>
+      <p class="prices-section-eyebrow" data-i18n="calculator_eyebrow">{messages.calculator_eyebrow}</p>
+      <h2 data-i18n="calculator_heading">{messages.calculator_heading}</h2>
+      <p class="prices-section-intro" data-i18n="calculator_intro">{messages.calculator_intro}</p>
     </header>
-    <section class="prices-hero" aria-label="Precios MyPerol">
+    <section class="prices-hero" aria-label={messages.calculator_prices_aria} data-i18n-aria-label="calculator_prices_aria">
     </section>
 
-    <section id="prices-calculator-card" class="prices-card service-expanded-card" aria-label="Aproximacion de precio MyPerol" data-price-card data-step="1">
-      <button class="price-back-button" type="button" aria-label="Atras" data-price-back hidden>
+    <section id="prices-calculator-card" class="prices-card service-expanded-card" aria-label={messages.calculator_estimate_aria} data-i18n-aria-label="calculator_estimate_aria" data-price-card data-step="1">
+      <button class="price-back-button" type="button" aria-label={messages.common_back} data-i18n-aria-label="common_back" data-price-back hidden>
         <span aria-hidden="true">&larr;</span>
-        <span class="price-back-label">Atras</span>
+        <span class="price-back-label" data-i18n="common_back">{messages.common_back}</span>
       </button>
 
       <div class="service-expanded-media" data-price-media>
         <div class="service-expanded-media-frame">
           <img src="/assets/card-images/services/home-card.webp" width="1200" height="900" loading="lazy" decoding="async" alt="" aria-hidden="true" />
         </div>
-        <p class="service-expanded-summary">Calcula un rango aproximado para orientar el coste de tu proyecto MyPerol.</p>
+        <p class="service-expanded-summary" data-i18n="calculator_summary">{messages.calculator_summary}</p>
       </div>
 
       <div class="service-expanded-content prices-step-content">
         <p class="service-expanded-label" data-price-label>MyPerol</p>
-        <h3 class="service-expanded-title" data-price-title>APROXIMACION DE PRECIO</h3>
-        <p class="service-expanded-copy" data-price-copy>Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.</p>
+        <h3 class="service-expanded-title" data-price-title data-i18n="calculator_title_intro">{messages.calculator_title_intro}</h3>
+        <p class="service-expanded-copy" data-price-copy data-i18n="calculator_copy_intro">{messages.calculator_copy_intro}</p>
 
         <div class="price-space-options" data-price-options hidden>
-          <button class="price-space-option" type="button" data-space="vivienda">&#127968; Vivienda</button>
-          <button class="price-space-option" type="button" data-space="garaje">&#128663; Garaje</button>
-          <button class="price-space-option" type="button" data-space="local-comercial">&#127970; Local comercial</button>
-          <button class="price-space-option" type="button" data-space="industria">&#127981; Industria</button>
-          <button class="price-space-option" type="button" data-space="exterior">&#127807; Exterior</button>
+          <button class="price-space-option" type="button" data-space="vivienda"><span aria-hidden="true">&#127968;</span> <span data-i18n="space_home">{messages.space_home}</span></button>
+          <button class="price-space-option" type="button" data-space="garaje"><span aria-hidden="true">&#128663;</span> <span data-i18n="space_garage">{messages.space_garage}</span></button>
+          <button class="price-space-option" type="button" data-space="local-comercial"><span aria-hidden="true">&#127970;</span> <span data-i18n="space_business">{messages.space_business}</span></button>
+          <button class="price-space-option" type="button" data-space="industria"><span aria-hidden="true">&#127981;</span> <span data-i18n="space_industry">{messages.space_industry}</span></button>
+          <button class="price-space-option" type="button" data-space="exterior"><span aria-hidden="true">&#127807;</span> <span data-i18n="space_outdoor">{messages.space_outdoor}</span></button>
         </div>
 
         <div class="price-surface-step" data-price-surface-step hidden>
-          <p class="price-step-question">Cuantos metros cuadrados tiene la superficie?</p>
+          <p class="price-step-question" data-i18n="calculator_surface_question">{messages.calculator_surface_question}</p>
           <label class="price-surface-field">
-            <span class="visually-hidden">Metros cuadrados</span>
+            <span class="visually-hidden" data-i18n="calculator_surface_label">{messages.calculator_surface_label}</span>
             <input
               type="text"
               inputmode="numeric"
               pattern="[0-9]*"
-              placeholder="m2"
+              placeholder={messages.calculator_surface_placeholder}
+              data-i18n-placeholder="calculator_surface_placeholder"
               data-price-surface-input
             />
           </label>
-          <p class="price-surface-error" data-price-surface-error hidden>Fuera de limites</p>
+          <p class="price-surface-error" data-price-surface-error hidden data-i18n="calculator_surface_error">{messages.calculator_surface_error}</p>
         </div>
 
         <div class="price-support-options" data-price-support-options hidden>
-          <button class="price-space-option" type="button" data-support="hormigon">Hormigon</button>
-          <button class="price-space-option" type="button" data-support="mortero-autonivelante">Mortero autonivelante</button>
-          <button class="price-space-option" type="button" data-support="ceramica-baldosa">Ceramica/Baldosa</button>
-          <button class="price-space-option" type="button" data-support="otro">Otro</button>
+          <button class="price-space-option" type="button" data-support="hormigon" data-i18n="support_concrete">{messages.support_concrete}</button>
+          <button class="price-space-option" type="button" data-support="mortero-autonivelante" data-i18n="support_screed">{messages.support_screed}</button>
+          <button class="price-space-option" type="button" data-support="ceramica-baldosa" data-i18n="support_tiles">{messages.support_tiles}</button>
+          <button class="price-space-option" type="button" data-support="otro" data-i18n="support_other">{messages.support_other}</button>
         </div>
 
         <div class="price-ceramic-step" data-price-ceramic-step hidden>
           <button class="price-space-option price-long-option" type="button" data-ceramic-removal="no">
-            <span>No, instalar el sistema MyPerol sobre la ceramica existente.</span>
-            <small>Opcion mas rapida y economica, siempre que el soporte se encuentre en buen estado.</small>
+            <span data-i18n="ceramic_keep">{messages.ceramic_keep}</span>
+            <small data-i18n="ceramic_keep_copy">{messages.ceramic_keep_copy}</small>
           </button>
           <button class="price-space-option price-long-option" type="button" data-ceramic-removal="si">
-            <span>Si, retirar la ceramica antes de la instalacion.</span>
-            <small>Recomendado cuando el pavimento presenta danos, desprendimientos o se desea comenzar sobre una base completamente nueva. (La retirada de cerámica requiere validación técnica. El estado del soporte inferior no puede conocerse hasta comenzar la demolición )</small>
+            <span data-i18n="ceramic_remove">{messages.ceramic_remove}</span>
+            <small data-i18n="ceramic_remove_copy">{messages.ceramic_remove_copy}</small>
           </button>
           <button class="price-help-trigger" type="button" data-price-help-open>
-            <span>Ayuda</span> <span aria-hidden="true">?</span>
+            <span data-i18n="common_help">{messages.common_help}</span> <span aria-hidden="true">?</span>
           </button>
         </div>
 
         <div class="price-condition-step" data-price-condition-step hidden>
           <button class="price-space-option price-long-option" type="button" data-condition="excelente">
-            <span class="price-condition-label price-condition-label-excellent">Excelente</span>
-            <small>Superficie firme, uniforme, nivelada y sin desperfectos.</small>
+            <span class="price-condition-label price-condition-label-excellent" data-i18n="condition_excellent">{messages.condition_excellent}</span>
+            <small data-i18n="condition_excellent_copy">{messages.condition_excellent_copy}</small>
           </button>
           <button class="price-space-option price-long-option" type="button" data-condition="buen-estado">
-            <span class="price-condition-label price-condition-label-good">Buen estado</span>
-            <small>Presenta un desgaste normal, pero no tiene grietas, desniveles importantes ni problemas de adherencia.</small>
+            <span class="price-condition-label price-condition-label-good" data-i18n="condition_good">{messages.condition_good}</span>
+            <small data-i18n="condition_good_copy">{messages.condition_good_copy}</small>
           </button>
           <button class="price-space-option price-long-option" type="button" data-condition="pequenas-reparaciones">
-            <span class="price-condition-label price-condition-label-minor">Necesita pequenas reparaciones</span>
-            <small>Presenta pequenas grietas, ligeros desniveles, juntas marcadas o imperfecciones que requieren preparacion previa.</small>
+            <span class="price-condition-label price-condition-label-minor" data-i18n="condition_minor">{messages.condition_minor}</span>
+            <small data-i18n="condition_minor_copy">{messages.condition_minor_copy}</small>
           </button>
           <button class="price-space-option price-long-option" type="button" data-condition="reparacion-importante">
-            <span class="price-condition-label price-condition-label-major">Necesita una reparacion importante</span>
-            <small>Presenta grietas importantes, desniveles considerables, humedad, zonas desprendidas o danos que requieren una reparacion mas profunda antes de la instalacion.</small>
+            <span class="price-condition-label price-condition-label-major" data-i18n="condition_major">{messages.condition_major}</span>
+            <small data-i18n="condition_major_copy">{messages.condition_major_copy}</small>
           </button>
           <button class="price-help-trigger" type="button" data-price-condition-help-open>
-            <span>Ayuda</span> <span aria-hidden="true">?</span>
+            <span data-i18n="common_help">{messages.common_help}</span> <span aria-hidden="true">?</span>
           </button>
         </div>
 
         <div class="price-result-step" data-price-result-step hidden>
           <div class="price-result-overview">
-          <p class="price-result-kicker">MyPerol - Estudio tecnico gratuito</p>
-          <h3>Estimacion personalizada completada</h3>
+          <p class="price-result-kicker" data-i18n="result_kicker">{messages.result_kicker}</p>
+          <h3 data-i18n="result_heading">{messages.result_heading}</h3>
           <div class="price-result-range">
-            <p>El precio de la instalacion del sistema MP SYSTEM, para tu <span data-price-result-space>Vivienda</span>, oscila entre:</p>
-            <strong class="price-result-amount" data-price-result-amount>1000 Euros</strong>
+            <p data-i18n-template="result_intro">El precio de la instalación del sistema MP SYSTEM, para tu <span data-price-result-space data-i18n-slot="space" data-i18n="space_home">{messages.space_home}</span>, oscila entre:</p>
+            <strong class="price-result-amount" data-price-result-amount>1000 €</strong>
           </div>
           </div>
 
@@ -109,28 +111,28 @@ import SectionCornerControls from "./SectionCornerControls.astro";
 
           <section class="price-result-panel">
             <h4 class="price-result-panel-title">
-              <span>Que ocurre ahora?</span>
-              <span class="price-result-kicker price-result-free">gratis</span>
+              <span data-i18n="result_now">{messages.result_now}</span>
+              <span class="price-result-kicker price-result-free" data-i18n="result_free">{messages.result_free}</span>
             </h4>
-            <p>Para ofrecerte un presupuesto preciso, uno de nuestros tecnicos certificados realizara un estudio del soporte existente. Esta evaluacion nos permite comprobar el estado real de la superficie, identificar las preparaciones necesarias y definir el alcance de la instalacion con total precision.</p>
+            <p data-i18n="result_now_copy">{messages.result_now_copy}</p>
           </section>
 
           <section class="price-result-panel price-result-panel-plain">
-            <h4>Comienza tu proyecto con MyPerol</h4>
-            <p>Uno de nuestros especialistas se pondra en contacto contigo para resolver cualquier duda y concertar una visita tecnica, totalmente gratuita y sin compromiso.</p>
+            <h4 data-i18n="result_start">{messages.result_start}</h4>
+            <p data-i18n="result_start_copy">{messages.result_start_copy}</p>
           </section>
 
           <form class="price-result-form">
             <label>
-              <span>Nombre completo</span>
+              <span data-i18n="form_name">{messages.form_name}</span>
               <input type="text" name="full-name" autocomplete="name" data-price-result-name />
             </label>
             <label>
-              <span>Telefono</span>
+              <span data-i18n="form_phone">{messages.form_phone}</span>
               <span class="price-phone-field">
                 <span class="phone-prefix-select" data-phone-prefix-select>
                   <input type="hidden" name="phone-prefix" value="+34" data-phone-prefix-value />
-                  <button class="phone-prefix-button" type="button" aria-label="Prefijo telefonico" aria-expanded="false" data-phone-prefix-button>
+                  <button class="phone-prefix-button" type="button" aria-label={messages.form_phone_prefix} data-i18n-aria-label="form_phone_prefix" aria-expanded="false" data-phone-prefix-button>
                     <span data-phone-prefix-current>&#127466;&#127480; +34</span>
                     <span aria-hidden="true">&#9662;</span>
                   </button>
@@ -142,27 +144,27 @@ import SectionCornerControls from "./SectionCornerControls.astro";
           </form>
 
           <section class="price-result-panel">
-            <h4>Que ocurre despues?</h4>
+            <h4 data-i18n="result_next">{messages.result_next}</h4>
             <ul>
-              <li>Contactamos contigo para programar la visita.</li>
-              <li>Enviamos a un tecnico certificado para realizar el estudio.</li>
-              <li>Recibes un presupuesto detallado, personalizado.</li>
+              <li data-i18n="result_next_contact">{messages.result_next_contact}</li>
+              <li data-i18n="result_next_visit">{messages.result_next_visit}</li>
+              <li data-i18n="result_next_quote">{messages.result_next_quote}</li>
             </ul>
-            <p>En MyPerol no ofrecemos presupuestos genericos. Cada proyecto comienza con un estudio tecnico para garantizar una solucion adaptada a las caracteristicas reales de cada superficie.</p>
+            <p data-i18n="result_next_copy">{messages.result_next_copy}</p>
           </section>
 
           <button class="service-expanded-action price-result-action" type="button" data-price-result-submit disabled>
-            <span>Solicitar estudio tecnico</span>
+            <span data-i18n="result_submit">{messages.result_submit}</span>
           </button>
           <p class="price-result-submit-status" data-price-result-status aria-live="polite"></p>
           </div>
         </div>
         <div class="prices-card-footer">
           <button class="service-expanded-composition prices-step-action" type="button" data-price-action>
-            <span class="composition-shift-label" data-price-action-label>Comenzar</span>
+            <span class="composition-shift-label" data-price-action-label data-i18n="calculator_start">{messages.calculator_start}</span>
             <span class="composition-shift-arrow" aria-hidden="true">&rarr;</span>
           </button>
-          <div class="prices-progress-dots home-carousel-dots-on-light" aria-label="Paso 1 de 5" data-price-progress>
+          <div class="prices-progress-dots home-carousel-dots-on-light" aria-label="Paso 1 de 5" data-i18n-aria-label="calculator_progress" data-i18n-params='{"step":1,"total":5}' data-price-progress>
             <span class="feature-cards-dot is-active" aria-hidden="true" data-price-dot></span>
             <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
             <span class="feature-cards-dot" aria-hidden="true" data-price-dot></span>
@@ -176,16 +178,16 @@ import SectionCornerControls from "./SectionCornerControls.astro";
 
     <section class="price-estimate-stage" aria-live="polite" data-price-estimate hidden>
       <article class="price-estimate-card">
-        <span class="price-estimate-kicker">MYPEROL / CÁLCULO</span>
-        <p>Estimando precio</p>
-        <span class="price-estimate-status">Analizando las necesidades de tu superficie.</span>
+        <span class="price-estimate-kicker" data-i18n="estimate_kicker">{messages.estimate_kicker}</span>
+        <p data-i18n="estimate_title">{messages.estimate_title}</p>
+        <span class="price-estimate-status" data-i18n="estimate_status">{messages.estimate_status}</span>
         <div class="price-estimate-amount" data-price-estimate-amount>130 €</div>
       </article>
       <div class="price-estimate-model" data-price-estimate-model>
         <canvas
           class="price-estimate-canvas"
           data-price-estimate-canvas
-          aria-label="Modelo tridimensional del sistema MyPerol abriendo y cerrando sus capas"
+          aria-label={messages.estimate_canvas} data-i18n-aria-label="estimate_canvas"
         ></canvas>
         <div class="price-estimate-model-fallback" aria-hidden="true">
           <span></span><span></span><span></span><span></span><span></span>

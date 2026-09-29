@@ -1,3 +1,5 @@
+import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCurrency, applyTranslations } from "../i18n/client";
+
     const priceCard = document.querySelector("[data-price-card]");
 
   if (priceCard instanceof HTMLElement) {
@@ -63,7 +65,7 @@
     priceCard.addEventListener("pointerdown", preloadEstimate, { passive: true });
     priceCard.addEventListener("focusin", preloadEstimate);
     let stepAnimationFrame = 0;
-    const formatEuros = (value) => `${value} €`;
+    const formatEuros = formatCurrency;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
     const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
     const phonePrefixMenu = priceCard.querySelector("[data-phone-prefix-menu]");
@@ -92,7 +94,7 @@
     let countryNames: Intl.DisplayNames | undefined;
     const getCountryName = (countryCode) => {
       try {
-        countryNames ||= new Intl.DisplayNames(["es"], { type: "region" });
+        countryNames ||= new Intl.DisplayNames([currentLanguage()], { type: "region" });
         return countryNames.of(countryCode) || countryCode;
       } catch {
         return countryCode;
@@ -218,11 +220,11 @@
       if (backButton instanceof HTMLButtonElement) {
         const isResultStep = priceCard.dataset.step === "result";
         backButton.hidden = !isResultStep && Number(priceCard.dataset.step || "1") <= 1;
-        backButton.setAttribute("aria-label", isResultStep ? "Reiniciar" : "Atras");
+        bindAttribute(backButton, "aria-label", isResultStep ? "common_restart" : "common_back");
       }
 
       if (backLabel instanceof HTMLElement) {
-        backLabel.textContent = priceCard.dataset.step === "result" ? "Reiniciar" : "Atras";
+        bindText(backLabel, priceCard.dataset.step === "result" ? "common_restart" : "common_back");
       }
     };
 
@@ -240,7 +242,7 @@
 
       if (progress) {
         const totalSteps = hasCeramicExtraStep ? 6 : 5;
-        progress.setAttribute("aria-label", `Paso ${step} de ${totalSteps}`);
+        bindAttribute(progress, "aria-label", "calculator_progress", { step, total: totalSteps });
       }
     };
 
@@ -265,7 +267,8 @@
       resultSubmit.disabled = !(hasName && hasPhone);
     };
 
-    const setActionLabel = (text) => {
+    const setActionLabel = (key: string) => {
+      const text = t(key);
       if (!actionLabel) return;
 
       window.clearTimeout(actionLabelTimeout);
@@ -275,15 +278,15 @@
       actionLabel.classList.add("is-changing");
 
       actionLabelTimeout = window.setTimeout(() => {
-        actionLabel.textContent = text;
+        bindText(actionLabel, key);
         actionLabel.classList.remove("is-changing");
       }, 120);
     };
 
     const updateSupportActionLabel = () => {
       setActionLabel(priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "otro"
-        ? "Consultar en chat"
-        : "Continuar");
+        ? "calculator_chat"
+        : "calculator_continue");
     };
 
     const updateSelectedOption = (container, selectedValue, dataName) => {
@@ -302,49 +305,25 @@
       });
     };
 
-    const getSpaceLabel = () => {
-      const labels = {
-        "vivienda": "Vivienda",
-        "garaje": "Garaje",
-        "local-comercial": "Local comercial",
-        "industria": "Industria",
-        "exterior": "Exterior",
-      };
-
-      return labels[priceCard.dataset.selectedSpace || "vivienda"] || "Vivienda";
+    const spaceKeys = {
+      "vivienda": "space_home", "garaje": "space_garage",
+      "local-comercial": "space_business", "industria": "space_industry", "exterior": "space_outdoor",
     };
-
-    const getSupportLabel = () => {
-      const labels = {
-        "hormigon": "Hormigon",
-        "mortero-autonivelante": "Mortero autonivelante",
-        "ceramica-baldosa": "Ceramica/Baldosa",
-        "otro": "Otro",
-      };
-
-      return labels[priceCard.dataset.selectedSupport || ""] || "Sin seleccionar";
+    const supportKeys = {
+      "hormigon": "support_concrete", "mortero-autonivelante": "support_screed",
+      "ceramica-baldosa": "support_tiles", "otro": "support_other",
     };
-
+    const conditionKeys = {
+      "excelente": "condition_excellent", "buen-estado": "condition_good",
+      "pequenas-reparaciones": "condition_minor", "reparacion-importante": "condition_major",
+    };
+    const getSpaceKey = () => spaceKeys[priceCard.dataset.selectedSpace || "vivienda"] || "space_home";
+    const getSpaceLabel = () => t(getSpaceKey());
+    const getSupportLabel = () => t(supportKeys[priceCard.dataset.selectedSupport || ""] || "common_unselected");
+    const getConditionLabel = () => t(conditionKeys[priceCard.dataset.selectedCondition || ""] || "common_unselected");
     const getCeramicRemovalLabel = () => {
-      if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") return "No aplica";
-
-      const labels = {
-        "no": "No, instalar sobre la ceramica existente",
-        "si": "Si, retirar la ceramica antes de la instalacion",
-      };
-
-      return labels[priceCard.dataset.selectedCeramicRemoval || ""] || "Sin seleccionar";
-    };
-
-    const getConditionLabel = () => {
-      const labels = {
-        "excelente": "Excelente",
-        "buen-estado": "Buen estado",
-        "pequenas-reparaciones": "Necesita pequenas reparaciones",
-        "reparacion-importante": "Necesita una reparacion importante",
-      };
-
-      return labels[priceCard.dataset.selectedCondition || ""] || "Sin seleccionar";
+      if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") return t("common_not_applicable");
+      return t(({ no: "ceramic_keep", si: "ceramic_remove" })[priceCard.dataset.selectedCeramicRemoval || ""] || "common_unselected");
     };
 
     const priceMultipliers = {
@@ -390,7 +369,7 @@
       priceCard.dataset.estimatedPrice = String(estimate);
 
       if (resultAmount) {
-        resultAmount.textContent = `${formatEuros(lowerEstimate)} a ${formatEuros(upperEstimate)}`;
+        bindText(resultAmount, "result_range", { min: formatEuros(lowerEstimate), max: formatEuros(upperEstimate) });
       }
     };
 
@@ -399,7 +378,7 @@
       const lowerEstimate = Math.round(estimate * 0.9);
       const upperEstimate = Math.round(estimate * 1.1);
 
-      return `${formatEuros(lowerEstimate)} a ${formatEuros(upperEstimate)}`;
+      return t("result_range", { min: formatEuros(lowerEstimate), max: formatEuros(upperEstimate) });
     };
 
     const getPriceRequestPayload = () => {
@@ -421,10 +400,10 @@
       };
     };
 
-    const setResultStatus = (message, type = "") => {
+    const setResultStatus = (key, type = "") => {
       if (!(resultStatus instanceof HTMLElement)) return;
 
-      resultStatus.textContent = message;
+      bindText(resultStatus, key);
       resultStatus.dataset.status = type;
     };
 
@@ -439,7 +418,7 @@
 
       resultSubmit.disabled = true;
       resultSubmit.classList.add("is-loading");
-      setResultStatus("Enviando solicitud...", "loading");
+      setResultStatus("request_sending", "loading");
 
       try {
         const response = await fetch("/.netlify/functions/price-request", {
@@ -452,12 +431,12 @@
 
         const result = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(result.error || "No se pudo enviar la solicitud.");
+          throw new Error(result.code === "MISSING_FIELDS" ? "request_missing" : "request_error");
         }
 
-        setResultStatus("Solicitud enviada. Te contactaremos lo antes posible.", "success");
+        setResultStatus("request_success", "success");
       } catch (error) {
-        setResultStatus(error instanceof Error ? error.message : "No se pudo enviar la solicitud.", "error");
+        setResultStatus(error instanceof Error && error.message === "request_missing" ? "request_missing" : "request_error", "error");
         updateResultSubmitState();
       } finally {
         resultSubmit.classList.remove("is-loading");
@@ -465,29 +444,20 @@
     };
 
     const helpContent = {
-      ceramic: {
-        title: "Que opcion es la mas adecuada?",
-        body: [
-          "En la mayoria de los casos, no es necesario retirar la ceramica. Los sistemas MyPerol pueden aplicarse directamente sobre baldosas correctamente adheridas y un preparado exhaustivo de la superficie, reduciendo los tiempos de ejecucion, los escombros y el coste de la obra.",
-          "La retirada del pavimento solo se recomienda cuando existen problemas estructurales, piezas sueltas, humedades o un soporte que no garantice una correcta adherencia del sistema.",
-        ],
-      },
-      condition: {
-        title: "Como describiria el estado actual de la superficie?",
-        body: [
-          "El estado del soporte es determinante para garantizar una correcta aplicacion y la maxima durabilidad del sistema MyPerol.",
-        ],
-      },
+      ceramic: { title: "help_ceramic_title", body: ["help_ceramic_one", "help_ceramic_two"] },
+      condition: { title: "help_condition_title", body: ["help_condition_copy"] },
     };
 
     const openHelpModal = (contentType = "ceramic") => {
       const content = helpContent[contentType] || helpContent.ceramic;
-
-      if (helpTitle) helpTitle.textContent = content.title;
+      bindText(helpTitle, content.title);
       if (helpBody instanceof HTMLElement) {
-        helpBody.innerHTML = content.body.map((text) => `<p>${text}</p>`).join("");
+        helpBody.replaceChildren(...content.body.map(key => {
+          const paragraph = document.createElement("p");
+          bindText(paragraph, key);
+          return paragraph;
+        }));
       }
-
       if (helpOverlay instanceof HTMLElement) {
         helpOverlay.hidden = false;
         window.requestAnimationFrame(() => helpOverlay.classList.add("is-open"));
@@ -512,8 +482,8 @@
       priceCard.dataset.view = "intro";
 
       setBaseStepChromeHidden(false);
-      if (title) title.textContent = "APROXIMACION DE PRECIO";
-      if (copy) copy.textContent = "Esta calculadora de precios te ayudara a obtener un rango aproximado del coste segun las caracteristicas principales del espacio.";
+      bindText(title, "calculator_title_intro");
+      bindText(copy, "calculator_copy_intro");
       if (options instanceof HTMLElement) options.hidden = true;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
@@ -522,7 +492,7 @@
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
       resetStepScroll();
       closeHelpModal();
-      setActionLabel("Comenzar");
+      setActionLabel("calculator_start");
 
       setActiveDots(1);
       setActionEnabled(true);
@@ -536,8 +506,8 @@
       priceCard.dataset.view = "space";
 
       setBaseStepChromeHidden(false);
-      if (title) title.textContent = "TIPO DE ESPACIO";
-      if (copy) copy.textContent = "";
+      bindText(title, "calculator_title_space");
+      clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = false;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
@@ -546,7 +516,7 @@
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
       resetStepScroll();
       closeHelpModal();
-      setActionLabel("Continuar");
+      setActionLabel("calculator_continue");
 
       setActiveDots(2);
       setActionEnabled(Boolean(priceCard.dataset.selectedSpace));
@@ -560,8 +530,8 @@
       priceCard.dataset.view = "surface";
 
       setBaseStepChromeHidden(false);
-      if (title) title.textContent = "SUPERFICIE";
-      if (copy) copy.textContent = "";
+      bindText(title, "calculator_title_surface");
+      clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = false;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
@@ -571,7 +541,7 @@
       resetStepScroll();
       closeHelpModal();
       if (animate && surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
-      setActionLabel("Continuar");
+      setActionLabel("calculator_continue");
 
       setActiveDots(3);
       setActionEnabled(isValidSurfaceValue());
@@ -585,8 +555,8 @@
       priceCard.dataset.view = "support";
 
       setBaseStepChromeHidden(false);
-      if (title) title.textContent = "SOPORTE EXISTENTE";
-      if (copy) copy.textContent = "";
+      bindText(title, "calculator_title_support");
+      clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = false;
@@ -609,8 +579,8 @@
       priceCard.dataset.view = "ceramic-removal";
 
       setBaseStepChromeHidden(false);
-      if (title) title.textContent = "DESEA RETIRAR LA CERAMICA?";
-      if (copy) copy.textContent = "";
+      bindText(title, "calculator_title_ceramic");
+      clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
@@ -618,7 +588,7 @@
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
       resetStepScroll();
-      setActionLabel("Continuar");
+      setActionLabel("calculator_continue");
 
       setActiveDots(5);
       setActionEnabled(Boolean(priceCard.dataset.selectedCeramicRemoval));
@@ -632,8 +602,8 @@
       priceCard.dataset.view = "condition";
 
       setBaseStepChromeHidden(false);
-      if (title) title.textContent = "ESTADO DEL SOPORTE";
-      if (copy) copy.textContent = "";
+      bindText(title, "calculator_title_condition");
+      clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
@@ -642,7 +612,7 @@
       if (resultStep instanceof HTMLElement) resultStep.hidden = true;
       resetStepScroll();
       closeHelpModal();
-      setActionLabel("Finalizar");
+      setActionLabel("calculator_finish");
 
       setActiveDots(Number(priceCard.dataset.step || "5"));
       setActionEnabled(Boolean(priceCard.dataset.selectedCondition));
@@ -663,13 +633,14 @@
       if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
       if (resultStep instanceof HTMLElement) resultStep.hidden = false;
       resetStepScroll();
-      if (resultSpace) resultSpace.textContent = getSpaceLabel();
+      bindText(resultSpace, getSpaceKey());
+      applyTranslations(resultStep);
       updateResultAmount();
       updateResultSubmitState();
       closeHelpModal();
 
       updateBackButton();
-      setActionLabel("Comenzar");
+      setActionLabel("calculator_start");
       setActionEnabled(true);
       if (animate) animatePriceCardStep();
       saveState();
@@ -750,7 +721,10 @@
 
       frames.forEach((value, index) => {
         window.setTimeout(() => {
-          if (estimateAmount) estimateAmount.textContent = formatEuros(value);
+          if (estimateAmount instanceof HTMLElement) {
+            estimateAmount.dataset.amount = String(value);
+            estimateAmount.textContent = formatEuros(value);
+          }
         }, index * frameDuration);
       });
 
@@ -1064,6 +1038,21 @@
 
       setStepOne({ animate: true });
     };
+
+    window.addEventListener("i18n:updated", () => {
+      countryNames = undefined;
+      phonePrefixMenu?.querySelectorAll<HTMLElement>(".phone-prefix-option").forEach(option => {
+        const country = option.querySelector(".phone-prefix-option-country");
+        if (country) country.textContent = getCountryName(option.dataset.country);
+      });
+      if (priceCard.dataset.view === "result") {
+        bindText(resultSpace, getSpaceKey());
+        updateResultAmount();
+      }
+      if (estimateAmount instanceof HTMLElement) {
+        estimateAmount.textContent = formatEuros(Number(estimateAmount.dataset.amount || 130));
+      }
+    });
 
     restoreState();
   }

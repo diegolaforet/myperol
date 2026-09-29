@@ -1,4 +1,5 @@
 ---
+import messages from "../i18n/json/es.json";
 import SocialLinks from "../components/SocialLinks.astro";
 import Header from "../components/Header.astro";
 import "@fontsource-variable/lexend";
@@ -8,13 +9,15 @@ import "../styles/base.css";
 import "../styles/design.css";
 
 const {
-  title = "MyPerol",
-  description = "Página informativa de MyPerol.",
+  titleKey = "page_title",
+  descriptionKey = "page_description",
   isHome = false,
   bodyClass = "",
 } = Astro.props;
 
 
+const title = messages[titleKey];
+const description = messages[descriptionKey];
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.es");
 ---
 
@@ -25,18 +28,18 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preload" href={latinFont} as="font" type="font/woff2" crossorigin />
     {isHome && <link rel="preload" href="/assets/videos/hero-poster.webp" as="image" fetchpriority="high" />}
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <title data-i18n={titleKey}>{title}</title>
+    <meta name="description" content={description} data-i18n-content={descriptionKey} />
     <meta name="theme-color" content="#ffffff" />
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={title} data-i18n-content={titleKey} />
+    <meta property="og:description" content={description} data-i18n-content={descriptionKey} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="MyPerol" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={title} data-i18n-content={titleKey} />
+    <meta name="twitter:description" content={description} data-i18n-content={descriptionKey} />
 
     <link rel="icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

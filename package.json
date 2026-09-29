@@ -4,6 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "check:i18n": "node scripts/audit-i18n.mjs",
+    "prebuild": "npm run check:i18n",
     "build": "astro build",
     "preview": "astro preview",
     "test:e2e": "playwright test",

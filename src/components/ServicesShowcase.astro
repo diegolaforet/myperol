@@ -1,4 +1,5 @@
 ---
+import messages from "../i18n/json/es.json";
 import ServiceCard from "../components/ServiceCard.astro";
 import { homeServices } from "../data/services";
 import SectionCornerControls from "./SectionCornerControls.astro";
@@ -8,17 +9,15 @@ import SectionCornerControls from "./SectionCornerControls.astro";
   id="servicios"
   class="feature-cards services-feature-cards home-services-showcase"
   aria-label="Servicios MyPerol"
-  data-i18n-aria-label="feature_cards_aria"
+  data-i18n-aria-label="services_aria"
 >
   <SectionCornerControls instanceId="services" />
 
   <div class="feature-cards-header">
     <h2 id="services-feature-heading" class="services-feature-heading" data-i18n="feature_cards_heading">Explora posibilidades para tu espacio.</h2>
     <div class="services-feature-subtitle">
-      <p id="services-performance-copy"><b>Cada espacio exige un nivel de rendimiento diferente.</b></p>
-      <p id="services-performance-copy-2">
-        Nuestros sistemas epoxídicos <b>(MP SYSTEM)</b> han sido desarrollados para responder a las exigencias específicas de cada entorno, combinando resistencia, diseño y facilidad de mantenimiento para ofrecer el máximo rendimiento en distintos entornos de uso.
-      </p>
+      <p id="services-performance-copy"><b data-i18n="services_performance">{messages.services_performance}</b></p>
+      <p id="services-performance-copy-2" data-i18n-html="services_description" set:html={messages.services_description} />
     </div>
   </div>
 
@@ -41,5 +40,5 @@ import SectionCornerControls from "./SectionCornerControls.astro";
 
 <script>
   import { initializeServiceCards } from "../scripts/service-dialog";
-  initializeServiceCards(".home-services-showcase .service-card-expandable", "Calcular precio");
+  initializeServiceCards(".home-services-showcase .service-card-expandable", "service_calculate");
 </script>

@@ -2,6 +2,7 @@ import { createRenderController } from "./render-controller";
 import { loadFlooringResources } from "../spline/resources";
 import { observeSceneVisibility } from "../spline/visibility";
 import { getScenePixelRatio } from "../spline/resolution";
+import { bindText } from "../../i18n/client";
 
 const LAYER_DEPTHS = {
   imprimacion: 134.598,
@@ -156,13 +157,6 @@ const normalizeName = (name = "") =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
-const getMessage = (key, fallback) => {
-  const language = document.documentElement.lang || "es";
-  const messages = window.I18N_MESSAGES || {};
-
-  return messages[language]?.[key] || messages.es?.[key] || fallback;
-};
-
 export const buildSplineScroll = async () => {
   const section = document.querySelector("[data-flooring-scroll]");
   const canvas = section?.querySelector("[data-flooring-canvas]");
@@ -228,9 +222,9 @@ export const buildSplineScroll = async () => {
   };
   reducedMotion.addEventListener("change", updateMotionPreference);
 
-  const showError = (message) => {
+  const showError = () => {
     if (loader instanceof HTMLElement) loader.classList.add("has-error");
-    if (loaderMessage instanceof HTMLElement) loaderMessage.textContent = message;
+    bindText(loaderMessage, "mp_systems_error");
     section.classList.remove("is-loading");
     section.classList.add("has-load-error");
     section.dataset.flooringInitialized = "error";
@@ -932,7 +926,7 @@ export const buildSplineScroll = async () => {
   } catch (error) {
     if (isDisposed) return;
     console.error("No se pudo inicializar la escena MP Systems.", error);
-    showError(getMessage("mp_systems_error", "No se ha podido cargar el sistema 3D."));
+    showError();
     cleanup();
     throw error;
   }

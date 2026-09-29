@@ -1,14 +1,15 @@
 ---
+import messages from "../i18n/json/es.json";
 import type { Service } from "../data/services";
 interface Props { service: Service; home?: boolean }
 const { service, home = false } = Astro.props;
 ---
-<article class="feature-card service-card-expandable" tabindex="0" data-price-space={service.space} data-service-technical={service.technical}>
+<article class="feature-card service-card-expandable" tabindex="0" data-price-space={service.space} data-service-technical={service.technicalKey ? messages[service.technicalKey] : undefined} data-service-technical-key={service.technicalKey}>
   <div class="service-card-media">
     <span class={home ? "service-card-label-text" : undefined}>MyPerol</span>
     {home && <img class="service-card-logo" src="/assets/logo/logo-blanco.png" loading="lazy" decoding="async" alt="" aria-hidden="true" />}
     <img class="service-card-image service-card-image-cover" src={service.image} loading="lazy" decoding="async" width="1200" height="900" alt="" aria-hidden="true" />
   </div>
   <h2>{service.title}</h2>
-  <p class="feature-card-services-text" data-i18n={service.translationKey}>{service.summary}</p>
+  <p class="feature-card-services-text" data-i18n={service.translationKey}>{messages[service.translationKey]}</p>
 </article>

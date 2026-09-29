@@ -1,10 +1,12 @@
+import { bindText, bindAttribute, applyTranslations } from "../i18n/client";
+
 export function enhanceServiceDialog(overlay: HTMLElement, trigger: HTMLElement, close: () => void) {
   const dialog = overlay.querySelector<HTMLElement>('[role="dialog"]');
   if (!dialog) return () => {};
   const closeButton = document.createElement("button");
   closeButton.type = "button";
   closeButton.className = "service-expanded-close";
-  closeButton.setAttribute("aria-label", "Cerrar");
+  bindAttribute(closeButton, "aria-label", "common_close");
   closeButton.textContent = "\u00d7";
   closeButton.addEventListener("click", close);
   dialog.prepend(closeButton);
@@ -36,7 +38,7 @@ export function enhanceServiceDialog(overlay: HTMLElement, trigger: HTMLElement,
   };
 }
 
-export function initializeServiceCards(selector: string, priceActionLabel: string) {
+export function initializeServiceCards(selector: string, priceActionKey: string) {
   const cards = Array.from(document.querySelectorAll<HTMLElement>(selector));
   if (!cards.length) return;
 
@@ -76,8 +78,6 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
 
     const label = card.querySelector(".service-card-label-text, .service-card-media > span")?.textContent?.trim() || "MyPerol";
     const title = card.querySelector("h2")?.textContent?.trim() || "";
-    const summary = card.querySelector(".feature-card-services-text")?.textContent?.trim() || "";
-    const technicalText = card.dataset.serviceTechnical || summary;
     const image = card.querySelector<HTMLImageElement>(".service-card-image");
     const priceSpace = card.dataset.priceSpace || "";
 
@@ -92,25 +92,25 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
         <div class="service-expanded-content">
           <p class="service-expanded-label"></p>
           <h2 class="service-expanded-title" id="service-dialog-title"></h2>
-          <p class="service-expanded-copy" role="region" aria-label="Detalles del servicio" tabindex="0"></p>
+          <p class="service-expanded-copy" role="region" data-i18n-aria-label="service_details" tabindex="0"></p>
           <div class="service-expanded-actions">
             <button class="service-expanded-action" type="button" data-service-price-space=""></button>
-            <button class="service-expanded-composition" type="button"><span class="composition-shift-label">Conoce la composicion</span><span class="composition-shift-arrow" aria-hidden="true">&rarr;</span></button>
+            <button class="service-expanded-composition" type="button"><span class="composition-shift-label" data-i18n="service_composition"></span><span class="composition-shift-arrow" aria-hidden="true">&rarr;</span></button>
           </div>
         </div>
       </article>
     `;
     overlay.querySelector<HTMLElement>(".service-expanded-label")!.textContent = label;
     overlay.querySelector<HTMLElement>(".service-expanded-title")!.textContent = title;
-    overlay.querySelector<HTMLElement>(".service-expanded-summary")!.textContent = summary;
-    overlay.querySelector<HTMLElement>(".service-expanded-copy")!.textContent = technicalText;
+    bindText(overlay.querySelector(".service-expanded-summary"), card.querySelector<HTMLElement>(".feature-card-services-text")!.dataset.i18n!);
+    bindText(overlay.querySelector(".service-expanded-copy"), card.dataset.serviceTechnicalKey || card.querySelector<HTMLElement>(".feature-card-services-text")!.dataset.i18n!);
 
     const expandedImage = overlay.querySelector<HTMLImageElement>(".service-expanded-media-frame img")!;
     expandedImage.src = image?.currentSrc || image?.src || "";
     if (image?.classList.contains("service-card-image-cover")) expandedImage.classList.add("service-expanded-image-cover");
 
     const priceButton = overlay.querySelector<HTMLButtonElement>("[data-service-price-space]")!;
-    priceButton.textContent = priceActionLabel;
+    bindText(priceButton, priceActionKey);
     priceButton.dataset.servicePriceSpace = priceSpace;
     priceButton.addEventListener("click", () => {
       sessionStorage.removeItem("myperol-price-calculator");
@@ -123,6 +123,7 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
 
     activeOverlay = overlay;
     document.body.append(overlay);
+    applyTranslations(overlay);
     const background = Array.from(document.body.children).filter(
       (element): element is HTMLElement => element instanceof HTMLElement && element !== overlay && !element.inert
     );
@@ -138,7 +139,7 @@ export function initializeServiceCards(selector: string, priceActionLabel: strin
     if (card.dataset.expansionReady) return;
     card.dataset.expansionReady = "true";
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `Abrir ${card.querySelector("h2")?.textContent?.trim() || "servicio"}`);
+    bindAttribute(card, "aria-label", "service_open", { service: card.querySelector("h2")?.textContent?.trim() || "MyPerol" });
     card.addEventListener("click", () => openExpandedCard(card));
     card.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;

@@ -1,4 +1,4 @@
-﻿---
+---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SectionCornerControls from "../components/SectionCornerControls.astro";
 import ServicesShowcase from "../components/ServicesShowcase.astro";
@@ -7,8 +7,8 @@ import Calculator from "../components/Calculator.astro";
 ---
 
 <BaseLayout
-  title="MyPerol - EPOXI"
-  description="Página informativa de MyPerol."
+  titleKey="page_title"
+  descriptionKey="page_description"
   isHome
 >
   <main class="home-page">
@@ -36,7 +36,7 @@ import Calculator from "../components/Calculator.astro";
           <a href="#calculadora" data-i18n="nav_prices">Calculadora</a>
         </div>
       </div>
-      <a class="hero-scroll-cue" href="#experiencia" aria-label="Descubrir MyPerol">
+      <a class="hero-scroll-cue" href="#experiencia" aria-label="Descubrir MyPerol" data-i18n-aria-label="hero_discover">
         <span class="hero-scroll-cue__line" aria-hidden="true"></span>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="m7 10 5 5 5-5"></path>
