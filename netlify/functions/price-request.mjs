@@ -49,6 +49,28 @@ const buildEmailText = (data) => [
   `Estado del soporte: ${sanitizeText(data.condition)}`,
 ].join("\n");
 
+const buildDirectEmailHtml = (data) => `
+  <div style="font-family: Arial, sans-serif; color: #1f1f1f; line-height: 1.45;">
+    <h1 style="margin: 0 0 18px; font-size: 24px;">Nueva solicitud de presupuesto directo MyPerol</h1>
+    <p><strong>Nombre completo:</strong> ${escapeHtml(data.fullName)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+    <p><strong>Telefono:</strong> ${escapeHtml(`${data.phonePrefix || ""} ${data.phone}`)}</p>
+    <h2 style="margin: 24px 0 8px; font-size: 18px;">Detalles del proyecto</h2>
+    <p style="white-space: pre-wrap;">${escapeHtml(data.message)}</p>
+  </div>
+`;
+
+const buildDirectEmailText = (data) => [
+  "Nueva solicitud de presupuesto directo MyPerol.",
+  "",
+  `Nombre completo: ${sanitizeText(data.fullName)}`,
+  `Email: ${sanitizeText(data.email)}`,
+  `Telefono: ${sanitizeText(data.phonePrefix)} ${sanitizeText(data.phone)}`.trim(),
+  "",
+  "Detalles del proyecto:",
+  sanitizeText(data.message),
+].join("\n");
+
 export const handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { error: "Metodo no permitido." });
@@ -61,17 +83,20 @@ export const handler = async (event) => {
     return jsonResponse(400, { error: "JSON invalido." });
   }
 
-  const requiredFields = [
-    "fullName",
-    "phone",
-    "phonePrefix",
-    "priceRange",
-    "space",
-    "squareMeters",
-    "support",
-    "ceramicRemoval",
-    "condition",
-  ];
+  const isDirectRequest = data.requestType === "direct-quote";
+  const requiredFields = isDirectRequest
+    ? ["fullName", "email", "phone", "message"]
+    : [
+        "fullName",
+        "phone",
+        "phonePrefix",
+        "priceRange",
+        "space",
+        "squareMeters",
+        "support",
+        "ceramicRemoval",
+        "condition",
+      ];
 
   const missingField = requiredFields.find((field) => !sanitizeText(data[field]));
   if (missingField) {
@@ -93,7 +118,9 @@ export const handler = async (event) => {
     });
   }
 
-  const subject = `Solicitud de estudio tecnico MyPerol - ${sanitizeText(data.fullName)}`;
+  const subject = isDirectRequest
+    ? `Solicitud de presupuesto MyPerol - ${sanitizeText(data.fullName)}`
+    : `Solicitud de estudio tecnico MyPerol - ${sanitizeText(data.fullName)}`;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -104,8 +131,8 @@ export const handler = async (event) => {
       from: fromEmail,
       to: [toEmail],
       subject,
-      html: buildEmailHtml(data),
-      text: buildEmailText(data),
+      html: isDirectRequest ? buildDirectEmailHtml(data) : buildEmailHtml(data),
+      text: isDirectRequest ? buildDirectEmailText(data) : buildEmailText(data),
     }),
   });
 

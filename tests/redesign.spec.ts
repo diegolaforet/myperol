@@ -647,6 +647,46 @@ test("calculator intro and steps fit within one viewport", async ({ page }, test
   await page.screenshot({ path: testInfo.outputPath("calculator-condition.png") });
 });
 
+test("calculator intro offers a direct quote without changing the calculator flow", async ({ page }) => {
+  await page.route("**/.netlify/functions/price-request", async route => {
+    const payload = route.request().postDataJSON();
+    expect(payload).toMatchObject({
+      requestType: "direct-quote",
+      fullName: "Cliente de prueba",
+      email: "cliente@example.com",
+      phonePrefix: "+33",
+      phone: "600123456",
+      message: "Proyecto residencial de 80 m2.",
+    });
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+  });
+
+  await page.goto("/precios?reset=1");
+  const card = page.locator("[data-price-card]");
+  const form = card.locator("[data-price-direct-form]");
+
+  await expect(card.locator("[data-price-direct-panel]")).toBeVisible();
+  await expect(card.locator("[data-price-media]")).toBeHidden();
+  await card.locator("[data-price-direct-open]").click();
+  await expect(form).toBeVisible();
+  await expect(card.locator("[data-price-title]")).toBeHidden();
+
+  await form.locator("[data-price-direct-name]").fill("Cliente");
+  await form.locator("[data-price-direct-last-name]").fill("de prueba");
+  await form.locator("[data-price-direct-email]").fill("cliente@example.com");
+  await form.locator("[data-price-direct-phone-prefix-button]").click();
+  await form.locator("[data-price-direct-phone-prefix-menu] [data-country='FR']").click();
+  await form.locator("[data-price-direct-phone]").fill("600123456");
+  await form.locator("[data-price-direct-message]").fill("Proyecto residencial de 80 m2.");
+  await form.locator("[data-price-direct-submit]").click();
+  await expect(form.locator("[data-price-direct-status]")).toHaveAttribute("data-status", "success");
+
+  await card.locator("[data-price-direct-close]").click();
+  await expect(form).toBeHidden();
+  await card.locator("[data-price-action]").click();
+  await expect(card).toHaveAttribute("data-view", "space");
+});
+
 test("final polish reuses carousel pagination and exposes premium navigation cues", async ({ page }, testInfo) => {
   await page.goto("/");
   const cue = page.locator(".hero-scroll-cue");

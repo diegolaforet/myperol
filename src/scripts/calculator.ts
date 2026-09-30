@@ -36,12 +36,29 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     const resultPhoneInput = priceCard.querySelector("[data-price-result-phone]");
     const resultSubmit = priceCard.querySelector("[data-price-result-submit]");
     const resultStatus = priceCard.querySelector("[data-price-result-status]");
+    const directPanel = priceCard.querySelector("[data-price-direct-panel]");
+    const directOpenButton = priceCard.querySelector("[data-price-direct-open]");
+    const directForm = priceCard.querySelector("[data-price-direct-form]");
+    const directCloseButton = priceCard.querySelector("[data-price-direct-close]");
+    const directNameInput = priceCard.querySelector("[data-price-direct-name]");
+    const directLastNameInput = priceCard.querySelector("[data-price-direct-last-name]");
+    const directEmailInput = priceCard.querySelector("[data-price-direct-email]");
+    const directPhoneInput = priceCard.querySelector("[data-price-direct-phone]");
+    const directPhonePrefixSelect = priceCard.querySelector("[data-price-direct-phone-prefix-select]");
+    const directPhonePrefixButton = priceCard.querySelector("[data-price-direct-phone-prefix-button]");
+    const directPhonePrefixMenu = priceCard.querySelector("[data-price-direct-phone-prefix-menu]");
+    const directPhonePrefixCurrent = priceCard.querySelector("[data-price-direct-phone-prefix-current]");
+    const directPhonePrefixValue = priceCard.querySelector("[data-price-direct-phone-prefix-value]");
+    const directMessageInput = priceCard.querySelector("[data-price-direct-message]");
+    const directSubmit = priceCard.querySelector("[data-price-direct-submit]");
+    const directStatus = priceCard.querySelector("[data-price-direct-status]");
     const storageKey = "myperol-price-calculator";
     const whatsappUrl = "https://wa.me/34663108027";
     let surfaceErrorTimeout = 0;
     let actionLabelTimeout = 0;
     let estimateTimeout = 0;
     let stepAnimationFrame = 0;
+    let introModeTimeout = 0;
     const formatEuros = formatCurrency;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
     const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
@@ -78,48 +95,70 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       }
     };
 
-    const closePhonePrefixMenu = () => {
-      if (phonePrefixMenu instanceof HTMLElement) phonePrefixMenu.hidden = true;
-      if (phonePrefixButton instanceof HTMLButtonElement) phonePrefixButton.setAttribute("aria-expanded", "false");
+    const closePhonePrefixMenu = (menu = phonePrefixMenu, button = phonePrefixButton) => {
+      if (menu instanceof HTMLElement) menu.hidden = true;
+      if (button instanceof HTMLButtonElement) button.setAttribute("aria-expanded", "false");
     };
 
-    const setPhonePrefix = (countryCode, code) => {
+    const setPhonePrefix = (
+      countryCode,
+      code,
+      {
+        current = phonePrefixCurrent,
+        value = phonePrefixValue,
+        menu = phonePrefixMenu,
+      } = {},
+    ) => {
       const flag = getCountryFlag(countryCode);
 
-      if (phonePrefixCurrent) phonePrefixCurrent.textContent = `${flag} ${code}`;
-      if (phonePrefixValue instanceof HTMLInputElement) phonePrefixValue.value = code;
+      if (current) current.textContent = `${flag} ${code}`;
+      if (value instanceof HTMLInputElement) value.value = code;
 
-      phonePrefixMenu?.querySelectorAll(".phone-prefix-option").forEach((option) => {
+      menu?.querySelectorAll(".phone-prefix-option").forEach((option) => {
         if (option instanceof HTMLElement) {
           option.classList.toggle("is-selected", option.dataset.code === code && option.dataset.country === countryCode);
         }
       });
     };
 
-    let phonePrefixesReady = false;
-    const renderPhonePrefixes = () => {
-      if (phonePrefixesReady || !(phonePrefixMenu instanceof HTMLElement)) return;
+    const createPhonePrefixMenu = ({ menu, current, value }) => {
+      let isReady = false;
 
-      const fragment = document.createDocumentFragment();
-      phonePrefixes.forEach(([countryCode, code]) => {
-        const flag = getCountryFlag(countryCode);
-        const country = getCountryName(countryCode);
-        const option = document.createElement("button");
-        option.type = "button";
-        option.className = "phone-prefix-option";
-        option.dataset.code = code;
-        option.dataset.country = countryCode;
-        option.setAttribute("role", "option");
-        option.innerHTML = `<span aria-hidden="true">${flag}</span><span class="phone-prefix-option-country">${country}</span><span class="phone-prefix-option-code">${code}</span>`;
-        fragment.append(option);
-      });
-      phonePrefixMenu.replaceChildren(fragment);
-      phonePrefixesReady = true;
+      return () => {
+        if (isReady || !(menu instanceof HTMLElement)) return;
 
-      const selectedCode = phonePrefixValue instanceof HTMLInputElement ? phonePrefixValue.value : "+34";
-      const selected = phonePrefixes.find(([, code]) => code === selectedCode) || phonePrefixes[0];
-      setPhonePrefix(selected[0], selected[1]);
+        const fragment = document.createDocumentFragment();
+        phonePrefixes.forEach(([countryCode, code]) => {
+          const flag = getCountryFlag(countryCode);
+          const country = getCountryName(countryCode);
+          const option = document.createElement("button");
+          option.type = "button";
+          option.className = "phone-prefix-option";
+          option.dataset.code = code;
+          option.dataset.country = countryCode;
+          option.setAttribute("role", "option");
+          option.innerHTML = `<span aria-hidden="true">${flag}</span><span class="phone-prefix-option-country">${country}</span><span class="phone-prefix-option-code">${code}</span>`;
+          fragment.append(option);
+        });
+        menu.replaceChildren(fragment);
+        isReady = true;
+
+        const selectedCode = value instanceof HTMLInputElement ? value.value : "+34";
+        const selected = phonePrefixes.find(([, code]) => code === selectedCode) || phonePrefixes[0];
+        setPhonePrefix(selected[0], selected[1], { current, value, menu });
+      };
     };
+
+    const renderPhonePrefixes = createPhonePrefixMenu({
+      menu: phonePrefixMenu,
+      current: phonePrefixCurrent,
+      value: phonePrefixValue,
+    });
+    const renderDirectPhonePrefixes = createPhonePrefixMenu({
+      menu: directPhonePrefixMenu,
+      current: directPhonePrefixCurrent,
+      value: directPhonePrefixValue,
+    });
 
     phonePrefixMenu?.addEventListener("click", (event) => {
       const option = event.target instanceof Element
@@ -128,6 +167,19 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       if (!option?.dataset.country || !option.dataset.code) return;
       setPhonePrefix(option.dataset.country, option.dataset.code);
       closePhonePrefixMenu();
+    });
+
+    directPhonePrefixMenu?.addEventListener("click", (event) => {
+      const option = event.target instanceof Element
+        ? event.target.closest<HTMLElement>(".phone-prefix-option")
+        : null;
+      if (!option?.dataset.country || !option.dataset.code) return;
+      setPhonePrefix(option.dataset.country, option.dataset.code, {
+        current: directPhonePrefixCurrent,
+        value: directPhonePrefixValue,
+        menu: directPhonePrefixMenu,
+      });
+      closePhonePrefixMenu(directPhonePrefixMenu, directPhonePrefixButton);
     });
 
     phonePrefixButton?.addEventListener("click", () => {
@@ -139,9 +191,21 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       phonePrefixButton.setAttribute("aria-expanded", String(willOpen));
     });
 
+    directPhonePrefixButton?.addEventListener("click", () => {
+      if (!(directPhonePrefixMenu instanceof HTMLElement) || !(directPhonePrefixButton instanceof HTMLButtonElement)) return;
+
+      const willOpen = directPhonePrefixMenu.hidden;
+      if (willOpen) renderDirectPhonePrefixes();
+      directPhonePrefixMenu.hidden = !willOpen;
+      directPhonePrefixButton.setAttribute("aria-expanded", String(willOpen));
+    });
+
     document.addEventListener("click", (event) => {
       if (!(phonePrefixSelect instanceof HTMLElement)) return;
       if (event.target instanceof Node && !phonePrefixSelect.contains(event.target)) closePhonePrefixMenu();
+      if (directPhonePrefixSelect instanceof HTMLElement && event.target instanceof Node && !directPhonePrefixSelect.contains(event.target)) {
+        closePhonePrefixMenu(directPhonePrefixMenu, directPhonePrefixButton);
+      }
     });
 
     const getState = () => ({
@@ -282,6 +346,34 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       });
     };
 
+    const setDirectContactMode = (enabled, { animate = true } = {}) => {
+      window.clearTimeout(introModeTimeout);
+
+      const updateMode = () => {
+        priceCard.classList.toggle("is-direct-contact", enabled);
+        if (directForm instanceof HTMLFormElement) directForm.hidden = !enabled;
+
+        window.requestAnimationFrame(() => {
+          if (stepContent instanceof HTMLElement) stepContent.classList.remove("is-view-switching");
+          if (enabled && directNameInput instanceof HTMLInputElement) directNameInput.focus();
+        });
+      };
+
+      if (!animate || !(stepContent instanceof HTMLElement)) {
+        updateMode();
+        return;
+      }
+
+      stepContent.classList.add("is-view-switching");
+      introModeTimeout = window.setTimeout(updateMode, 150);
+    };
+
+    const configureStepColumns = (isIntro) => {
+      if (directPanel instanceof HTMLElement) directPanel.hidden = !isIntro;
+      if (isIntro && media instanceof HTMLElement) media.hidden = true;
+      if (!isIntro) setDirectContactMode(false, { animate: false });
+    };
+
     const spaceKeys = {
       "vivienda": "space_home", "garaje": "space_garage",
       "local-comercial": "space_business", "industria": "space_industry", "exterior": "space_outdoor",
@@ -384,6 +476,21 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       resultStatus.dataset.status = type;
     };
 
+    const submitRequest = async (payload) => {
+      const response = await fetch("/.netlify/functions/price-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.code === "MISSING_FIELDS" ? "request_missing" : "request_error");
+      }
+    };
+
     const submitPriceRequest = async () => {
       if (!(resultSubmit instanceof HTMLButtonElement) || resultSubmit.disabled) return;
 
@@ -398,25 +505,53 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       setResultStatus("request_sending", "loading");
 
       try {
-        const response = await fetch("/.netlify/functions/price-request", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(result.code === "MISSING_FIELDS" ? "request_missing" : "request_error");
-        }
-
+        await submitRequest(payload);
         setResultStatus("request_success", "success");
       } catch (error) {
         setResultStatus(error instanceof Error && error.message === "request_missing" ? "request_missing" : "request_error", "error");
         updateResultSubmitState();
       } finally {
         resultSubmit.classList.remove("is-loading");
+      }
+    };
+
+    const setDirectStatus = (key = "", type = "") => {
+      if (!(directStatus instanceof HTMLElement)) return;
+
+      if (key) bindText(directStatus, key);
+      else directStatus.textContent = "";
+      directStatus.dataset.status = type;
+    };
+
+    const submitDirectRequest = async () => {
+      if (!(directForm instanceof HTMLFormElement) || !(directSubmit instanceof HTMLButtonElement)) return;
+      if (!directForm.reportValidity()) return;
+
+      const payload = {
+        requestType: "direct-quote",
+        fullName: [
+          directNameInput instanceof HTMLInputElement ? directNameInput.value.trim() : "",
+          directLastNameInput instanceof HTMLInputElement ? directLastNameInput.value.trim() : "",
+        ].filter(Boolean).join(" "),
+        email: directEmailInput instanceof HTMLInputElement ? directEmailInput.value.trim() : "",
+        phonePrefix: directPhonePrefixValue instanceof HTMLInputElement ? directPhonePrefixValue.value : "",
+        phone: directPhoneInput instanceof HTMLInputElement ? directPhoneInput.value.trim() : "",
+        message: directMessageInput instanceof HTMLTextAreaElement ? directMessageInput.value.trim() : "",
+      };
+
+      directSubmit.disabled = true;
+      directSubmit.classList.add("is-loading");
+      setDirectStatus("request_sending", "loading");
+
+      try {
+        await submitRequest(payload);
+        setDirectStatus("request_success", "success");
+        directForm.reset();
+      } catch (error) {
+        setDirectStatus(error instanceof Error && error.message === "request_missing" ? "request_missing" : "request_error", "error");
+      } finally {
+        directSubmit.disabled = false;
+        directSubmit.classList.remove("is-loading");
       }
     };
 
@@ -459,6 +594,8 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "intro";
 
       setBaseStepChromeHidden(false);
+      configureStepColumns(true);
+      setDirectContactMode(false, { animate: false });
       bindText(title, "calculator_title_intro");
       bindText(copy, "calculator_copy_intro");
       if (options instanceof HTMLElement) options.hidden = true;
@@ -483,6 +620,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "space";
 
       setBaseStepChromeHidden(false);
+      configureStepColumns(false);
       bindText(title, "calculator_title_space");
       clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = false;
@@ -507,6 +645,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "surface";
 
       setBaseStepChromeHidden(false);
+      configureStepColumns(false);
       bindText(title, "calculator_title_surface");
       clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
@@ -532,6 +671,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "support";
 
       setBaseStepChromeHidden(false);
+      configureStepColumns(false);
       bindText(title, "calculator_title_support");
       clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
@@ -556,6 +696,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "ceramic-removal";
 
       setBaseStepChromeHidden(false);
+      configureStepColumns(false);
       bindText(title, "calculator_title_ceramic");
       clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
@@ -579,6 +720,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "condition";
 
       setBaseStepChromeHidden(false);
+      configureStepColumns(false);
       bindText(title, "calculator_title_condition");
       clearTranslation(copy);
       if (options instanceof HTMLElement) options.hidden = true;
@@ -603,6 +745,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.dataset.view = "result";
 
       setBaseStepChromeHidden(true);
+      configureStepColumns(false);
       if (options instanceof HTMLElement) options.hidden = true;
       if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
       if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
@@ -724,19 +867,35 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       }
     };
 
+    directOpenButton?.addEventListener("click", () => {
+      if (priceCard.dataset.step !== "1") return;
+      setDirectStatus();
+      setDirectContactMode(true);
+    });
+
+    directCloseButton?.addEventListener("click", () => {
+      setDirectStatus();
+      setDirectContactMode(false);
+    });
+
+    directForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitDirectRequest();
+    });
+
     action?.addEventListener("click", () => {
       if (priceCard.dataset.step === "1") {
-        setStepTwo();
+        setStepTwo({ animate: true });
         return;
       }
 
       if (priceCard.dataset.step === "2") {
-        setStepThree();
+        setStepThree({ animate: true });
         return;
       }
 
       if (priceCard.dataset.step === "3" && isValidSurfaceValue()) {
-        setStepFour();
+        setStepFour({ animate: true });
         return;
       }
 
@@ -746,7 +905,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       }
 
       if (priceCard.dataset.step === "4" && priceCard.dataset.selectedSupport === "ceramica-baldosa") {
-        setStepFive();
+        setStepFive({ animate: true });
         return;
       }
 
@@ -754,12 +913,12 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
         priceCard.dataset.selectedSupport === "hormigon" ||
         priceCard.dataset.selectedSupport === "mortero-autonivelante"
       )) {
-        setConditionStep();
+        setConditionStep({ animate: true });
         return;
       }
 
       if (priceCard.dataset.step === "5" && priceCard.dataset.selectedSupport === "ceramica-baldosa" && priceCard.dataset.selectedCeramicRemoval) {
-        setConditionStep();
+        setConditionStep({ animate: true });
         return;
       }
 
@@ -777,32 +936,32 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       const currentStep = Number(priceCard.dataset.step || "1");
 
       if (currentStep === 6) {
-        setStepFive();
+        setStepFive({ animate: true });
         return;
       }
 
       if (currentStep === 5) {
         if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") {
-          setStepFour();
+          setStepFour({ animate: true });
           return;
         }
 
-        setStepFour();
+        setStepFour({ animate: true });
         return;
       }
 
       if (currentStep === 4) {
-        setStepThree();
+        setStepThree({ animate: true });
         return;
       }
 
       if (currentStep === 3) {
-        setStepTwo();
+        setStepTwo({ animate: true });
         return;
       }
 
       if (currentStep === 2) {
-        setStepOne();
+        setStepOne({ animate: true });
       }
     });
 
@@ -876,6 +1035,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       if (event.key === "Escape") {
         closeHelpModal();
         closePhonePrefixMenu();
+        if (priceCard.classList.contains("is-direct-contact")) setDirectContactMode(false);
       }
     });
 
@@ -989,9 +1149,11 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
 
     window.addEventListener("i18n:updated", () => {
       countryNames = undefined;
-      phonePrefixMenu?.querySelectorAll<HTMLElement>(".phone-prefix-option").forEach(option => {
-        const country = option.querySelector(".phone-prefix-option-country");
-        if (country) country.textContent = getCountryName(option.dataset.country);
+      [phonePrefixMenu, directPhonePrefixMenu].forEach((menu) => {
+        menu?.querySelectorAll<HTMLElement>(".phone-prefix-option").forEach(option => {
+          const country = option.querySelector(".phone-prefix-option-country");
+          if (country) country.textContent = getCountryName(option.dataset.country);
+        });
       });
       if (priceCard.dataset.view === "result") {
         bindText(resultSpace, getSpaceKey());
