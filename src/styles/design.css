@@ -592,10 +592,10 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 #prices-calculator-card { --price-card-enter-duration: 300ms; scroll-margin-top: 104px; }
 .prices-page .prices-card .service-expanded-title { max-width: 16ch; margin-bottom: var(--space-20); font-size: clamp(32px, 3vw, 48px); font-weight: 400; line-height: 1.14; }
 .prices-page .prices-card .service-expanded-copy { max-width: 52ch; font-size: var(--text-16); line-height: 1.7; }
-.prices-page .service-expanded-media { grid-template-rows: minmax(0, 1fr) auto; gap: var(--space-16); }
+.prices-page .service-expanded-media { grid-template-rows: minmax(0, 1fr); gap: 0; }
 .prices-page .service-expanded-media-frame { align-items: stretch; justify-content: stretch; }
 .prices-page .service-expanded-media-frame img { width: 100%; height: 100%; max-height: none; object-fit: cover; }
-.prices-page .service-expanded-summary { max-width: 42ch; font-size: var(--text-14); line-height: 1.7; }
+.prices-page .service-expanded-summary { display: none; }
 .prices-page .prices-step-content { padding-top: var(--space-16); min-width: 0; }
 .prices-page .service-expanded-label { width: 100%; margin-bottom: var(--space-18); padding-bottom: var(--space-12); border-bottom: 1px solid var(--palette-tone-107); color: var(--palette-tone-108); }
 .prices-card-footer { flex-direction: row-reverse; justify-content: space-between; width: 100%; padding-top: var(--space-20); gap: var(--space-16); }
@@ -632,7 +632,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .prices-card[data-view="condition"] .price-long-option span { font-size: var(--text-15); line-height: 1.5; }
 .prices-card[data-view="condition"] .price-long-option small { line-height: 1.65; }
 .prices-page .prices-card[data-view="condition"] { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
-.prices-page .prices-card[data-view="condition"] .service-expanded-media { grid-template-rows: minmax(0, 1fr) auto; gap: var(--space-10); }
+.prices-page .prices-card[data-view="condition"] .service-expanded-media { grid-template-rows: minmax(0, 1fr); gap: 0; }
 .prices-page .prices-card[data-view="condition"] .service-expanded-media-frame { width: 100%; height: 100%; }
 .prices-page .prices-card[data-view="condition"] .service-expanded-media-frame img {
   width: 100%;
@@ -641,7 +641,6 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   object-fit: cover;
   object-position: center;
 }
-.prices-page .prices-card[data-view="condition"] .service-expanded-summary { font-size: var(--text-13); line-height: 1.4; }
 .prices-page .prices-card[data-view="condition"] .prices-step-content { padding-top: var(--space-8); overflow: hidden; }
 .prices-page .prices-card[data-view="condition"] .service-expanded-label { margin-bottom: var(--space-8); padding-bottom: var(--space-8); }
 .prices-page .prices-card[data-view="condition"] .service-expanded-title {
@@ -868,11 +867,11 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
     overscroll-behavior-y: auto;
     padding-right: 4px;
   }
-  .prices-page .service-expanded-media { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+  .prices-page .service-expanded-media { display: grid; grid-template-rows: minmax(0, 1fr); }
   .prices-page .prices-card:not([data-view="intro"]) .service-expanded-media { display: none; }
   .prices-page .prices-card:not([data-view="intro"]):not([data-view="result"]) { grid-template-rows: minmax(0, 1fr); }
   .prices-page .prices-card:not([data-view="intro"]):not([data-view="result"]) .prices-step-content { grid-row: 1; }
-  .prices-page .service-expanded-summary { display: block; }
+  .prices-page .service-expanded-summary { display: none; }
   .prices-page .prices-step-content { padding-top: 0; }
   .price-estimate-stage {
     grid-template-columns: 1fr;
@@ -951,7 +950,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .prices-page .prices-card[data-view="condition"] .price-long-option { padding: 9px 12px; }
   .prices-page .prices-card[data-view="condition"] .price-long-option small { font-size: var(--text-11); line-height: 1.28; }
   .prices-page .prices-card[data-view="condition"] .service-expanded-title { margin-bottom: 6px; font-size: var(--text-25); }
-  .prices-page .service-expanded-media { grid-template-rows: minmax(125px, 1fr) auto; padding-top: 0; }
+  .prices-page .service-expanded-media { grid-template-rows: minmax(125px, 1fr); padding-top: 0; }
   .price-estimate-stage { height: min(610px, calc(100dvh - 178px)); gap: var(--space-14); }
   .price-estimate-card { padding: var(--space-18); }
   .price-estimate-card > p { font-size: var(--text-28); }
