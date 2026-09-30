@@ -41,7 +41,6 @@ p { overflow-wrap: break-word; }
   .price-intro-direct > p:not(.price-intro-direct__kicker),
   .price-direct-contact__copy,
   .prices-section-intro,
-  .price-step-question,
   .price-long-option small,
   .price-result-step p,
   .price-result-step li,
@@ -887,6 +886,27 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .prices-progress-dots .price-extra-dot { max-width: none; margin-left: 0; }
 .prices-progress-dots .price-extra-dot.is-visible { max-width: none; margin-left: 0; animation: none; }
 .price-space-options, .price-support-options, .price-ceramic-step, .price-condition-step { width: 100%; gap: var(--space-12); margin-top: var(--space-20); }
+.prices-page .prices-card[data-view="surface"] .service-expanded-title {
+  margin-bottom: var(--space-8);
+}
+.prices-page .prices-card[data-view="surface"] .price-surface-step {
+  width: min(520px, 100%);
+  gap: var(--space-14);
+  margin-top: 0;
+}
+.prices-page .prices-card[data-view="surface"] .price-step-question {
+  max-width: 24ch;
+  margin: 0;
+  letter-spacing: 0;
+  word-spacing: 0;
+  text-align: left;
+  text-align-last: left;
+  text-justify: auto;
+  text-wrap: balance;
+}
+.prices-page .prices-card[data-view="surface"] .price-surface-field input {
+  width: min(260px, 100%);
+}
 .prices-card .price-space-option {
   padding: 16px 18px;
   min-height: 52px;
@@ -981,7 +1001,15 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   box-shadow: inset 0 1px 2px var(--palette-tone-114);
   min-height: 54px;
 }
-.price-surface-field input:focus, .price-result-form input:focus, .phone-prefix-button:focus-visible { border-color: var(--palette-label); background: var(--palette-white); outline: 3px solid var(--palette-tone-115); outline-offset: 2px; }
+.price-surface-field input:focus {
+  border-color: var(--palette-label);
+  background: var(--palette-white);
+  outline: 0;
+  box-shadow:
+    inset 0 1px 2px var(--palette-tone-114),
+    0 0 0 3px var(--palette-tone-115);
+}
+.price-result-form input:focus, .phone-prefix-button:focus-visible { border-color: var(--palette-label); background: var(--palette-white); outline: 3px solid var(--palette-tone-115); outline-offset: 2px; }
 .price-back-button { top: 12px; right: 16px; left: auto; font-size: var(--text-12); padding: var(--space-8); }
 .prices-page .prices-card[data-view="result"] .price-back-button { top: 0; }
 .prices-page .prices-card[data-view="result"] { width: 100%; min-height: 0; }
