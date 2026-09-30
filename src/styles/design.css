@@ -82,24 +82,24 @@ img { max-width: 100%; }
 .hero-scroll-cue {
   position: absolute;
   z-index: 3;
-  bottom: 16px;
-  left: 50%;
+  right: var(--model-edge-gutter);
+  bottom: 68px;
   display: flex;
-  width: 44px;
-  height: 72px;
+  width: 58px;
+  height: 82px;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 0;
   color: var(--palette-white);
   opacity: .96;
   filter: drop-shadow(0 3px 8px var(--palette-tone-16));
   text-decoration: none;
-  transform: translateX(-50%);
+  transform: translateZ(0);
   transition: opacity 180ms ease, transform 180ms ease;
 }
-.hero-scroll-cue:hover, .hero-scroll-cue:focus-visible { opacity: 1; transform: translate3d(-50%, 3px, 0); }
-.hero-scroll-cue__line { position: relative; width: 2px; height: 36px; overflow: hidden; background: var(--palette-tone-62); }
+.hero-scroll-cue:hover, .hero-scroll-cue:focus-visible { opacity: 1; transform: translate3d(0, 3px, 0); }
+.hero-scroll-cue__line { position: relative; width: 3px; height: 44px; overflow: hidden; background: var(--palette-tone-62); }
 .hero-scroll-cue__line::after {
   content: "";
   position: absolute;
@@ -108,7 +108,7 @@ img { max-width: 100%; }
   transform: translateY(-100%);
   animation: hero-scroll-line 1.8s cubic-bezier(.45, 0, .2, 1) infinite;
 }
-.hero-scroll-cue svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: hero-scroll-bounce 1.8s ease-in-out infinite; }
+.hero-scroll-cue svg { width: 30px; height: 30px; margin-top: -1px; fill: none; stroke: currentColor; stroke-width: 2.15; stroke-linecap: round; stroke-linejoin: round; animation: hero-scroll-bounce 1.8s ease-in-out infinite; }
 @keyframes hero-scroll-line {
   0% { opacity: 0; transform: translateY(-100%); }
   25%, 75% { opacity: 1; }
@@ -910,6 +910,9 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .hero-logo-title img { width: min(61.2vw, 280.5px); }
   .hero-identity__copy { margin: 20px 0 28px; font-size: 17px; }
   .hero-identity__actions a { padding: 12px 22px; }
+  .hero-scroll-cue { right: var(--model-edge-gutter); bottom: 104px; width: 48px; height: 70px; }
+  .hero-scroll-cue__line { height: 36px; }
+  .hero-scroll-cue svg { width: 26px; height: 26px; }
   .feature-cards-header h2, .services-feature-heading { font-size: var(--text-30); }
   .home-primary-cards-header { margin-bottom: var(--space-36); }
   .home-primary-cards-track { grid-template-columns: 1fr; }

@@ -96,6 +96,16 @@ if (
     return false;
   };
 
+  const heroScrollCue = document.querySelector<HTMLAnchorElement>(".hero-scroll-cue");
+  heroScrollCue?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isEntryScrollAnimating) return;
+
+    animateEntryScroll(getEntryScrollTop());
+  });
+
   const preventInputDuringEntryScroll = (event) => {
     if (!isEntryScrollAnimating) return false;
 
