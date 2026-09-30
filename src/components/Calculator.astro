@@ -30,11 +30,11 @@ import messages from "../i18n/json/es.json";
         <p class="service-expanded-copy" data-price-copy data-i18n="calculator_copy_intro">{messages.calculator_copy_intro}</p>
 
         <div class="price-space-options" data-price-options hidden>
-          <button class="price-space-option" type="button" data-space="vivienda"><span aria-hidden="true">&#127968;</span> <span data-i18n="space_home">{messages.space_home}</span></button>
-          <button class="price-space-option" type="button" data-space="garaje"><span aria-hidden="true">&#128663;</span> <span data-i18n="space_garage">{messages.space_garage}</span></button>
-          <button class="price-space-option" type="button" data-space="local-comercial"><span aria-hidden="true">&#127970;</span> <span data-i18n="space_business">{messages.space_business}</span></button>
-          <button class="price-space-option" type="button" data-space="industria"><span aria-hidden="true">&#127981;</span> <span data-i18n="space_industry">{messages.space_industry}</span></button>
-          <button class="price-space-option" type="button" data-space="exterior"><span aria-hidden="true">&#127807;</span> <span data-i18n="space_outdoor">{messages.space_outdoor}</span></button>
+          <button class="price-space-option" type="button" data-space="vivienda"><span data-i18n="space_home">{messages.space_home}</span></button>
+          <button class="price-space-option" type="button" data-space="garaje"><span data-i18n="space_garage">{messages.space_garage}</span></button>
+          <button class="price-space-option" type="button" data-space="local-comercial"><span data-i18n="space_business">{messages.space_business}</span></button>
+          <button class="price-space-option" type="button" data-space="industria"><span data-i18n="space_industry">{messages.space_industry}</span></button>
+          <button class="price-space-option" type="button" data-space="exterior"><span data-i18n="space_outdoor">{messages.space_outdoor}</span></button>
         </div>
 
         <div class="price-surface-step" data-price-surface-step hidden>
@@ -116,18 +116,25 @@ import messages from "../i18n/json/es.json";
             <p data-i18n="result_now_copy">{messages.result_now_copy}</p>
           </section>
 
-          <section class="price-result-panel price-result-panel-plain">
+          <section class="price-result-panel price-result-contact">
             <h4 data-i18n="result_start">{messages.result_start}</h4>
             <p data-i18n="result_start_copy">{messages.result_start_copy}</p>
           </section>
 
           <form class="price-result-form">
             <label>
-              <span data-i18n="form_name">{messages.form_name}</span>
-              <input type="text" name="full-name" autocomplete="name" data-price-result-name />
+              <span class="visually-hidden" data-i18n="form_name">{messages.form_name}</span>
+              <input
+                type="text"
+                name="full-name"
+                autocomplete="name"
+                placeholder={messages.form_name}
+                data-i18n-placeholder="form_name"
+                data-price-result-name
+              />
             </label>
             <label>
-              <span data-i18n="form_phone">{messages.form_phone}</span>
+              <span class="visually-hidden" data-i18n="form_phone">{messages.form_phone}</span>
               <span class="price-phone-field">
                 <span class="phone-prefix-select" data-phone-prefix-select>
                   <input type="hidden" name="phone-prefix" value="+34" data-phone-prefix-value />
@@ -137,7 +144,14 @@ import messages from "../i18n/json/es.json";
                   </button>
                   <span class="phone-prefix-menu" role="listbox" data-phone-prefix-menu hidden></span>
                 </span>
-                <input type="tel" name="phone" autocomplete="tel" data-price-result-phone />
+                <input
+                  type="tel"
+                  name="phone"
+                  autocomplete="tel"
+                  placeholder={messages.form_phone}
+                  data-i18n-placeholder="form_phone"
+                  data-price-result-phone
+                />
               </span>
             </label>
           </form>
@@ -182,16 +196,6 @@ import messages from "../i18n/json/es.json";
         <span class="price-estimate-status" data-i18n="estimate_status">{messages.estimate_status}</span>
         <div class="price-estimate-amount" data-price-estimate-amount>130 €</div>
       </article>
-      <div class="price-estimate-model" data-price-estimate-model>
-        <canvas
-          class="price-estimate-canvas"
-          data-price-estimate-canvas
-          aria-label={messages.estimate_canvas} data-i18n-aria-label="estimate_canvas"
-        ></canvas>
-        <div class="price-estimate-model-fallback" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-      </div>
     </section>
 
   </section>

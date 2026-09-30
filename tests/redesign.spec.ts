@@ -192,7 +192,9 @@ test("home video and 3D render, move, reverse and fit the viewport", async ({ pa
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/");
-  await expect(page.locator(".hero-identity h1")).toHaveText("MyPerol");
+  const heroTitle = page.locator(".hero-identity h1");
+  await expect(heroTitle).toHaveAttribute("aria-label", "MyPerol");
+  await expect(heroTitle.locator("img")).toBeVisible();
   const heroAlignment = await page.evaluate(() => {
     const modelLeft = document.querySelector(".flooring-copy-panel")!.getBoundingClientRect().left;
     return {

@@ -32,7 +32,6 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     const extraDot = priceCard.querySelector("[data-price-extra-dot]");
     const estimateCard = document.querySelector("[data-price-estimate]");
     const estimateAmount = document.querySelector("[data-price-estimate-amount]");
-    const estimateCanvas = document.querySelector("[data-price-estimate-canvas]");
     const resultNameInput = priceCard.querySelector("[data-price-result-name]");
     const resultPhoneInput = priceCard.querySelector("[data-price-result-phone]");
     const resultSubmit = priceCard.querySelector("[data-price-result-submit]");
@@ -42,28 +41,6 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     let surfaceErrorTimeout = 0;
     let actionLabelTimeout = 0;
     let estimateTimeout = 0;
-    let estimateSplineGeneration = 0;
-    let disposeEstimateSpline = () => undefined;
-    let estimateSplineModulePromise: Promise<typeof import("./calculator-estimate-spline")> | undefined;
-    const loadEstimateSplineModule = () => {
-      estimateSplineModulePromise ||= import("./calculator-estimate-spline").catch(error => {
-        estimateSplineModulePromise = undefined;
-        throw error;
-      });
-      return estimateSplineModulePromise;
-    };
-
-    // Warm the estimate on intent, not simply by scrolling past the calculator.
-    const preloadEstimate = () => {
-      if (priceCard.dataset.view === "result") return;
-      priceCard.removeEventListener("pointerdown", preloadEstimate);
-      priceCard.removeEventListener("focusin", preloadEstimate);
-      void loadEstimateSplineModule()
-        .then(({ preloadCalculatorEstimateSpline }) => preloadCalculatorEstimateSpline())
-        .catch(() => undefined);
-    };
-    priceCard.addEventListener("pointerdown", preloadEstimate, { passive: true });
-    priceCard.addEventListener("focusin", preloadEstimate);
     let stepAnimationFrame = 0;
     const formatEuros = formatCurrency;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
@@ -648,7 +625,6 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
 
     const resetCalculator = () => {
       window.clearTimeout(estimateTimeout);
-      stopEstimateSpline();
       sessionStorage.removeItem(storageKey);
 
       delete priceCard.dataset.selectedSpace;
@@ -678,34 +654,8 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       priceCard.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
-    const stopEstimateSpline = () => {
-      estimateSplineGeneration += 1;
-      disposeEstimateSpline();
-      disposeEstimateSpline = () => undefined;
-    };
-
-    const startEstimateSpline = async () => {
-      if (!(estimateCanvas instanceof HTMLCanvasElement)) return;
-
-      const generation = ++estimateSplineGeneration;
-      try {
-        const { mountCalculatorEstimateSpline } = await loadEstimateSplineModule();
-        if (
-          generation !== estimateSplineGeneration ||
-          !(estimateCard instanceof HTMLElement) ||
-          estimateCard.hidden
-        ) return;
-
-        disposeEstimateSpline();
-        disposeEstimateSpline = mountCalculatorEstimateSpline(estimateCanvas);
-      } catch (error) {
-        console.error("No se pudo iniciar el modelo 3D de estimación.", error);
-      }
-    };
-
     const runEstimateLoading = () => {
       window.clearTimeout(estimateTimeout);
-      stopEstimateSpline();
 
       priceCard.hidden = true;
 
@@ -713,7 +663,6 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
         estimateCard.hidden = false;
         requestAnimationFrame(() => estimateCard.classList.add("is-visible"));
       }
-      void startEstimateSpline();
 
       const estimateDuration = 2500;
       const frames = [130, 280, 420, 690, 930, 1180, 1410, 1600];
@@ -729,7 +678,6 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       });
 
       estimateTimeout = window.setTimeout(() => {
-        stopEstimateSpline();
         if (estimateCard instanceof HTMLElement) {
           estimateCard.classList.remove("is-visible");
 
