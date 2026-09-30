@@ -102,7 +102,7 @@
   "service_open": "Подробнее о {service}",
   "service_details": "Описание услуги",
   "service_composition": "Узнать состав системы",
-  "service_calculate": "Рассчитать стоимость",
+  "service_calculate": "Запросить смету",
   "service_request": "Запросить стоимость",
   "calculator_aria": "Калькулятор MyPerol",
   "calculator_prices_aria": "Стоимость MyPerol",

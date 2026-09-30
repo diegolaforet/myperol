@@ -102,7 +102,7 @@
   "service_open": "View {service}",
   "service_details": "Service details",
   "service_composition": "Explore the system layers",
-  "service_calculate": "Estimate the price",
+  "service_calculate": "Request a quote",
   "service_request": "Request a quote",
   "calculator_aria": "MyPerol cost calculator",
   "calculator_prices_aria": "MyPerol pricing",

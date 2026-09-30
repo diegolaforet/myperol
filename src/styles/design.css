@@ -439,7 +439,7 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
   max-height: none;
   padding: 0;
   overflow: hidden;
-  background: var(--palette-tone-93);
+  background: var(--palette-tone-101);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: 0 34px 100px var(--palette-tone-94);
@@ -450,6 +450,10 @@ body:has(.service-expanded-overlay) { overflow: hidden; }
 .service-expanded-overlay.is-open .service-expanded-card { transform: translateZ(0) scale(1); }
 .service-expanded-overlay.is-closing .service-expanded-card { transform: translate3d(0, 8px, 0) scale(.995); }
 .service-expanded-overlay .service-expanded-media { position: relative; display: block; min-height: 0; overflow: hidden; }
+.service-expanded-overlay .service-expanded-media,
+.service-expanded-overlay .service-expanded-content {
+  background: var(--palette-tone-101);
+}
 .service-expanded-overlay .service-expanded-media-frame { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
 .service-expanded-overlay .service-expanded-media-frame img { width: 100%; height: 100%; max-height: none; object-fit: cover; }
 .service-expanded-overlay .service-expanded-summary {
