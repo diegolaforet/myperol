@@ -42,6 +42,8 @@ export function initializeServiceCards(selector: string, priceActionKey: string)
   const cards = Array.from(document.querySelectorAll<HTMLElement>(selector));
   if (!cards.length) return;
 
+  const listeners = new AbortController();
+  const { signal } = listeners;
   let activeOverlay: HTMLElement | null = null;
   let isClosing = false;
   let restoreDialog = () => {};
@@ -140,15 +142,17 @@ export function initializeServiceCards(selector: string, priceActionKey: string)
     card.dataset.expansionReady = "true";
     card.setAttribute("role", "button");
     bindAttribute(card, "aria-label", "service_open", { service: card.querySelector("h2")?.textContent?.trim() || "MyPerol" });
-    card.addEventListener("click", () => openExpandedCard(card));
+    card.addEventListener("click", () => openExpandedCard(card), { signal });
     card.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       openExpandedCard(card);
-    });
+    }, { signal });
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeExpandedCard();
-  });
+  }, { signal });
+
+  document.addEventListener("astro:before-swap", () => listeners.abort(), { once: true, signal });
 }

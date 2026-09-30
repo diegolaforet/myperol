@@ -4,7 +4,7 @@ import { stat } from "node:fs/promises";
 import ffmpeg from "ffmpeg-static";
 
 const directory = new URL("../public/assets/videos/", import.meta.url);
-const source = fileURLToPath(new URL("video-intro-index.mov", directory));
+const source = fileURLToPath(new URL("../source-assets/videos/videointro_hero.mov", import.meta.url));
 const run = args => {
   const result = spawnSync(ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", ...args], { stdio: "inherit" });
   if (result.status !== 0) throw new Error(`FFmpeg failed: ${result.status}`);

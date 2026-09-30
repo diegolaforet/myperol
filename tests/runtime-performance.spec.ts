@@ -67,7 +67,8 @@ test("price estimate loading does not mount a 3D renderer", async ({ page }) => 
       selectedSupport: "hormigon", selectedCondition: "excelente",
     }));
     const timeout = window.setTimeout.bind(window);
-    window.setTimeout = ((handler, delay, ...args) => timeout(handler, delay === 2500 ? 60000 : delay, ...args)) as typeof window.setTimeout;
+    window.setTimeout = ((handler: TimerHandler, delay?: number, ...args: any[]) =>
+      timeout(handler, delay === 2500 ? 60000 : delay, ...args)) as typeof window.setTimeout;
   });
   await page.goto("/precios");
   await page.locator("[data-price-action]").click();

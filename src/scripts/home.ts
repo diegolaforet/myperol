@@ -11,6 +11,8 @@ if (
   entryScrollTarget instanceof HTMLElement &&
   window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches
 ) {
+  const listeners = new AbortController();
+  const { signal } = listeners;
   let isEntryScrollAnimating = false;
   let touchStartX = 0;
   let touchStartY = 0;
@@ -22,7 +24,7 @@ if (
   const entryScrollTolerance = 12;
   const entryScrollReturnRange = 48;
 
-  const easeInOutCubic = (progress) =>
+  const easeInOutCubic = (progress: number) =>
     progress < 0.5
       ? 4 * progress * progress * progress
       : 1 - Math.pow(-2 * progress + 2, 3) / 2;
@@ -33,14 +35,14 @@ if (
     return Math.max(0, targetTop - entryScrollTargetOffset);
   };
 
-  const animateEntryScroll = (targetTop, onComplete = () => {}) => {
+  const animateEntryScroll = (targetTop: number, onComplete: () => void = () => {}) => {
     const startTop = window.scrollY;
     const distance = targetTop - startTop;
     const startTime = performance.now();
     let lastWrittenScrollY = startTop;
     isEntryScrollAnimating = true;
 
-    const step = (currentTime) => {
+    const step = (currentTime: number) => {
       // An anchor, focus change or scroll restoration takes priority over this tween.
       if (Math.abs(window.scrollY - lastWrittenScrollY) > 2) {
         isEntryScrollAnimating = false;
@@ -71,7 +73,7 @@ if (
     entryAnimationFrame = window.requestAnimationFrame(step);
   };
 
-  const scrollBetweenEntryFrames = (direction) => {
+  const scrollBetweenEntryFrames = (direction: "down" | "up") => {
     if (isEntryScrollAnimating) return false;
 
     const entryScrollTop = getEntryScrollTop();
@@ -104,9 +106,9 @@ if (
     if (isEntryScrollAnimating) return;
 
     animateEntryScroll(getEntryScrollTop());
-  });
+  }, { signal });
 
-  const preventInputDuringEntryScroll = (event) => {
+  const preventInputDuringEntryScroll = (event: Event) => {
     if (!isEntryScrollAnimating) return false;
 
     event.preventDefault();
@@ -151,9 +153,9 @@ if (
   const entryInputRegions = [document.querySelector(".home-video-hero"), entryScrollTarget];
   for (const region of entryInputRegions) {
     if (!(region instanceof HTMLElement)) continue;
-    region.addEventListener("wheel", handleEntryWheel, { passive: false, capture: true });
-    region.addEventListener("touchstart", handleEntryTouchStart, { passive: true, capture: true });
-    region.addEventListener("touchmove", handleEntryTouchMove, { passive: false, capture: true });
+    region.addEventListener("wheel", handleEntryWheel, { passive: false, capture: true, signal });
+    region.addEventListener("touchstart", handleEntryTouchStart, { passive: true, capture: true, signal });
+    region.addEventListener("touchmove", handleEntryTouchMove, { passive: false, capture: true, signal });
   }
 
   // Wheel, touch and keys are handled above/below. Only a scrollbar drag needs
@@ -161,10 +163,10 @@ if (
   document.addEventListener("pointerdown", (event) => {
     isScrollbarDragging = event.clientX >= document.documentElement.clientWidth;
     lastObservedScrollY = window.scrollY;
-  }, { passive: true });
+  }, { passive: true, signal });
   const stopScrollbarDetection = () => { isScrollbarDragging = false; };
-  window.addEventListener("pointerup", stopScrollbarDetection, { passive: true });
-  window.addEventListener("pointercancel", stopScrollbarDetection, { passive: true });
+  window.addEventListener("pointerup", stopScrollbarDetection, { passive: true, signal });
+  window.addEventListener("pointercancel", stopScrollbarDetection, { passive: true, signal });
 
   document.addEventListener(
     "scroll",
@@ -178,7 +180,7 @@ if (
 
       scrollBetweenEntryFrames(scrollDelta > 0 ? "down" : "up");
     },
-    { passive: true, capture: true }
+    { passive: true, capture: true, signal }
   );
 
   document.addEventListener("keydown", (event) => {
@@ -199,6 +201,11 @@ if (
     if (!scrollBetweenEntryFrames(isDownKey ? "down" : "up")) return;
 
     event.preventDefault();
-  });
+  }, { signal });
+
+  document.addEventListener("astro:before-swap", () => {
+    listeners.abort();
+    window.cancelAnimationFrame(entryAnimationFrame);
+  }, { once: true, signal });
 
 }

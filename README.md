@@ -9,7 +9,7 @@ Astro static site for the MyPerol redesign.
 - `/precios` is the price calculator page. It prepares a lead request and sends it through a Netlify Function.
 - There is no `/home` route; the previous home content now lives directly in `src/pages/index.astro`.
 - The old brochure pages and brochure assets have been removed from the project.
-- The current hero media is a placeholder image at `public/assets/placeholder/placeholder-index.jpg`. It is intended to be replaced later by a looped video.
+- The hero uses responsive MP4 variants generated from `source-assets/videos/videointro_hero.mov`; run `node scripts/optimize-video.mjs` after replacing the source video.
 - The site supports Spanish, English, German, French, Russian and Ukrainian through local JSON dictionaries.
 
 ## Tech Stack

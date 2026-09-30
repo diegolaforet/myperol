@@ -1,5 +1,6 @@
 export function initializeSectionControls() {
   const controls = document.querySelectorAll<HTMLElement>("[data-section-corner-controls]");
+  const observers: IntersectionObserver[] = [];
   document.documentElement.classList.add("section-controls-reveal-enabled");
   const closeLanguageMenus = (scope: ParentNode = document) => {
     for (const toggle of scope.querySelectorAll<HTMLElement>('.lang-button[aria-expanded="true"]')) {
@@ -21,6 +22,7 @@ export function initializeSectionControls() {
       }
     }
   }, { rootMargin: "0px 0px -100px 0px", threshold: 0 });
+  observers.push(observer);
   for (const control of controls) {
     control.inert = true;
     const sentinel = document.createElement("span");
@@ -41,6 +43,7 @@ export function initializeSectionControls() {
       primaryControls.forEach(element => { element.inert = suppressed; });
       if (suppressed) closeLanguageMenus();
     }, { threshold: 0 });
+    observers.push(exclusionObserver);
     exclusionObserver.observe(controlsExclusion);
   }
   const hero = document.querySelector(".hero-placeholder");
@@ -48,6 +51,7 @@ export function initializeSectionControls() {
     const toneObserver = new IntersectionObserver(([entry]) => {
       document.body.classList.toggle("controls-over-light", entry.boundingClientRect.bottom <= 65);
     }, { rootMargin: "-65px 0px 0px 0px" });
+    observers.push(toneObserver);
     toneObserver.observe(hero);
   }
   const calculator = document.querySelector<HTMLElement>("#calculadora");
@@ -55,6 +59,11 @@ export function initializeSectionControls() {
     const calculatorToneObserver = new IntersectionObserver(([entry]) => {
       document.body.classList.toggle("controls-over-calculator", entry.isIntersecting);
     }, { rootMargin: "-65px 0px -55% 0px", threshold: 0 });
+    observers.push(calculatorToneObserver);
     calculatorToneObserver.observe(calculator);
   }
+
+  document.addEventListener("astro:before-swap", () => {
+    observers.forEach(currentObserver => currentObserver.disconnect());
+  }, { once: true });
 }

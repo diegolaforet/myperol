@@ -34,7 +34,12 @@ export const initializeScrollReveal = () => {
     }
   );
 
-  window.requestAnimationFrame(() => {
+  const observeFrame = window.requestAnimationFrame(() => {
     revealItems.forEach((item) => revealObserver.observe(item));
   });
+
+  document.addEventListener("astro:before-swap", () => {
+    window.cancelAnimationFrame(observeFrame);
+    revealObserver.disconnect();
+  }, { once: true });
 };

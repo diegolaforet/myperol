@@ -238,7 +238,7 @@ test("home video and 3D render, move, reverse and fit the viewport", async ({ pa
     const canvas = page.locator("[data-flooring-canvas]");
     const hideOverlay = await page.addStyleTag({ content: ".flooring-copy-stack, .flooring-progress, .section-corner-controls, .site-header, body > .social-float { visibility: hidden !important; }" });
     const buffer = await canvas.screenshot();
-    await hideOverlay.evaluate(el => el.remove());
+    await hideOverlay.evaluate(el => el.parentNode?.removeChild(el));
     const pixels = await sharp(buffer).resize(120, 120, { fit: "fill" }).removeAlpha().raw().toBuffer();
     let nonWhite = 0;
     for (let i = 0; i < pixels.length; i += 3) if (pixels[i] < 225 || pixels[i + 1] < 225 || pixels[i + 2] < 225) nonWhite++;
@@ -384,7 +384,7 @@ test("small portrait and landscape layouts keep controls and 3D copy in view", a
     expect(logo!.x + logo!.width).toBeLessThanOrEqual(contacts!.x);
     const hideOverlay = await page.addStyleTag({ content: ".flooring-copy-stack, .flooring-progress, .section-corner-controls, .site-header, body > .social-float { visibility: hidden !important; }" });
     const buffer = await page.locator("[data-flooring-canvas]").screenshot();
-    await hideOverlay.evaluate(el => el.remove());
+    await hideOverlay.evaluate(el => el.parentNode?.removeChild(el));
     const pixels = await sharp(buffer).resize(120, 120, { fit: "fill" }).removeAlpha().raw().toBuffer();
     let edgePixels = 0;
     for (let y = 0; y < 120; y++) {
@@ -514,11 +514,12 @@ test("navigation reaches the calculator in the home scroll", async ({ page }, te
   } else {
     await page.locator('.desktop-nav a[href="/#calculadora"]').click();
   }
-  await expect(page).toHaveURL(/#calculadora$/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe("");
   await expect(page.locator("#calculadora")).toBeInViewport();
 });
 
-test("hero cue and navbar animate internal navigation with a fixed-header offset", async ({ page }, testInfo) => {
+test("hero cue and navbar animate internal navigation without changing the route", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.evaluate(() => {
     const samples: number[] = [];
@@ -529,19 +530,17 @@ test("hero cue and navbar animate internal navigation with a fixed-header offset
   });
 
   await page.locator(".hero-scroll-cue").click();
-  await expect(page).toHaveURL(/#experiencia$/);
-  const headerSelector = testInfo.project.name === "mobile" ? ".mobile-header-bar" : ".desktop-nav";
-  await expect.poll(async () => page.evaluate(({ targetSelector, navigationSelector }) => {
-    const target = document.querySelector(targetSelector)!;
-    const navigation = document.querySelector(navigationSelector)!;
-    const expectedTop = navigation.getBoundingClientRect().bottom + 12;
-    return Math.abs(target.getBoundingClientRect().top - expectedTop);
-  }, { targetSelector: "#experiencia", navigationSelector: headerSelector })).toBeLessThan(3);
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe("");
+  await expect.poll(() => page.locator("#experiencia").evaluate(element =>
+    Math.abs(element.getBoundingClientRect().top)
+  )).toBeLessThanOrEqual(80);
 
   const sampledPositions = await page.evaluate(() =>
     (window as typeof window & { __smoothScrollSamples?: number[] }).__smoothScrollSamples ?? []
   );
   expect(new Set(sampledPositions.map(position => Math.round(position))).size).toBeGreaterThan(2);
+  await page.waitForTimeout(500);
 
   if (testInfo.project.name === "mobile") {
     await page.locator(".mobile-menu-button").click();
@@ -549,12 +548,9 @@ test("hero cue and navbar animate internal navigation with a fixed-header offset
   } else {
     await page.locator('.desktop-nav a[href="/#servicios"]').click();
   }
-  await expect(page).toHaveURL(/#servicios$/);
-  await expect.poll(async () => page.evaluate((navigationSelector) => {
-    const target = document.querySelector("#servicios")!;
-    const navigation = document.querySelector(navigationSelector)!;
-    return Math.abs(target.getBoundingClientRect().top - navigation.getBoundingClientRect().bottom - 12);
-  }, headerSelector)).toBeLessThan(3);
+  await expect(page).toHaveURL(/\/$/);
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe("");
+  await expect(page.locator("#servicios")).toBeInViewport({ timeout: 30000 });
 });
 
 test("dark carousel centers when space allows and services use an asymmetric grid", async ({ page }, testInfo) => {

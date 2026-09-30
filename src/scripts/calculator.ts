@@ -1,4 +1,6 @@
 import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCurrency, applyTranslations } from "../i18n/client";
+import { createPhonePrefixControls } from "./calculator/phone-prefix";
+import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/request";
 
     const priceCard = document.querySelector("[data-price-card]");
 
@@ -57,6 +59,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     let surfaceErrorTimeout = 0;
     let actionLabelTimeout = 0;
     let estimateTimeout = 0;
+    let estimateFrameTimeouts: number[] = [];
     let stepAnimationFrame = 0;
     let introModeTimeout = 0;
     const formatEuros = formatCurrency;
@@ -65,148 +68,22 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     const phonePrefixMenu = priceCard.querySelector("[data-phone-prefix-menu]");
     const phonePrefixCurrent = priceCard.querySelector("[data-phone-prefix-current]");
     const phonePrefixValue = priceCard.querySelector("[data-phone-prefix-value]");
-    const phonePrefixes = [
-      ["ES", "+34"], ["FR", "+33"], ["DE", "+49"], ["GB", "+44"], ["UA", "+380"], ["RU", "+7"],
-      ["AD", "+376"], ["AL", "+355"], ["AM", "+374"], ["AT", "+43"], ["BE", "+32"], ["BG", "+359"],
-      ["CH", "+41"], ["CY", "+357"], ["CZ", "+420"], ["DK", "+45"], ["EE", "+372"], ["FI", "+358"],
-      ["GR", "+30"], ["HR", "+385"], ["HU", "+36"], ["IE", "+353"], ["IS", "+354"], ["IT", "+39"],
-      ["LT", "+370"], ["LU", "+352"], ["LV", "+371"], ["MC", "+377"], ["MD", "+373"], ["MT", "+356"],
-      ["NL", "+31"], ["NO", "+47"], ["PL", "+48"], ["PT", "+351"], ["RO", "+40"], ["RS", "+381"],
-      ["SE", "+46"], ["SI", "+386"], ["SK", "+421"], ["TR", "+90"],
-      ["US", "+1"], ["CA", "+1"], ["MX", "+52"], ["AR", "+54"], ["BR", "+55"], ["CL", "+56"],
-      ["CO", "+57"], ["CR", "+506"], ["CU", "+53"], ["DO", "+1"], ["EC", "+593"], ["PE", "+51"],
-      ["UY", "+598"], ["VE", "+58"], ["PA", "+507"], ["PY", "+595"], ["BO", "+591"],
-      ["AE", "+971"], ["CN", "+86"], ["HK", "+852"], ["ID", "+62"], ["IN", "+91"], ["IL", "+972"],
-      ["JP", "+81"], ["KR", "+82"], ["MY", "+60"], ["PH", "+63"], ["SA", "+966"], ["SG", "+65"],
-      ["TH", "+66"], ["VN", "+84"], ["AU", "+61"], ["NZ", "+64"],
-      ["DZ", "+213"], ["EG", "+20"], ["GH", "+233"], ["KE", "+254"], ["MA", "+212"], ["NG", "+234"],
-      ["SN", "+221"], ["ZA", "+27"], ["TN", "+216"],
-    ];
-    const getCountryFlag = (countryCode) => countryCode
-      .toUpperCase()
-      .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
-    let countryNames: Intl.DisplayNames | undefined;
-    const getCountryName = (countryCode) => {
-      try {
-        countryNames ||= new Intl.DisplayNames([currentLanguage()], { type: "region" });
-        return countryNames.of(countryCode) || countryCode;
-      } catch {
-        return countryCode;
-      }
-    };
-
-    const closePhonePrefixMenu = (menu = phonePrefixMenu, button = phonePrefixButton) => {
-      if (menu instanceof HTMLElement) menu.hidden = true;
-      if (button instanceof HTMLButtonElement) button.setAttribute("aria-expanded", "false");
-    };
-
-    const setPhonePrefix = (
-      countryCode,
-      code,
+    const phonePrefixControls = createPhonePrefixControls([
       {
-        current = phonePrefixCurrent,
-        value = phonePrefixValue,
-        menu = phonePrefixMenu,
-      } = {},
-    ) => {
-      const flag = getCountryFlag(countryCode);
-
-      if (current) current.textContent = `${flag} ${code}`;
-      if (value instanceof HTMLInputElement) value.value = code;
-
-      menu?.querySelectorAll(".phone-prefix-option").forEach((option) => {
-        if (option instanceof HTMLElement) {
-          option.classList.toggle("is-selected", option.dataset.code === code && option.dataset.country === countryCode);
-        }
-      });
-    };
-
-    const createPhonePrefixMenu = ({ menu, current, value }) => {
-      let isReady = false;
-
-      return () => {
-        if (isReady || !(menu instanceof HTMLElement)) return;
-
-        const fragment = document.createDocumentFragment();
-        phonePrefixes.forEach(([countryCode, code]) => {
-          const flag = getCountryFlag(countryCode);
-          const country = getCountryName(countryCode);
-          const option = document.createElement("button");
-          option.type = "button";
-          option.className = "phone-prefix-option";
-          option.dataset.code = code;
-          option.dataset.country = countryCode;
-          option.setAttribute("role", "option");
-          option.innerHTML = `<span aria-hidden="true">${flag}</span><span class="phone-prefix-option-country">${country}</span><span class="phone-prefix-option-code">${code}</span>`;
-          fragment.append(option);
-        });
-        menu.replaceChildren(fragment);
-        isReady = true;
-
-        const selectedCode = value instanceof HTMLInputElement ? value.value : "+34";
-        const selected = phonePrefixes.find(([, code]) => code === selectedCode) || phonePrefixes[0];
-        setPhonePrefix(selected[0], selected[1], { current, value, menu });
-      };
-    };
-
-    const renderPhonePrefixes = createPhonePrefixMenu({
-      menu: phonePrefixMenu,
-      current: phonePrefixCurrent,
-      value: phonePrefixValue,
-    });
-    const renderDirectPhonePrefixes = createPhonePrefixMenu({
-      menu: directPhonePrefixMenu,
-      current: directPhonePrefixCurrent,
-      value: directPhonePrefixValue,
-    });
-
-    phonePrefixMenu?.addEventListener("click", (event) => {
-      const option = event.target instanceof Element
-        ? event.target.closest<HTMLElement>(".phone-prefix-option")
-        : null;
-      if (!option?.dataset.country || !option.dataset.code) return;
-      setPhonePrefix(option.dataset.country, option.dataset.code);
-      closePhonePrefixMenu();
-    });
-
-    directPhonePrefixMenu?.addEventListener("click", (event) => {
-      const option = event.target instanceof Element
-        ? event.target.closest<HTMLElement>(".phone-prefix-option")
-        : null;
-      if (!option?.dataset.country || !option.dataset.code) return;
-      setPhonePrefix(option.dataset.country, option.dataset.code, {
+        select: phonePrefixSelect,
+        button: phonePrefixButton,
+        menu: phonePrefixMenu,
+        current: phonePrefixCurrent,
+        value: phonePrefixValue,
+      },
+      {
+        select: directPhonePrefixSelect,
+        button: directPhonePrefixButton,
+        menu: directPhonePrefixMenu,
         current: directPhonePrefixCurrent,
         value: directPhonePrefixValue,
-        menu: directPhonePrefixMenu,
-      });
-      closePhonePrefixMenu(directPhonePrefixMenu, directPhonePrefixButton);
-    });
-
-    phonePrefixButton?.addEventListener("click", () => {
-      if (!(phonePrefixMenu instanceof HTMLElement) || !(phonePrefixButton instanceof HTMLButtonElement)) return;
-
-      const willOpen = phonePrefixMenu.hidden;
-      if (willOpen) renderPhonePrefixes();
-      phonePrefixMenu.hidden = !willOpen;
-      phonePrefixButton.setAttribute("aria-expanded", String(willOpen));
-    });
-
-    directPhonePrefixButton?.addEventListener("click", () => {
-      if (!(directPhonePrefixMenu instanceof HTMLElement) || !(directPhonePrefixButton instanceof HTMLButtonElement)) return;
-
-      const willOpen = directPhonePrefixMenu.hidden;
-      if (willOpen) renderDirectPhonePrefixes();
-      directPhonePrefixMenu.hidden = !willOpen;
-      directPhonePrefixButton.setAttribute("aria-expanded", String(willOpen));
-    });
-
-    document.addEventListener("click", (event) => {
-      if (!(phonePrefixSelect instanceof HTMLElement)) return;
-      if (event.target instanceof Node && !phonePrefixSelect.contains(event.target)) closePhonePrefixMenu();
-      if (directPhonePrefixSelect instanceof HTMLElement && event.target instanceof Node && !directPhonePrefixSelect.contains(event.target)) {
-        closePhonePrefixMenu(directPhonePrefixMenu, directPhonePrefixButton);
-      }
-    });
+      },
+    ], currentLanguage);
 
     const getState = () => ({
       step: priceCard.dataset.step || "1",
@@ -222,7 +99,18 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     const saveState = () => {
       window.clearTimeout(saveStateTimeout);
       saveStateTimeout = 0;
-      sessionStorage.setItem(storageKey, JSON.stringify(getState()));
+      try {
+        sessionStorage.setItem(storageKey, JSON.stringify(getState()));
+      } catch {
+        // The calculator remains usable when browser storage is unavailable.
+      }
+    };
+    const removeSavedState = () => {
+      try {
+        sessionStorage.removeItem(storageKey);
+      } catch {
+        // Storage is an enhancement, not a requirement for the flow.
+      }
     };
 
     // Validation stays synchronous; coalesce only the blocking storage write.
@@ -269,7 +157,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       }
     };
 
-    const setActiveDots = (step) => {
+    const setActiveDots = (step: number) => {
       updateExtraProgressDot();
 
       const hasCeramicExtraStep = priceCard.dataset.selectedSupport === "ceramica-baldosa";
@@ -296,7 +184,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       extraDot.classList.toggle("is-active", shouldShowExtraDot && Number(priceCard.dataset.step || "1") >= 5);
     };
 
-    const setActionEnabled = (enabled) => {
+    const setActionEnabled = (enabled: boolean) => {
       if (action instanceof HTMLButtonElement) action.disabled = !enabled;
     };
 
@@ -330,7 +218,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
         : "calculator_continue");
     };
 
-    const updateSelectedOption = (container, selectedValue, dataName) => {
+    const updateSelectedOption = (container: Element | null, selectedValue: string, dataName: string) => {
       if (!(container instanceof HTMLElement)) return;
 
       container.querySelectorAll(".price-space-option").forEach((item) => {
@@ -340,13 +228,20 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       });
     };
 
-    const setBaseStepChromeHidden = (hidden) => {
+    const setBaseStepChromeHidden = (hidden: boolean) => {
       [media, label, title, copy].forEach((element) => {
         if (element instanceof HTMLElement) element.hidden = hidden;
       });
     };
 
-    const setDirectContactMode = (enabled, { animate = true } = {}) => {
+    const stepPanels = [options, surfaceStep, supportOptions, ceramicStep, conditionStep, resultStep];
+    const showStepPanel = (activePanel: Element | null) => {
+      for (const panel of stepPanels) {
+        if (panel instanceof HTMLElement) panel.hidden = panel !== activePanel;
+      }
+    };
+
+    const setDirectContactMode = (enabled: boolean, { animate = true }: { animate?: boolean } = {}) => {
       window.clearTimeout(introModeTimeout);
 
       const updateMode = () => {
@@ -368,21 +263,21 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       introModeTimeout = window.setTimeout(updateMode, 150);
     };
 
-    const configureStepColumns = (isIntro) => {
+    const configureStepColumns = (isIntro: boolean) => {
       if (directPanel instanceof HTMLElement) directPanel.hidden = !isIntro;
       if (isIntro && media instanceof HTMLElement) media.hidden = true;
       if (!isIntro) setDirectContactMode(false, { animate: false });
     };
 
-    const spaceKeys = {
+    const spaceKeys: Record<string, string> = {
       "vivienda": "space_home", "garaje": "space_garage",
       "local-comercial": "space_business", "industria": "space_industry", "exterior": "space_outdoor",
     };
-    const supportKeys = {
+    const supportKeys: Record<string, string> = {
       "hormigon": "support_concrete", "mortero-autonivelante": "support_screed",
       "ceramica-baldosa": "support_tiles", "otro": "support_other",
     };
-    const conditionKeys = {
+    const conditionKeys: Record<string, string> = {
       "excelente": "condition_excellent", "buen-estado": "condition_good",
       "pequenas-reparaciones": "condition_minor", "reparacion-importante": "condition_major",
     };
@@ -395,7 +290,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       return t(({ no: "ceramic_keep", si: "ceramic_remove" })[priceCard.dataset.selectedCeramicRemoval || ""] || "common_unselected");
     };
 
-    const priceMultipliers = {
+    const priceMultipliers: { space: Record<string, number>; condition: Record<string, number> } = {
       space: {
         "vivienda": 1,
         "garaje": 1.06,
@@ -469,26 +364,11 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       };
     };
 
-    const setResultStatus = (key, type = "") => {
+    const setResultStatus = (key: string, type = "") => {
       if (!(resultStatus instanceof HTMLElement)) return;
 
       bindText(resultStatus, key);
       resultStatus.dataset.status = type;
-    };
-
-    const submitRequest = async (payload) => {
-      const response = await fetch("/.netlify/functions/price-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(result.code === "MISSING_FIELDS" ? "request_missing" : "request_error");
-      }
     };
 
     const submitPriceRequest = async () => {
@@ -505,10 +385,10 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       setResultStatus("request_sending", "loading");
 
       try {
-        await submitRequest(payload);
+        await sendPriceRequest(payload);
         setResultStatus("request_success", "success");
       } catch (error) {
-        setResultStatus(error instanceof Error && error.message === "request_missing" ? "request_missing" : "request_error", "error");
+        setResultStatus(getRequestErrorTranslation(error), "error");
         updateResultSubmitState();
       } finally {
         resultSubmit.classList.remove("is-loading");
@@ -544,18 +424,18 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       setDirectStatus("request_sending", "loading");
 
       try {
-        await submitRequest(payload);
+        await sendPriceRequest(payload);
         setDirectStatus("request_success", "success");
         directForm.reset();
       } catch (error) {
-        setDirectStatus(error instanceof Error && error.message === "request_missing" ? "request_missing" : "request_error", "error");
+        setDirectStatus(getRequestErrorTranslation(error), "error");
       } finally {
         directSubmit.disabled = false;
         directSubmit.classList.remove("is-loading");
       }
     };
 
-    const helpContent = {
+    const helpContent: Record<string, { title: string; body: string[] }> = {
       ceramic: { title: "help_ceramic_title", body: ["help_ceramic_one", "help_ceramic_two"] },
       condition: { title: "help_condition_title", body: ["help_condition_copy"] },
     };
@@ -598,12 +478,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       setDirectContactMode(false, { animate: false });
       bindText(title, "calculator_title_intro");
       bindText(copy, "calculator_copy_intro");
-      if (options instanceof HTMLElement) options.hidden = true;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      showStepPanel(null);
       resetStepScroll();
       closeHelpModal();
       setActionLabel("calculator_start");
@@ -623,12 +498,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       configureStepColumns(false);
       bindText(title, "calculator_title_space");
       clearTranslation(copy);
-      if (options instanceof HTMLElement) options.hidden = false;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      showStepPanel(options);
       resetStepScroll();
       closeHelpModal();
       setActionLabel("calculator_continue");
@@ -648,12 +518,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       configureStepColumns(false);
       bindText(title, "calculator_title_surface");
       clearTranslation(copy);
-      if (options instanceof HTMLElement) options.hidden = true;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = false;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      showStepPanel(surfaceStep);
       resetStepScroll();
       closeHelpModal();
       if (animate && surfaceInput instanceof HTMLInputElement) surfaceInput.focus();
@@ -674,12 +539,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       configureStepColumns(false);
       bindText(title, "calculator_title_support");
       clearTranslation(copy);
-      if (options instanceof HTMLElement) options.hidden = true;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = false;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      showStepPanel(supportOptions);
       resetStepScroll();
       closeHelpModal();
 
@@ -699,12 +559,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       configureStepColumns(false);
       bindText(title, "calculator_title_ceramic");
       clearTranslation(copy);
-      if (options instanceof HTMLElement) options.hidden = true;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = false;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      showStepPanel(ceramicStep);
       resetStepScroll();
       setActionLabel("calculator_continue");
 
@@ -723,12 +578,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       configureStepColumns(false);
       bindText(title, "calculator_title_condition");
       clearTranslation(copy);
-      if (options instanceof HTMLElement) options.hidden = true;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = false;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = true;
+      showStepPanel(conditionStep);
       resetStepScroll();
       closeHelpModal();
       setActionLabel("calculator_finish");
@@ -746,15 +596,10 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
 
       setBaseStepChromeHidden(true);
       configureStepColumns(false);
-      if (options instanceof HTMLElement) options.hidden = true;
-      if (surfaceStep instanceof HTMLElement) surfaceStep.hidden = true;
-      if (supportOptions instanceof HTMLElement) supportOptions.hidden = true;
-      if (ceramicStep instanceof HTMLElement) ceramicStep.hidden = true;
-      if (conditionStep instanceof HTMLElement) conditionStep.hidden = true;
-      if (resultStep instanceof HTMLElement) resultStep.hidden = false;
+      showStepPanel(resultStep);
       resetStepScroll();
       bindText(resultSpace, getSpaceKey());
-      applyTranslations(resultStep);
+      if (resultStep) applyTranslations(resultStep);
       updateResultAmount();
       updateResultSubmitState();
       closeHelpModal();
@@ -766,9 +611,16 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       saveState();
     };
 
-    const resetCalculator = () => {
+    const clearEstimateLoadingTimers = () => {
       window.clearTimeout(estimateTimeout);
-      sessionStorage.removeItem(storageKey);
+      estimateTimeout = 0;
+      estimateFrameTimeouts.forEach(timeout => window.clearTimeout(timeout));
+      estimateFrameTimeouts = [];
+    };
+
+    const resetCalculator = () => {
+      clearEstimateLoadingTimers();
+      removeSavedState();
 
       delete priceCard.dataset.selectedSpace;
       delete priceCard.dataset.selectedSupport;
@@ -798,7 +650,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     };
 
     const runEstimateLoading = () => {
-      window.clearTimeout(estimateTimeout);
+      clearEstimateLoadingTimers();
 
       priceCard.hidden = true;
 
@@ -812,12 +664,12 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       const frameDuration = estimateDuration / frames.length;
 
       frames.forEach((value, index) => {
-        window.setTimeout(() => {
+        estimateFrameTimeouts.push(window.setTimeout(() => {
           if (estimateAmount instanceof HTMLElement) {
             estimateAmount.dataset.amount = String(value);
             estimateAmount.textContent = formatEuros(value);
           }
-        }, index * frameDuration);
+        }, index * frameDuration));
       });
 
       estimateTimeout = window.setTimeout(() => {
@@ -843,7 +695,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       return Number.isInteger(value) && value > 0 && value <= 9999999999;
     };
 
-    const setSurfaceLimitError = (hasError) => {
+    const setSurfaceLimitError = (hasError: boolean) => {
       window.clearTimeout(surfaceErrorTimeout);
 
       if (surfaceInput instanceof HTMLInputElement) {
@@ -941,11 +793,6 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       }
 
       if (currentStep === 5) {
-        if (priceCard.dataset.selectedSupport !== "ceramica-baldosa") {
-          setStepFour({ animate: true });
-          return;
-        }
-
         setStepFour({ animate: true });
         return;
       }
@@ -965,22 +812,16 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
       }
     });
 
-    options?.querySelectorAll(".price-space-option").forEach((option) => {
-      option.addEventListener("click", () => {
-        if (!(option instanceof HTMLButtonElement)) return;
+    priceCard.addEventListener("click", event => {
+      const option = event.target instanceof Element
+        ? event.target.closest<HTMLButtonElement>(".price-space-option")
+        : null;
+      if (!option || !priceCard.contains(option)) return;
 
+      if (option.hasAttribute("data-space")) {
         priceCard.dataset.selectedSpace = option.dataset.space || "";
         updateSelectedOption(options, priceCard.dataset.selectedSpace, "space");
-
-        setActionEnabled(true);
-        saveState();
-      });
-    });
-
-    supportOptions?.querySelectorAll(".price-space-option").forEach((option) => {
-      option.addEventListener("click", () => {
-        if (!(option instanceof HTMLButtonElement)) return;
-
+      } else if (option.hasAttribute("data-support")) {
         priceCard.dataset.selectedSupport = option.dataset.support || "";
         updateSelectedOption(supportOptions, priceCard.dataset.selectedSupport, "support");
 
@@ -995,33 +836,18 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
         updateExtraProgressDot();
         setActiveDots(Number(priceCard.dataset.step || "4"));
         updateSupportActionLabel();
-        setActionEnabled(true);
-        saveState();
-      });
-    });
-
-    ceramicStep?.querySelectorAll(".price-space-option").forEach((option) => {
-      option.addEventListener("click", () => {
-        if (!(option instanceof HTMLButtonElement)) return;
-
+      } else if (option.hasAttribute("data-ceramic-removal")) {
         priceCard.dataset.selectedCeramicRemoval = option.dataset.ceramicRemoval || "";
         updateSelectedOption(ceramicStep, priceCard.dataset.selectedCeramicRemoval, "ceramicRemoval");
-
-        setActionEnabled(true);
-        saveState();
-      });
-    });
-
-    conditionStep?.querySelectorAll(".price-space-option").forEach((option) => {
-      option.addEventListener("click", () => {
-        if (!(option instanceof HTMLButtonElement)) return;
-
+      } else if (option.hasAttribute("data-condition")) {
         priceCard.dataset.selectedCondition = option.dataset.condition || "";
         updateSelectedOption(conditionStep, priceCard.dataset.selectedCondition, "condition");
+      } else {
+        return;
+      }
 
-        setActionEnabled(true);
-        saveState();
-      });
+      setActionEnabled(true);
+      saveState();
     });
 
     helpOpenButton?.addEventListener("click", () => openHelpModal("ceramic"));
@@ -1034,7 +860,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeHelpModal();
-        closePhonePrefixMenu();
+        phonePrefixControls.closeAll();
         if (priceCard.classList.contains("is-direct-contact")) setDirectContactMode(false);
       }
     });
@@ -1066,7 +892,7 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
         const validSpaces = ["vivienda", "garaje", "local-comercial", "industria", "exterior"];
 
         if (requestedReset) {
-          sessionStorage.removeItem(storageKey);
+          removeSavedState();
 
           if (validSpaces.includes(requestedSpace)) {
             priceCard.dataset.selectedSpace = requestedSpace;
@@ -1141,20 +967,14 @@ import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCu
           return;
         }
       } catch {
-        sessionStorage.removeItem(storageKey);
+        removeSavedState();
       }
 
       setStepOne({ animate: true });
     };
 
     window.addEventListener("i18n:updated", () => {
-      countryNames = undefined;
-      [phonePrefixMenu, directPhonePrefixMenu].forEach((menu) => {
-        menu?.querySelectorAll<HTMLElement>(".phone-prefix-option").forEach(option => {
-          const country = option.querySelector(".phone-prefix-option-country");
-          if (country) country.textContent = getCountryName(option.dataset.country);
-        });
-      });
+      phonePrefixControls.refreshLabels();
       if (priceCard.dataset.view === "result") {
         bindText(resultSpace, getSpaceKey());
         updateResultAmount();

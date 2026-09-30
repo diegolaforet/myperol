@@ -9,7 +9,8 @@ Los principales costes observados estan en el navegador y en la descarga de medi
 
 Se conservan HTML, CSS, textos, IDs, atributos funcionales, formulas de precios,
 materiales 3D, encuadres y secuencia de scroll. Los cambios de produccion estan en
-los scripts. No se modifican dependencias ni se recomprimen imagenes o video.
+los scripts y en la entrega adaptativa del mismo video del hero. No se modifican
+dependencias de ejecucion.
 
 ## Problemas encontrados y soluciones
 
@@ -25,6 +26,8 @@ los scripts. No se modifican dependencias ni se recomprimen imagenes o video.
 | Cada evento actualizaba todos los puntos y cancelaba el temporizador de una flecha ya ocultandose. | Solo se modifica el punto anterior/nuevo y las flechas cuyo estado cambia. El temporizador de salida permanece activo. | Menos mutaciones; la flecha termina de ocultarse aunque sigan llegando eventos. |
 | Se creaban 82 botones de prefijo y 83 Intl.DisplayNames al cargar, con un listener por opcion. | Construccion unica al abrir, DocumentFragment, un Intl.DisplayNames reutilizable y delegacion del click. | Cero opciones ocultas creadas al arrancar y un unico listener para las opciones. |
 | Todos los clicks intentaban cerrar menus que ya estaban cerrados; se repetian lecturas de localStorage por etiqueta. | Solo se cierran menus abiertos, se reutiliza el idioma leido y se descarta una apertura RAF si el menu ya fue cerrado. | Menos mutaciones globales y lecturas sincronas; evita reaperturas diferidas. |
+| El hero publicaba y descargaba un MOV de 62,36 MB en todos los dispositivos. | Se generan variantes H.264 de 720p y 1080p desde la misma fuente; el MOV se conserva fuera de `public`. | Descarga de video reducida a 5,18 MB en movil y 20,68 MB en escritorio; `public` deja de incluir 62,36 MB sin uso directo. |
+| La configuracion estricta de TypeScript no se ejecutaba y ocultaba tipos implicitos en calculadora, scroll y escena 3D. | Se tiparon los limites de cada modulo y `tsc --noEmit` forma parte de `prebuild`. | Los contratos del DOM, Spline y GSAP se validan antes de publicar. |
 
 ## Medicion
 
@@ -76,9 +79,10 @@ Las regresiones nuevas viven en `tests/runtime-performance.spec.ts`.
 
 ## Limites y costes conservados
 
-- Video: `hero-1080.mp4` pesa 15,64 MB y `hero-720.mp4`, 4,34 MB en disco.
+- Video: `hero-1080.mp4` pesa 20,68 MB y `hero-720.mp4`, 5,18 MB en disco.
   Son el coste dominante de la portada. Cambiar el codec, bitrate o dimensiones
-  requiere evaluar calidad y compatibilidad; no se altera el material existente.
+  requiere evaluar calidad y compatibilidad; las variantes actuales mantienen
+  60 FPS y usan el mismo metraje de `source-assets/videos/videointro_hero.mov`.
 - La escena `.splinecode` pesa 3,35 MB. El runtime principal generado ocupa
   aproximadamente 2,04 MB sin gzip. El build conserva la advertencia de chunks
   grandes; el motor se importa de forma diferida y no pertenece al arranque del hero.

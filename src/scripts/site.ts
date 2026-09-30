@@ -1,4 +1,5 @@
 import { messages as i18nMessages, normalizeLanguage, loadLanguage, applyTranslations } from "../i18n/client";
+import type { Language } from "../i18n/client";
 
 import { initializeScrollReveal } from "./scroll-reveal";
 import { initializeSectionControls } from "./section-controls";
@@ -6,7 +7,17 @@ import { initializeHeroVideo } from "./hero-video";
 import { initializeSmoothNavigation } from "./smooth-navigation";
 
 const normalizeLang = normalizeLanguage;
-let selectedLanguage = "es";
+let selectedLanguage: Language = "es";
+
+declare global {
+  interface Window {
+    toggleLangMenu: (toggle?: HTMLElement | null) => void;
+    selectLang: (lang: unknown) => void;
+    toggleMobileMenu: () => void;
+    closeMobileMenu: () => void;
+    I18N_MESSAGES: typeof i18nMessages;
+  }
+}
 
 function getLang() {
   let storedLang: string | null = null;
@@ -20,7 +31,7 @@ function getLang() {
   return lang;
 }
 
-function setLang(lang) {
+function setLang(lang: unknown) {
   selectedLanguage = normalizeLang(lang);
   try { localStorage.setItem("lang", selectedLanguage); } catch { /* Keep the selection in memory. */ }
 }
@@ -31,11 +42,11 @@ function updateLangLabel(lang: string) {
   });
 }
 
-function updateDocumentLang(lang) {
+function updateDocumentLang(lang: unknown) {
   document.documentElement.lang = normalizeLang(lang);
 }
 
-function setFloatingMenuOpen(menu, toggle, isOpen) {
+function setFloatingMenuOpen(menu: HTMLElement | null, toggle: HTMLElement | null, isOpen: boolean) {
   if (!menu) return;
 
   window.clearTimeout(Number(menu.dataset.closeTimeout || 0));
@@ -70,16 +81,16 @@ function setFloatingMenuOpen(menu, toggle, isOpen) {
   }
 }
 
-function getLangMenu(toggle) {
+function getLangMenu(toggle: Element | null) {
   const menuId = toggle?.getAttribute("aria-controls");
   return menuId ? document.getElementById(menuId) : null;
 }
 
-function setLangMenuOpen(toggle, isOpen) {
+function setLangMenuOpen(toggle: HTMLElement | null, isOpen: boolean) {
   setFloatingMenuOpen(getLangMenu(toggle), toggle, isOpen);
 }
 
-function toggleLangMenu(toggle = document.getElementById("langToggle")) {
+function toggleLangMenu(toggle: HTMLElement | null = document.getElementById("langToggle")) {
   const menu = getLangMenu(toggle);
   const shouldOpen = menu ? !menu.classList.contains("open") : false;
 
@@ -93,11 +104,11 @@ function toggleLangMenu(toggle = document.getElementById("langToggle")) {
 
 function closeLangMenu() {
   document.querySelectorAll('.lang-button[aria-controls][aria-expanded="true"]').forEach((toggle) => {
-    setLangMenuOpen(toggle, false);
+    if (toggle instanceof HTMLElement) setLangMenuOpen(toggle, false);
   });
 }
 
-function setMobileMenuOpen(isOpen) {
+function setMobileMenuOpen(isOpen: boolean) {
   setFloatingMenuOpen(
     document.getElementById("primaryNav"),
     document.getElementById("mobileMenuToggle"),
@@ -117,14 +128,14 @@ function closeMobileMenu() {
   setMobileMenuOpen(false);
 }
 
-function selectLang(lang) {
+function selectLang(lang: unknown) {
   setLang(normalizeLang(lang));
   closeLangMenu();
   window.dispatchEvent(new Event("language-change"));
 }
 
-function markActiveLang(lang) {
-  const items = document.querySelectorAll(".lang-option");
+function markActiveLang(lang: string) {
+  const items = document.querySelectorAll<HTMLElement>(".lang-option");
 
   items.forEach((item) => {
     if (item.dataset.lang === lang) {
@@ -174,7 +185,7 @@ document.addEventListener("click", (event) => {
   }
 
   const header = document.querySelector(".site-header");
-  if (header && !header.contains(event.target)) {
+  if (header && event.target instanceof Node && !header.contains(event.target)) {
     closeMobileMenu();
   }
 });

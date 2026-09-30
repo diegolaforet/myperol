@@ -4,7 +4,7 @@ test("Spline downloads near the section but allocates WebGL only on entry", asyn
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
     Object.assign(window, { flooringContexts: 0 });
-    HTMLCanvasElement.prototype.getContext = function (type: string, ...args: any[]) {
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, ...args: any[]) {
       if (this.hasAttribute("data-flooring-canvas") && /webgl/.test(type)) {
         (window as any).flooringContexts++;
       }

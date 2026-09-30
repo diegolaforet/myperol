@@ -149,6 +149,9 @@ function cleanInitialSectionHash() {
 }
 
 export function initializeSmoothNavigation() {
-  document.addEventListener("click", handleAnchorNavigation);
+  const listeners = new AbortController();
+  const { signal } = listeners;
+  document.addEventListener("click", handleAnchorNavigation, { signal });
+  document.addEventListener("astro:before-swap", () => listeners.abort(), { once: true });
   if (!resumeCrossPageNavigation()) cleanInitialSectionHash();
 }

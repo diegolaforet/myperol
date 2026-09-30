@@ -3,6 +3,7 @@ import { loadFlooringResources } from "../spline/resources";
 import { observeSceneVisibility } from "../spline/visibility";
 import { getScenePixelRatio } from "../spline/resolution";
 import { bindText } from "../../i18n/client";
+import type { Application } from "@splinetool/runtime";
 
 const INTRO_DURATION = 15;
 const LAYER_BUILD_DURATION = 16;
@@ -129,6 +130,7 @@ const OBJECT_ALIASES = {
   sellador: ["sellador", "sealer", "sellado", "transparent sealer"],
   camera: ["cameraPrincipal", "camera principal", "main camera", "camera"],
 };
+type SceneObjectKey = keyof typeof OBJECT_ALIASES;
 
 const normalizeName = (name = "") =>
   name
@@ -155,20 +157,19 @@ export const buildSplineScroll = async () => {
 
   let isDisposed = false;
   let activePanelIndex = -1;
-  let spline;
+  let spline: Application | undefined;
   let initializing = false;
-  let timeline;
-  let ScrollTrigger;
-  let renderResizeObserver;
-  let renderBufferObserver;
-  let renderResizeTimer;
-  let applyCurrentModelTransform = () => undefined;
+  let timeline: gsap.core.Timeline | undefined;
+  let renderResizeObserver: ResizeObserver | undefined;
+  let renderBufferObserver: MutationObserver | undefined;
+  let renderResizeTimer = 0;
+  let applyCurrentModelTransform: () => void = () => {};
   let sceneReady = false;
   let renderController: ReturnType<typeof createRenderController> | undefined;
   let isStageVisible = false;
-  let syncVisibleScene = () => undefined;
-  let cancelInitialRender = () => undefined;
-  let syncInitialRender = () => undefined;
+  let syncVisibleScene: () => void = () => {};
+  let cancelInitialRender: () => void = () => {};
+  let syncInitialRender: () => void = () => {};
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const mobileRenderer = window.matchMedia("(pointer: coarse)");
 
@@ -204,13 +205,13 @@ export const buildSplineScroll = async () => {
 
   const showError = () => {
     if (loader instanceof HTMLElement) loader.classList.add("has-error");
-    bindText(loaderMessage, "mp_systems_error");
+    bindText(loaderMessage ?? null, "mp_systems_error");
     section.classList.remove("is-loading");
     section.classList.add("has-load-error");
     section.dataset.flooringInitialized = "error";
   };
 
-  const setActivePanel = (index) => {
+  const setActivePanel = (index: number) => {
     if (index === activePanelIndex) return;
 
     panels.forEach((panel) => {
@@ -221,7 +222,7 @@ export const buildSplineScroll = async () => {
     activePanelIndex = index;
   };
 
-  const getPanelIndex = (progress) => {
+  const getPanelIndex = (progress: number) => {
     if (progress < PANEL_PROGRESS_THRESHOLDS[0]) return 0;
     if (progress < PANEL_PROGRESS_THRESHOLDS[1]) return 1;
     if (progress < PANEL_PROGRESS_THRESHOLDS[2]) return 2;
@@ -231,7 +232,7 @@ export const buildSplineScroll = async () => {
     return 5;
   };
 
-  const renderInitialFrames = (application, frameCount = 2) =>
+  const renderInitialFrames = (application: Application, frameCount = 2) =>
     new Promise<void>((resolve, reject) => {
       let renderedFrames = 0;
       let nextFrame = 0;
@@ -240,8 +241,8 @@ export const buildSplineScroll = async () => {
         window.clearTimeout(timeout);
         window.cancelAnimationFrame(nextFrame);
         application.removeEventListener("rendered", handleRendered);
-        cancelInitialRender = () => undefined;
-        syncInitialRender = () => undefined;
+        cancelInitialRender = () => {};
+        syncInitialRender = () => {};
         error ? reject(error) : resolve();
       };
       cancelInitialRender = () => finish();
@@ -307,32 +308,34 @@ export const buildSplineScroll = async () => {
     const { Application } = runtimeModule;
     const { gsap } = gsapModule;
 
-    ScrollTrigger = scrollTriggerModule.ScrollTrigger;
-    gsap.registerPlugin(ScrollTrigger);
-    ScrollTrigger.config({ ignoreMobileResize: true });
+    const scrollTrigger = scrollTriggerModule.ScrollTrigger;
+    gsap.registerPlugin(scrollTrigger);
+    scrollTrigger.config({ ignoreMobileResize: true });
 
     if (isDisposed) return;
 
     // Download near the section, but defer decoding and GPU allocation until visible.
     await visibility.whenVisible();
     if (isDisposed) return;
-    spline = new Application(canvas, { renderMode: "manual" });
+    const loadingApplication = new Application(canvas, { renderMode: "manual" });
+    spline = loadingApplication;
     // Scroll owns all transforms. Spline's pointer/orbit event machinery is unused.
     initializing = true;
     try {
-      await spline.start(sceneBuffer.slice(0), { interactive: false });
+      await loadingApplication.start(sceneBuffer.slice(0), { interactive: false });
     } finally {
       initializing = false;
-      spline.stop();
+      loadingApplication.stop();
       if (isDisposed) {
-        spline.dispose();
-        spline = undefined;
+        loadingApplication.dispose();
+        if (spline === loadingApplication) spline = undefined;
       }
     }
 
     if (isDisposed) return;
     await visibility.whenVisible();
-    if (isDisposed) return;
+    const application = spline;
+    if (isDisposed || !application) return;
 
     let renderWidth = 0;
     let renderHeight = 0;
@@ -348,7 +351,7 @@ export const buildSplineScroll = async () => {
       horizontalCenterOffset: 0,
     };
 
-    const updateModelMotionBounds = (width, height) => {
+    const updateModelMotionBounds = (width: number, height: number) => {
       const viewportFit = Math.min(
         1,
         Math.max(
@@ -388,7 +391,7 @@ export const buildSplineScroll = async () => {
     };
 
     const syncRenderResolution = () => {
-      if (isDisposed || !spline) return;
+      if (isDisposed) return;
 
       const cssWidth = canvas.clientWidth;
       const cssHeight = canvas.clientHeight;
@@ -413,16 +416,16 @@ export const buildSplineScroll = async () => {
 
       renderWidth = nextWidth;
       renderHeight = nextHeight;
-      spline.setSize(renderWidth, renderHeight);
+      application.setSize(renderWidth, renderHeight);
       // The renderer caches its logical size. If only canvas attributes were
       // reset, invalidate that cache through the public API before restoring.
       if (Math.abs(canvas.width - expectedBufferWidth) > 1 ||
           Math.abs(canvas.height - expectedBufferHeight) > 1) {
-        spline.setSize(renderWidth + 1, renderHeight);
-        spline.setSize(renderWidth, renderHeight);
+        application.setSize(renderWidth + 1, renderHeight);
+        application.setSize(renderWidth, renderHeight);
       }
       if (renderController) renderController.request(true);
-      else if (isStageVisible && !document.hidden) spline.requestRender();
+      else if (isStageVisible && !document.hidden) application.requestRender();
     };
 
     const scheduleRenderResolutionSync = (delay = 120) => {
@@ -447,8 +450,8 @@ export const buildSplineScroll = async () => {
     });
     renderBufferObserver.observe(canvas, { attributes: true, attributeFilter: ["width", "height"] });
 
-    const sceneObjects = spline.getAllObjects();
-    const resolveObject = (key) => {
+    const sceneObjects = application.getAllObjects();
+    const resolveObject = (key: SceneObjectKey) => {
       const aliases = OBJECT_ALIASES[key].map(normalizeName);
       const matches = sceneObjects.filter((object) => aliases.includes(normalizeName(object.name)));
 
@@ -458,7 +461,7 @@ export const buildSplineScroll = async () => {
 
       return matches[0];
     };
-    const resolveOptionalObject = (key) => {
+    const resolveOptionalObject = (key: SceneObjectKey) => {
       const aliases = OBJECT_ALIASES[key].map(normalizeName);
       return sceneObjects.find((object) => aliases.includes(normalizeName(object.name)));
     };
@@ -605,16 +608,16 @@ export const buildSplineScroll = async () => {
     };
     const requestChangedSceneRender = (force = false) => {
       if (sceneReady) renderController?.request(force);
-      else if (isStageVisible && !document.hidden && commitScene(force)) spline.requestRender();
+      else if (isStageVisible && !document.hidden && commitScene(force)) application.requestRender();
     };
     syncVisibleScene = () => {
       requestChangedSceneRender(true);
     };
 
-    timeline = gsap.timeline({
+    const sceneTimeline = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onUpdate: () => {
-        const progress = timeline?.progress() ?? 0;
+        const progress = sceneTimeline.progress();
 
         if (progressBar instanceof HTMLElement) {
           progressBar.style.setProperty("--flooring-progress", String(progress));
@@ -629,21 +632,22 @@ export const buildSplineScroll = async () => {
         scrub: SCROLL_SCRUB_SECONDS,
       },
     });
+    timeline = sceneTimeline;
 
     // Keep the assembled model still during the introductory copy.
-    timeline.to({}, { duration: INTRO_DURATION });
+    sceneTimeline.to({}, { duration: INTRO_DURATION });
 
     MODEL_LAYER_MOTIONS.forEach((layerMotion, index) => {
       const isSealer = index === MODEL_LAYER_MOTIONS.length - 1;
       const movementDuration = isSealer ? SEALER_BUILD_DURATION : LAYER_BUILD_DURATION;
       const holdDuration = isSealer ? SEALER_HOLD_DURATION : LAYER_HOLD_DURATION;
-      const movementStart = timeline.duration();
+      const movementStart = sceneTimeline.duration();
       const cameraLayerMotion = CAMERA_LAYER_MOTIONS[index];
       if (index === 1) {
         const halfDuration = movementDuration / 2;
         const secondHalfStart = movementStart + halfDuration;
 
-        timeline.to(
+        sceneTimeline.to(
           modelMotion,
           {
             xRatio: MODEL_SILICA_MID_MOTION.xRatio,
@@ -655,7 +659,7 @@ export const buildSplineScroll = async () => {
           },
           movementStart
         );
-        timeline.to(
+        sceneTimeline.to(
           cameraMotion,
           {
             pitch: CAMERA_SILICA_MID_MOTION.pitch,
@@ -665,7 +669,7 @@ export const buildSplineScroll = async () => {
           },
           movementStart
         );
-        timeline.to(
+        sceneTimeline.to(
           modelMotion,
           {
             xRatio: MODEL_SILICA_SECOND_HALF_MOTION.xRatio,
@@ -677,7 +681,7 @@ export const buildSplineScroll = async () => {
           },
           secondHalfStart
         );
-        timeline.to(
+        sceneTimeline.to(
           cameraMotion,
           {
             pitch: CAMERA_SILICA_SECOND_HALF_MOTION.pitch,
@@ -688,7 +692,7 @@ export const buildSplineScroll = async () => {
           secondHalfStart
         );
       } else {
-        timeline.to(
+        sceneTimeline.to(
           modelMotion,
           {
             xRatio: layerMotion.xRatio,
@@ -700,7 +704,7 @@ export const buildSplineScroll = async () => {
           },
           movementStart
         );
-        timeline.to(
+        sceneTimeline.to(
           cameraMotion,
           {
             pitch: cameraLayerMotion.pitch,
@@ -712,14 +716,14 @@ export const buildSplineScroll = async () => {
         );
       }
 
-      timeline.to({}, { duration: holdDuration });
+      sceneTimeline.to({}, { duration: holdDuration });
     });
 
-    const finalMotionStart = timeline.duration();
+    const finalMotionStart = sceneTimeline.duration();
     const finalStageStart = finalMotionStart + FINAL_CENTER_DURATION;
     const finalResolveStart = finalStageStart + FINAL_STAGE_DURATION;
 
-    timeline.to(
+    sceneTimeline.to(
       modelMotion,
       {
         xRatio: MODEL_FINAL_CENTER_MOTION.xRatio,
@@ -730,7 +734,7 @@ export const buildSplineScroll = async () => {
       },
       finalMotionStart
     );
-    timeline.to(
+    sceneTimeline.to(
       modelMotion,
       {
         focus: MODEL_FINAL_MOTION.focus,
@@ -740,7 +744,7 @@ export const buildSplineScroll = async () => {
       },
       finalMotionStart
     );
-    timeline.to(
+    sceneTimeline.to(
       modelMotion,
       {
         xRatio: MODEL_FINAL_STAGE_MOTION.xRatio,
@@ -750,7 +754,7 @@ export const buildSplineScroll = async () => {
       },
       finalStageStart
     );
-    timeline.to(
+    sceneTimeline.to(
       modelMotion,
       {
         xRatio: MODEL_FINAL_MOTION.xRatio,
@@ -760,7 +764,7 @@ export const buildSplineScroll = async () => {
       },
       finalResolveStart
     );
-    timeline.to(
+    sceneTimeline.to(
       cameraMotion,
       {
         pitch: CAMERA_FINAL_MOTION.pitch,
@@ -772,8 +776,8 @@ export const buildSplineScroll = async () => {
     );
 
     updateMotionPreference();
-    setActivePanel(getPanelIndex(timeline.progress()));
-    await renderInitialFrames(spline, 2);
+    setActivePanel(getPanelIndex(sceneTimeline.progress()));
+    await renderInitialFrames(application, 2);
 
     if (isDisposed) return;
 
@@ -781,15 +785,15 @@ export const buildSplineScroll = async () => {
     section.classList.remove("is-loading");
     section.classList.add("is-ready");
     section.dataset.flooringInitialized = "ready";
-    renderController = createRenderController(spline, commitScene);
+    renderController = createRenderController(application, commitScene);
     sceneReady = true;
     updateVisibility();
 
     // Recalculate ScrollTrigger only after the two initial manual renders.
     window.requestAnimationFrame(() => {
       if (isDisposed) return;
-      ScrollTrigger.refresh();
-      timeline.scrollTrigger?.update();
+      scrollTrigger.refresh();
+      sceneTimeline.scrollTrigger?.update();
     });
 
   } catch (error) {
