@@ -36,9 +36,9 @@ import messages from "../i18n/json/es.json";
 
       <div class="service-expanded-content prices-step-content">
         <form class="price-direct-contact" data-price-direct-form hidden>
-          <button class="price-direct-contact__back" type="button" data-price-direct-close>
+          <button class="price-back-button price-direct-contact__back" type="button" aria-label={messages.calculator_direct_back} data-i18n-aria-label="calculator_direct_back" data-price-direct-close>
             <span aria-hidden="true">&larr;</span>
-            <span data-i18n="calculator_direct_back">{messages.calculator_direct_back}</span>
+            <span class="price-back-label" data-i18n="calculator_direct_back">{messages.calculator_direct_back}</span>
           </button>
           <p class="price-direct-contact__kicker" data-i18n="calculator_direct_form_kicker">{messages.calculator_direct_form_kicker}</p>
           <h3 id="priceDirectContactTitle" data-i18n="calculator_direct_form_title">{messages.calculator_direct_form_title}</h3>

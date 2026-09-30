@@ -707,22 +707,10 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   overflow: visible;
 }
 .price-direct-contact__back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  width: fit-content;
-  min-height: 30px;
-  margin: 0 0 clamp(12px, 1.7dvh, 18px);
-  padding: 4px 0 8px;
-  border: 0;
-  background: transparent;
-  color: var(--color-card-muted);
-  font: 500 var(--text-12)/1.35 var(--font-ui);
-  cursor: pointer;
-  transition: color .18s ease, transform .18s ease;
+  justify-self: end;
+  position: static;
+  margin: 0 0 clamp(10px, 1.5dvh, 16px);
 }
-.price-direct-contact__back:hover,
-.price-direct-contact__back:focus-visible { color: var(--palette-ink); transform: translateX(-2px); outline: none; }
 .price-direct-contact__kicker { margin-bottom: var(--space-10); color: var(--color-card-label); }
 .price-direct-contact h3 {
   max-width: 15ch;
