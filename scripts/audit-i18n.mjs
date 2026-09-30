@@ -26,7 +26,7 @@ async function sourceFiles(directory) {
 }
 
 const findings = [];
-const brands = /^(?:MyPerol|MYPEROL|MP SYSTEM|MP Systems|Instagram|WhatsApp|ES)$/;
+const brands = /^(?:MyPerol|MYPEROL|MPSYSTEM|MP SYSTEM|MP Systems|Instagram|WhatsApp|ES)$/;
 const meaningful = value => {
   const text = value.replace(/&(?:#\d+|\w+);/g, "").trim();
   return /\p{L}/u.test(text) && !brands.test(text);
