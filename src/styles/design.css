@@ -27,6 +27,34 @@ body, button, input, h1, h2, h3, p { letter-spacing: 0; }
 button, input, a { -webkit-tap-highlight-color: transparent; }
 h1, h2, h3 { text-wrap: balance; }
 p { overflow-wrap: break-word; }
+:where(
+  .hero-identity__copy,
+  .home-intro-statement p,
+  .home-primary-card-copy,
+  .home-secondary-card p,
+  .feature-cards-header p,
+  .services-feature-subtitle p,
+  .services-feature-cards .feature-card p,
+  .flooring-copy-panel > p:last-child,
+  .service-expanded-summary,
+  .service-expanded-copy,
+  .price-intro-direct > p:not(.price-intro-direct__kicker),
+  .price-direct-contact__copy,
+  .prices-section-intro,
+  .price-step-question,
+  .price-long-option small,
+  .price-result-step p,
+  .price-result-step li,
+  .price-help-modal p
+) {
+  hyphens: auto;
+  overflow-wrap: break-word;
+  text-align: justify;
+  text-align-last: left;
+  text-justify: inter-word;
+  text-wrap: pretty;
+  word-spacing: normal;
+}
 img { max-width: 100%; }
 ::selection { background: var(--palette-tone-60); color: var(--palette-ink); }
 :is(a, button, input, [tabindex]):focus-visible {
