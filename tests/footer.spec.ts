@@ -7,7 +7,12 @@ test("footer is shared, responsive and translated without dead legal links", asy
     const footer = page.locator(".site-footer");
     await footer.scrollIntoViewIfNeeded();
     await expect(footer).toHaveCount(1);
-    await expect(footer).toHaveCSS("background-color", "rgb(255, 255, 255)");
+    await expect(footer).toHaveCSS("background-color", "rgb(32, 33, 36)");
+    await expect(footer.locator(".site-footer__logo img")).toHaveAttribute("src", "/assets/logo/logo-blanco.webp");
+    if (route !== "/servicios") {
+      const budgetBackground = await page.locator(".prices-page").evaluate(el => getComputedStyle(el).backgroundColor);
+      await expect(footer).toHaveCSS("background-color", budgetBackground);
+    }
     await expect(footer.locator('a[href="mailto:myperolepoxy@gmail.com"]')).toBeVisible();
     await expect(footer.locator('a[href="tel:+34663108027"]')).toBeVisible();
     await expect(footer.locator('a[href="https://wa.me/34663108027"]')).toBeVisible();
@@ -15,6 +20,7 @@ test("footer is shared, responsive and translated without dead legal links", asy
     for (const social of await footer.locator(".social-link").all()) {
       await expect(social).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       await expect(social).toHaveCSS("box-shadow", "none");
+      await expect(social).toHaveCSS("color", "rgb(229, 229, 231)");
     }
     await expect(footer.locator(".site-footer__legal li")).toHaveCount(3);
     await expect(footer.locator(".site-footer__legal a")).toHaveCount(0);

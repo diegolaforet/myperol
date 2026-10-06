@@ -32,31 +32,3 @@ const { primary = false, inline = false } = Astro.props;
       {!inline && <span id={primary ? "whatsappText" : undefined} data-whatsapp-text data-i18n="whatsapp_cta"></span>}
     </a>
   </div>
-
-<style>
-  .social-links-inline { display: flex; gap: 8px; margin-top: 20px; }
-  .social-links-inline .social-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-    color: var(--palette-label);
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border: 1px solid var(--palette-tone-13);
-    border-radius: 50%;
-    text-shadow: none;
-    transition: color 180ms ease, border-color 180ms ease;
-  }
-  .social-links-inline .social-link svg { width: 20px; height: 20px; }
-  .social-links-inline .social-link:is(:hover, :focus-visible) {
-    color: var(--palette-ink);
-    border-color: var(--palette-label);
-    transform: none;
-  }
-  .social-links-inline .social-link:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
-</style>
