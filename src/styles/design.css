@@ -747,17 +747,28 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 }
 .prices-card.is-direct-contact .prices-step-content > :not(.price-direct-contact) { display: none; }
 .price-direct-contact {
+  position: relative;
   display: grid;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
   width: 100%;
   height: 100%;
   min-height: 0;
   overflow: visible;
 }
-.price-direct-contact__back {
-  justify-self: end;
-  position: static;
-  margin: 0 0 clamp(10px, 1.5dvh, 16px);
+.prices-page .price-direct-contact__back {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+}
+.prices-page .price-direct-contact__back > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  transform: translateY(-1px);
 }
 .price-direct-contact__kicker { margin-bottom: var(--space-10); color: var(--color-card-label); }
 .price-direct-contact h3 {
@@ -872,7 +883,10 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .prices-page .service-expanded-media[hidden],
 .prices-page .price-intro-direct[hidden],
 .prices-page .price-direct-contact[hidden] { display: none; }
-.prices-card.is-direct-contact .prices-step-content { overflow: visible; }
+.prices-page .prices-card.is-direct-contact .prices-step-content {
+  padding-top: 0;
+  overflow: visible;
+}
 /* Let wheel and touch gestures continue into the page at the panel boundaries. */
 .prices-page .prices-card:not([data-view="result"]) .prices-step-content { min-height: 0; overflow-y: auto; overscroll-behavior-y: auto; }
 .prices-page .prices-card:not([data-view="result"]).is-direct-contact .prices-step-content { overflow-y: visible; }
@@ -891,6 +905,15 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .prices-page .service-expanded-summary { display: none; }
 .prices-page .prices-step-content { padding-top: var(--space-16); min-width: 0; }
 .prices-page .service-expanded-label { width: 100%; margin-bottom: var(--space-18); padding-bottom: var(--space-12); border-bottom: 1px solid var(--palette-tone-107); color: var(--palette-tone-108); }
+.prices-page .price-brand-logo {
+  display: flex;
+  align-items: center;
+}
+.prices-page .price-brand-logo__image {
+  display: block;
+  width: 70px;
+  height: auto;
+}
 .prices-card-footer { flex-direction: row-reverse; justify-content: space-between; width: 100%; padding-top: var(--space-20); gap: var(--space-16); }
 .prices-progress-dots {
   gap: var(--space-8);
