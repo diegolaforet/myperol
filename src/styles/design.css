@@ -745,6 +745,61 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
     transform: translateZ(0) scale(1);
   }
 }
+.price-direct-contact.is-revealing {
+  animation: direct-contact-reveal 560ms cubic-bezier(.2, .78, .22, 1) both;
+  will-change: clip-path, opacity, transform;
+}
+.price-direct-contact.is-concealing {
+  pointer-events: none;
+  animation: direct-contact-conceal 560ms cubic-bezier(.4, 0, .3, 1) both;
+  will-change: clip-path, opacity, transform;
+}
+.price-direct-contact.is-revealing::after,
+.price-direct-contact.is-concealing::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 34%, var(--palette-tone-6) 50%, transparent 66%);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.price-direct-contact.is-revealing::after { animation: direct-contact-reveal-sheen 620ms ease-out both; }
+.price-direct-contact.is-concealing::after { animation: direct-contact-conceal-sheen 560ms ease-in both; }
+@keyframes direct-contact-reveal {
+  from {
+    clip-path: inset(0 100% 0 0 round var(--radius-8));
+    opacity: .35;
+    transform: translate3d(-18px, 0, 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round var(--radius-8));
+    opacity: 1;
+    transform: translateZ(0);
+  }
+}
+@keyframes direct-contact-conceal {
+  from {
+    clip-path: inset(0 0 0 0 round var(--radius-8));
+    opacity: 1;
+    transform: translateZ(0);
+  }
+  to {
+    clip-path: inset(0 100% 0 0 round var(--radius-8));
+    opacity: .35;
+    transform: translate3d(-18px, 0, 0);
+  }
+}
+@keyframes direct-contact-reveal-sheen {
+  from { opacity: 0; transform: translate3d(-100%, 0, 0); }
+  28% { opacity: .42; }
+  to { opacity: 0; transform: translate3d(100%, 0, 0); }
+}
+@keyframes direct-contact-conceal-sheen {
+  from { opacity: 0; transform: translate3d(100%, 0, 0); }
+  28% { opacity: .32; }
+  to { opacity: 0; transform: translate3d(-100%, 0, 0); }
+}
 .prices-card.is-direct-contact .prices-step-content > :not(.price-direct-contact) { display: none; }
 .price-direct-contact {
   position: relative;

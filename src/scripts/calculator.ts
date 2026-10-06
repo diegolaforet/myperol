@@ -62,6 +62,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     let estimateFrameTimeouts: number[] = [];
     let stepAnimationFrame = 0;
     let introModeTimeout = 0;
+    const directContactTransitionDuration = 560;
     const formatEuros = formatCurrency;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
     const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
@@ -246,7 +247,10 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
 
       const updateMode = () => {
         priceCard.classList.toggle("is-direct-contact", enabled);
-        if (directForm instanceof HTMLFormElement) directForm.hidden = !enabled;
+        if (directForm instanceof HTMLFormElement) {
+          directForm.hidden = !enabled;
+          directForm.classList.remove("is-revealing", "is-concealing");
+        }
 
         window.requestAnimationFrame(() => {
           if (stepContent instanceof HTMLElement) stepContent.classList.remove("is-view-switching");
@@ -254,8 +258,31 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
         });
       };
 
-      if (!animate || !(stepContent instanceof HTMLElement)) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!animate || reduceMotion || !(stepContent instanceof HTMLElement)) {
         updateMode();
+        return;
+      }
+
+      if (enabled && directForm instanceof HTMLFormElement) {
+        stepContent.classList.remove("is-view-switching");
+        priceCard.classList.add("is-direct-contact");
+        directForm.hidden = false;
+        directForm.classList.remove("is-concealing");
+        directForm.classList.add("is-revealing");
+
+        introModeTimeout = window.setTimeout(() => {
+          directForm.classList.remove("is-revealing");
+          if (directNameInput instanceof HTMLInputElement) directNameInput.focus();
+        }, directContactTransitionDuration);
+        return;
+      }
+
+      if (!enabled && directForm instanceof HTMLFormElement && priceCard.classList.contains("is-direct-contact")) {
+        stepContent.classList.remove("is-view-switching");
+        directForm.classList.remove("is-revealing");
+        directForm.classList.add("is-concealing");
+        introModeTimeout = window.setTimeout(updateMode, directContactTransitionDuration);
         return;
       }
 
