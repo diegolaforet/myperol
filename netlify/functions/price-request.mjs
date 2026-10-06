@@ -55,8 +55,7 @@ const buildDirectEmailHtml = (data) => `
     <p><strong>Nombre completo:</strong> ${escapeHtml(data.fullName)}</p>
     <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
     <p><strong>Telefono:</strong> ${escapeHtml(`${data.phonePrefix || ""} ${data.phone}`)}</p>
-    <h2 style="margin: 24px 0 8px; font-size: 18px;">Detalles del proyecto</h2>
-    <p style="white-space: pre-wrap;">${escapeHtml(data.message)}</p>
+    <p><strong>Tipo de espacio:</strong> ${escapeHtml(data.space)}</p>
   </div>
 `;
 
@@ -67,8 +66,7 @@ const buildDirectEmailText = (data) => [
   `Email: ${sanitizeText(data.email)}`,
   `Telefono: ${sanitizeText(data.phonePrefix)} ${sanitizeText(data.phone)}`.trim(),
   "",
-  "Detalles del proyecto:",
-  sanitizeText(data.message),
+  `Tipo de espacio: ${sanitizeText(data.space)}`,
 ].join("\n");
 
 export const handler = async (event) => {
@@ -85,7 +83,7 @@ export const handler = async (event) => {
 
   const isDirectRequest = data.requestType === "direct-quote";
   const requiredFields = isDirectRequest
-    ? ["fullName", "email", "phone", "message"]
+    ? ["fullName", "email", "phone", "space"]
     : [
         "fullName",
         "phone",
@@ -101,6 +99,10 @@ export const handler = async (event) => {
   const missingField = requiredFields.find((field) => !sanitizeText(data[field]));
   if (missingField) {
     return jsonResponse(400, { code: "MISSING_FIELDS", error: "Faltan datos obligatorios." });
+  }
+
+  if (isDirectRequest && !["Home", "Garage", "Business", "Industry", "Outdoor"].includes(data.space)) {
+    return jsonResponse(400, { code: "INVALID_SPACE", error: "Tipo de espacio no valido." });
   }
 
   const resendApiKey = process.env.RESEND_API_KEY;

@@ -5,7 +5,6 @@ import messages from "../i18n/json/es.json";
 <section id="calculadora" class="prices-page" aria-label={messages.calculator_aria} data-i18n-aria-label="calculator_aria">
     <SectionCornerControls instanceId="calculator" tone="dark" />
     <header class="prices-section-heading">
-      <p class="prices-section-eyebrow" data-i18n="calculator_eyebrow">{messages.calculator_eyebrow}</p>
       <h2 data-i18n="calculator_heading">{messages.calculator_heading}</h2>
       <p class="prices-section-intro" data-i18n="calculator_intro">{messages.calculator_intro}</p>
     </header>
@@ -35,12 +34,11 @@ import messages from "../i18n/json/es.json";
       </div>
 
       <div class="service-expanded-content prices-step-content">
-        <form class="price-direct-contact" data-price-direct-form hidden>
+        <form class="price-direct-contact" data-price-direct-form novalidate hidden>
           <button class="price-back-button price-direct-contact__back" type="button" aria-label={messages.calculator_direct_back} data-i18n-aria-label="calculator_direct_back" data-price-direct-close>
             <span aria-hidden="true">&larr;</span>
             <span class="price-back-label" data-i18n="calculator_direct_back">{messages.calculator_direct_back}</span>
           </button>
-          <p class="price-direct-contact__kicker" data-i18n="calculator_direct_form_kicker">{messages.calculator_direct_form_kicker}</p>
           <h3 id="priceDirectContactTitle" data-i18n="calculator_direct_form_title">{messages.calculator_direct_form_title}</h3>
           <p class="price-direct-contact__copy" data-i18n="calculator_direct_form_copy">{messages.calculator_direct_form_copy}</p>
           <div class="price-direct-contact__fields">
@@ -53,8 +51,8 @@ import messages from "../i18n/json/es.json";
               <input type="text" name="direct-last-name" autocomplete="family-name" required data-price-direct-last-name />
             </label>
             <label>
-              <span data-i18n="form_email">{messages.form_email}</span>
-              <input type="email" name="direct-email" autocomplete="email" required data-price-direct-email />
+              <span data-i18n="form_email_optional">{messages.form_email_optional}</span>
+              <input type="email" name="direct-email" autocomplete="email" data-price-direct-email />
             </label>
             <label class="price-direct-contact__phone-label">
               <span data-i18n="form_phone">{messages.form_phone}</span>
@@ -70,12 +68,19 @@ import messages from "../i18n/json/es.json";
                 <input type="tel" name="direct-phone" autocomplete="tel" required data-price-direct-phone />
               </span>
             </label>
-            <label class="price-direct-contact__message">
-              <span data-i18n="form_message">{messages.form_message}</span>
-              <textarea name="direct-message" rows="3" required data-price-direct-message></textarea>
-            </label>
+            <fieldset class="price-direct-contact__space">
+              <legend data-i18n="calculator_direct_space_question">{messages.calculator_direct_space_question}</legend>
+              <div class="price-direct-contact__space-options">
+                {["Home", "Garage", "Business", "Industry", "Outdoor"].map((space) => (
+                  <label class="price-direct-contact__space-option">
+                    <input type="radio" name="direct-space" value={space} required />
+                    <span>{space}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
-          <button class="price-direct-contact__submit" type="submit" data-price-direct-submit>
+          <button class="price-direct-contact__submit is-incomplete" type="submit" data-price-direct-submit>
             <span data-i18n="calculator_direct_submit">{messages.calculator_direct_submit}</span>
             <span aria-hidden="true">&rarr;</span>
           </button>

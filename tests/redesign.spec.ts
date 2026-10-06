@@ -644,16 +644,9 @@ test("calculator intro and steps fit within one viewport", async ({ page }, test
 });
 
 test("calculator intro offers a direct quote without changing the calculator flow", async ({ page }) => {
+  let requestCount = 0;
   await page.route("**/.netlify/functions/price-request", async route => {
-    const payload = route.request().postDataJSON();
-    expect(payload).toMatchObject({
-      requestType: "direct-quote",
-      fullName: "Cliente de prueba",
-      email: "cliente@example.com",
-      phonePrefix: "+33",
-      phone: "600123456",
-      message: "Proyecto residencial de 80 m2.",
-    });
+    requestCount += 1;
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
   });
 
@@ -667,15 +660,44 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await expect(form).toBeVisible();
   await expect(card.locator("[data-price-title]")).toBeHidden();
 
+  const submit = form.locator("[data-price-direct-submit]");
+  const errors = form.locator(".price-direct-contact__field-error:visible");
+  await expect(submit).toHaveClass(/is-incomplete/);
+  await expect(form).not.toHaveClass(/is-revealing/);
+  const initialStyle = await submit.evaluate(el => ({ background: getComputedStyle(el).backgroundColor, transform: getComputedStyle(el).transform }));
+  await submit.hover();
+  expect(await submit.evaluate(el => ({ background: getComputedStyle(el).backgroundColor, transform: getComputedStyle(el).transform }))).toEqual(initialStyle);
+  await submit.click();
+  await expect(errors).toHaveCount(4);
+  await expect(errors.first()).toHaveText("Rellena este campo para continuar");
+  await expect(form.locator("[data-price-direct-email]")).not.toHaveAttribute("required");
+  await expect(form.locator('[data-i18n="form_email_optional"]')).toContainText("opcional");
+
   await form.locator("[data-price-direct-name]").fill("Cliente");
   await form.locator("[data-price-direct-last-name]").fill("de prueba");
-  await form.locator("[data-price-direct-email]").fill("cliente@example.com");
   await form.locator("[data-price-direct-phone-prefix-button]").click();
   await form.locator("[data-price-direct-phone-prefix-menu] [data-country='FR']").click();
   await form.locator("[data-price-direct-phone]").fill("600123456");
-  await form.locator("[data-price-direct-message]").fill("Proyecto residencial de 80 m2.");
-  await form.locator("[data-price-direct-submit]").click();
-  await expect(form.locator("[data-price-direct-status]")).toHaveAttribute("data-status", "success");
+  await expect(form.locator("textarea")).toHaveCount(0);
+  await expect(form.getByRole("radio")).toHaveCount(5);
+  await expect(form.getByRole("radio", { checked: true })).toHaveCount(0);
+  expect(await form.evaluate((element: HTMLFormElement) => element.checkValidity())).toBe(false);
+  await form.getByRole("radio", { name: "Home", exact: true }).check();
+  await form.getByRole("radio", { name: "Business", exact: true }).check();
+  await expect(form.getByRole("radio", { name: "Home", exact: true })).not.toBeChecked();
+  await expect(form.getByRole("radio", { checked: true })).toHaveCount(1);
+  await expect(errors).toHaveCount(0);
+  await expect(submit).not.toHaveClass(/is-incomplete/);
+  await form.locator("[data-price-direct-email]").fill("invalid");
+  await expect(errors).toHaveCount(1);
+  await expect(submit).toHaveClass(/is-incomplete/);
+  await form.locator("[data-price-direct-email]").fill("");
+  await expect(submit).not.toHaveClass(/is-incomplete/);
+  await submit.click();
+  await expect(form.locator("[data-price-direct-status]")).toHaveAttribute("data-status", "info");
+  await expect(form.locator("[data-price-direct-status]")).toContainText("no est");
+  expect(requestCount).toBe(0);
+  await expect(form.getByRole("radio", { checked: true })).toHaveCount(1);
 
   await card.locator("[data-price-direct-close]").click();
   await expect(form).toBeHidden();

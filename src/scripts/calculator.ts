@@ -43,15 +43,11 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     const directForm = priceCard.querySelector("[data-price-direct-form]");
     const directCloseButton = priceCard.querySelector("[data-price-direct-close]");
     const directNameInput = priceCard.querySelector("[data-price-direct-name]");
-    const directLastNameInput = priceCard.querySelector("[data-price-direct-last-name]");
-    const directEmailInput = priceCard.querySelector("[data-price-direct-email]");
-    const directPhoneInput = priceCard.querySelector("[data-price-direct-phone]");
     const directPhonePrefixSelect = priceCard.querySelector("[data-price-direct-phone-prefix-select]");
     const directPhonePrefixButton = priceCard.querySelector("[data-price-direct-phone-prefix-button]");
     const directPhonePrefixMenu = priceCard.querySelector("[data-price-direct-phone-prefix-menu]");
     const directPhonePrefixCurrent = priceCard.querySelector("[data-price-direct-phone-prefix-current]");
     const directPhonePrefixValue = priceCard.querySelector("[data-price-direct-phone-prefix-value]");
-    const directMessageInput = priceCard.querySelector("[data-price-direct-message]");
     const directSubmit = priceCard.querySelector("[data-price-direct-submit]");
     const directStatus = priceCard.querySelector("[data-price-direct-status]");
     const storageKey = "myperol-price-calculator";
@@ -62,7 +58,6 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     let estimateFrameTimeouts: number[] = [];
     let stepAnimationFrame = 0;
     let introModeTimeout = 0;
-    const directContactTransitionDuration = 560;
     const formatEuros = formatCurrency;
     const phonePrefixSelect = priceCard.querySelector("[data-phone-prefix-select]");
     const phonePrefixButton = priceCard.querySelector("[data-phone-prefix-button]");
@@ -243,19 +238,25 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     };
 
     const setDirectContactMode = (enabled: boolean, { animate = true }: { animate?: boolean } = {}) => {
+      if (animate && (enabled
+        ? stepContent?.classList.contains("is-contact-fading") ||
+          (priceCard.classList.contains("is-direct-contact") && !directForm?.classList.contains("is-concealing"))
+        : directForm?.classList.contains("is-concealing"))) return;
+
       window.clearTimeout(introModeTimeout);
+      if (stepContent instanceof HTMLElement) stepContent.classList.remove("is-contact-fading", "is-contact-returning");
 
       const updateMode = () => {
+        const restoreFocus = !enabled && directForm?.contains(document.activeElement);
         priceCard.classList.toggle("is-direct-contact", enabled);
         if (directForm instanceof HTMLFormElement) {
           directForm.hidden = !enabled;
           directForm.classList.remove("is-revealing", "is-concealing");
         }
 
-        window.requestAnimationFrame(() => {
-          if (stepContent instanceof HTMLElement) stepContent.classList.remove("is-view-switching");
-          if (enabled && directNameInput instanceof HTMLInputElement) directNameInput.focus();
-        });
+        if (stepContent instanceof HTMLElement) stepContent.classList.remove("is-view-switching");
+        if (enabled && directNameInput instanceof HTMLInputElement) directNameInput.focus({ preventScroll: true });
+        if (restoreFocus && directOpenButton instanceof HTMLButtonElement) directOpenButton.focus({ preventScroll: true });
       };
 
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -266,15 +267,14 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
 
       if (enabled && directForm instanceof HTMLFormElement) {
         stepContent.classList.remove("is-view-switching");
-        priceCard.classList.add("is-direct-contact");
-        directForm.hidden = false;
-        directForm.classList.remove("is-concealing");
-        directForm.classList.add("is-revealing");
-
+        stepContent.classList.add("is-contact-fading");
         introModeTimeout = window.setTimeout(() => {
-          directForm.classList.remove("is-revealing");
-          if (directNameInput instanceof HTMLInputElement) directNameInput.focus();
-        }, directContactTransitionDuration);
+          priceCard.classList.add("is-direct-contact");
+          directForm.hidden = false;
+          directForm.classList.remove("is-concealing");
+          directForm.classList.add("is-revealing");
+          stepContent.classList.remove("is-contact-fading");
+        }, 150);
         return;
       }
 
@@ -282,13 +282,32 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
         stepContent.classList.remove("is-view-switching");
         directForm.classList.remove("is-revealing");
         directForm.classList.add("is-concealing");
-        introModeTimeout = window.setTimeout(updateMode, directContactTransitionDuration);
         return;
       }
 
       stepContent.classList.add("is-view-switching");
       introModeTimeout = window.setTimeout(updateMode, 150);
     };
+
+    directForm?.addEventListener("animationend", (event) => {
+      if (!(event instanceof AnimationEvent) || event.animationName !== "direct-contact-reveal") return;
+
+      // The last block changes with the direction of the staggered sequence.
+      if (directForm.classList.contains("is-concealing") &&
+          event.target instanceof HTMLElement && event.target.id === "priceDirectContactTitle") {
+        setDirectContactMode(false, { animate: false });
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          stepContent?.classList.add("is-contact-returning");
+        }
+      } else if (directForm.classList.contains("is-revealing") && event.target === directSubmit) {
+        directForm.classList.remove("is-revealing");
+        if (directNameInput instanceof HTMLInputElement) directNameInput.focus({ preventScroll: true });
+      }
+    });
+
+    stepContent?.addEventListener("animationend", (event) => {
+      if (event.target === stepContent) stepContent.classList.remove("is-contact-returning");
+    });
 
     const configureStepColumns = (isIntro: boolean) => {
       if (directPanel instanceof HTMLElement) directPanel.hidden = !isIntro;
@@ -430,36 +449,54 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       directStatus.dataset.status = type;
     };
 
-    const submitDirectRequest = async () => {
-      if (!(directForm instanceof HTMLFormElement) || !(directSubmit instanceof HTMLButtonElement)) return;
-      if (!directForm.reportValidity()) return;
+    let directValidationRequested = false;
+    const directValidationGroups = Array.from(
+      directForm?.querySelectorAll<HTMLElement>(".price-direct-contact__fields > label, .price-direct-contact__fields > fieldset") ?? [],
+    ).map((group, index) => {
+      const inputs = Array.from(group.querySelectorAll<HTMLInputElement>('input:not([type="hidden"])'));
+      const error = document.createElement("span");
+      error.className = "price-direct-contact__field-error";
+      error.id = `direct-contact-error-${index}`;
+      error.hidden = true;
+      error.setAttribute("aria-live", "polite");
+      group.append(error);
+      inputs.forEach(input => input.setAttribute("aria-describedby", error.id));
+      return { inputs, error };
+    });
 
-      const payload = {
-        requestType: "direct-quote",
-        fullName: [
-          directNameInput instanceof HTMLInputElement ? directNameInput.value.trim() : "",
-          directLastNameInput instanceof HTMLInputElement ? directLastNameInput.value.trim() : "",
-        ].filter(Boolean).join(" "),
-        email: directEmailInput instanceof HTMLInputElement ? directEmailInput.value.trim() : "",
-        phonePrefix: directPhonePrefixValue instanceof HTMLInputElement ? directPhonePrefixValue.value : "",
-        phone: directPhoneInput instanceof HTMLInputElement ? directPhoneInput.value.trim() : "",
-        message: directMessageInput instanceof HTMLTextAreaElement ? directMessageInput.value.trim() : "",
-      };
-
-      directSubmit.disabled = true;
-      directSubmit.classList.add("is-loading");
-      setDirectStatus("request_sending", "loading");
-
-      try {
-        await sendPriceRequest(payload);
-        setDirectStatus("request_success", "success");
-        directForm.reset();
-      } catch (error) {
-        setDirectStatus(getRequestErrorTranslation(error), "error");
-      } finally {
-        directSubmit.disabled = false;
-        directSubmit.classList.remove("is-loading");
+    const updateDirectValidation = () => {
+      let valid = true;
+      for (const { inputs, error } of directValidationGroups) {
+        const missing = inputs.some(input => input.required && (
+          input.type === "radio" ? !inputs.some(option => option.checked) : !input.value.trim()
+        ));
+        const invalid = missing || inputs.some(input => !input.validity.valid);
+        valid = valid && !invalid;
+        const showError = directValidationRequested && invalid;
+        if (showError) bindText(error, missing ? "form_required_error" : "form_email_error");
+        error.hidden = !showError;
+        inputs.forEach(input => input.setAttribute("aria-invalid", String(showError)));
       }
+      directSubmit?.classList.toggle("is-incomplete", !valid);
+      directForm?.classList.toggle("has-errors", directValidationRequested && !valid);
+      return valid;
+    };
+
+    directForm?.addEventListener("input", () => {
+      setDirectStatus();
+      updateDirectValidation();
+    });
+    directForm?.addEventListener("change", updateDirectValidation);
+    updateDirectValidation();
+
+    const submitDirectRequest = () => {
+      directValidationRequested = true;
+      if (!updateDirectValidation()) {
+        directForm?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus({ preventScroll: true });
+        return;
+      }
+      // The direct-contact submission is a preview until delivery is enabled.
+      setDirectStatus("calculator_direct_preview", "info");
     };
 
     const helpContent: Record<string, { title: string; body: string[] }> = {

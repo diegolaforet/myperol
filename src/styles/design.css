@@ -667,8 +667,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   pointer-events: none;
 }
 .price-intro-direct > * { position: relative; z-index: 1; }
-.price-intro-direct__kicker,
-.price-direct-contact__kicker {
+.price-intro-direct__kicker {
   margin: 0 0 var(--space-14);
   color: var(--palette-tone-102);
   font-size: var(--text-12);
@@ -711,8 +710,8 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 }
 .price-intro-direct__action:hover,
 .price-intro-direct__action:focus-visible,
-.price-direct-contact__submit:hover,
-.price-direct-contact__submit:focus-visible {
+.price-direct-contact__submit:not(.is-incomplete):hover,
+.price-direct-contact__submit:not(.is-incomplete):focus-visible {
   background: var(--palette-silver);
   transform: translate3d(0, -2px, 0);
   outline: none;
@@ -745,66 +744,57 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
     transform: translateZ(0) scale(1);
   }
 }
-.price-direct-contact.is-revealing {
-  animation: direct-contact-reveal 560ms cubic-bezier(.2, .78, .22, 1) both;
-  will-change: clip-path, opacity, transform;
+.prices-page .prices-card .prices-step-content.is-contact-fading {
+  pointer-events: none;
+  animation: direct-contact-fade-out 150ms ease both;
+}
+.prices-page .prices-card .prices-step-content.is-contact-returning {
+  animation: direct-contact-fade-out 150ms ease reverse both;
+}
+@keyframes direct-contact-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.price-direct-contact { --contact-last-reveal-index: 7; }
+.price-direct-contact__back,
+.price-direct-contact > h3 { --contact-reveal-index: 0; }
+.price-direct-contact__copy { --contact-reveal-index: 1; }
+.price-direct-contact__fields > label:nth-child(1) { --contact-reveal-index: 2; }
+.price-direct-contact__fields > label:nth-child(2) { --contact-reveal-index: 3; }
+.price-direct-contact__fields > label:nth-child(3) { --contact-reveal-index: 4; }
+.price-direct-contact__fields > label:nth-child(4) { --contact-reveal-index: 5; }
+.price-direct-contact__space { --contact-reveal-index: 6; }
+.price-direct-contact__submit,
+.price-direct-contact__status { --contact-reveal-index: 7; }
+.price-direct-contact:is(.is-revealing, .is-concealing) > :not(.price-direct-contact__fields),
+.price-direct-contact:is(.is-revealing, .is-concealing) .price-direct-contact__fields > :is(label, fieldset) {
+  animation: direct-contact-reveal var(--reveal-duration) var(--reveal-easing) both;
+  animation-delay: calc(var(--contact-reveal-index) * var(--reveal-stagger));
+  will-change: opacity, transform;
 }
 .price-direct-contact.is-concealing {
   pointer-events: none;
-  animation: direct-contact-conceal 560ms cubic-bezier(.4, 0, .3, 1) both;
-  will-change: clip-path, opacity, transform;
 }
-.price-direct-contact.is-revealing::after,
-.price-direct-contact.is-concealing::after {
-  content: "";
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 34%, var(--palette-tone-6) 50%, transparent 66%);
-  pointer-events: none;
-  will-change: transform, opacity;
+.price-direct-contact.is-concealing > :not(.price-direct-contact__fields),
+.price-direct-contact.is-concealing .price-direct-contact__fields > :is(label, fieldset) {
+  animation-direction: reverse;
+  animation-delay: calc((var(--contact-last-reveal-index) - var(--contact-reveal-index)) * var(--reveal-stagger));
 }
-.price-direct-contact.is-revealing::after { animation: direct-contact-reveal-sheen 620ms ease-out both; }
-.price-direct-contact.is-concealing::after { animation: direct-contact-conceal-sheen 560ms ease-in both; }
 @keyframes direct-contact-reveal {
   from {
-    clip-path: inset(0 100% 0 0 round var(--radius-8));
-    opacity: .35;
-    transform: translate3d(-18px, 0, 0);
+    opacity: 0;
+    transform: translate3d(0, calc(-1 * var(--reveal-distance)), 0) scale(.985);
   }
   to {
-    clip-path: inset(0 0 0 0 round var(--radius-8));
     opacity: 1;
-    transform: translateZ(0);
+    transform: translateZ(0) scale(1);
   }
-}
-@keyframes direct-contact-conceal {
-  from {
-    clip-path: inset(0 0 0 0 round var(--radius-8));
-    opacity: 1;
-    transform: translateZ(0);
-  }
-  to {
-    clip-path: inset(0 100% 0 0 round var(--radius-8));
-    opacity: .35;
-    transform: translate3d(-18px, 0, 0);
-  }
-}
-@keyframes direct-contact-reveal-sheen {
-  from { opacity: 0; transform: translate3d(-100%, 0, 0); }
-  28% { opacity: .42; }
-  to { opacity: 0; transform: translate3d(100%, 0, 0); }
-}
-@keyframes direct-contact-conceal-sheen {
-  from { opacity: 0; transform: translate3d(100%, 0, 0); }
-  28% { opacity: .32; }
-  to { opacity: 0; transform: translate3d(-100%, 0, 0); }
 }
 .prices-card.is-direct-contact .prices-step-content > :not(.price-direct-contact) { display: none; }
 .price-direct-contact {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(min-content, 1fr) auto auto;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -825,7 +815,6 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   line-height: 18px;
   transform: translateY(-1px);
 }
-.price-direct-contact__kicker { margin-bottom: var(--space-10); color: var(--color-card-label); }
 .price-direct-contact h3 {
   max-width: 15ch;
   margin: 0;
@@ -845,26 +834,83 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .price-direct-contact__fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: auto auto minmax(88px, 1fr);
-  gap: var(--space-10) var(--space-12);
+  grid-template-rows: repeat(3, max-content);
+  gap: var(--space-18) var(--space-12);
   width: 100%;
   min-height: 0;
-  align-items: stretch;
+  align-content: space-evenly;
+  align-items: start;
   align-self: stretch;
   margin-top: var(--space-14);
 }
-.price-direct-contact__fields label {
+.price-direct-contact__fields > label {
   display: grid;
-  grid-template-rows: auto minmax(42px, auto);
+  grid-template-rows: auto 42px;
+  align-content: start;
   gap: var(--space-6);
   min-width: 0;
   color: var(--color-card-muted);
   font-size: var(--text-11);
   line-height: 1.2;
 }
-.price-direct-contact__message {
+.price-direct-contact__space {
   grid-column: 1 / -1;
   grid-row: 3;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.price-direct-contact__space legend {
+  padding: 0;
+  color: var(--palette-ink);
+  font-size: var(--text-14);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.price-direct-contact__space-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 108px), 1fr));
+  gap: var(--space-8);
+  margin-top: var(--space-10);
+}
+.price-direct-contact__space-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 8px;
+  border: 1px solid var(--palette-tone-113);
+  border-radius: var(--radius-6);
+  background: var(--palette-tone-91);
+  color: var(--palette-ink);
+  font-size: var(--text-13);
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+.price-direct-contact__space-option:hover { border-color: var(--palette-graphite); }
+.price-direct-contact__space-option:has(input:checked) {
+  border-color: var(--palette-graphite);
+  background: var(--palette-graphite);
+  color: var(--palette-white);
+}
+.price-direct-contact__space-option:has(input:focus-visible) {
+  outline: 2px solid var(--palette-label);
+  outline-offset: 2px;
+}
+.price-direct-contact__space-option input[type="radio"] {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--palette-graphite);
+  cursor: pointer;
+}
+.price-direct-contact__space-option input[type="radio"]:checked {
+  accent-color: var(--palette-white);
 }
 .price-direct-contact__phone-label { align-self: start; }
 .price-direct-contact__phone {
@@ -882,13 +928,11 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   color: var(--palette-ink);
   font-size: var(--text-13);
 }
-.price-direct-contact input,
-.price-direct-contact textarea {
+.price-direct-contact input:not([type="radio"]) {
   width: 100%;
   min-width: 0;
   min-height: 42px;
   padding: 9px 12px;
-  resize: none;
   border: 1px solid var(--palette-tone-113);
   border-radius: var(--radius-6);
   background: var(--palette-tone-91);
@@ -902,12 +946,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   max-height: 42px;
   min-height: 42px;
 }
-.price-direct-contact textarea {
-  height: 100%;
-  min-height: 88px;
-}
-.price-direct-contact input:focus,
-.price-direct-contact textarea:focus,
+.price-direct-contact input:not([type="radio"]):focus,
 .price-direct-contact .phone-prefix-button:focus-visible {
   border-color: var(--palette-label);
   background: var(--palette-white);
@@ -923,8 +962,37 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   background: var(--palette-graphite);
   color: var(--palette-white);
 }
-.price-direct-contact__submit:hover,
-.price-direct-contact__submit:focus-visible { background: var(--palette-ink); color: var(--palette-white); }
+.price-direct-contact__submit:not(.is-incomplete):hover,
+.price-direct-contact__submit:not(.is-incomplete):focus-visible { background: var(--palette-ink); color: var(--palette-white); }
+.price-direct-contact__submit.is-incomplete {
+  background: #999a9d;
+  border-color: #999a9d;
+  cursor: default;
+  transform: none;
+}
+.price-direct-contact__submit.is-incomplete:focus-visible {
+  outline: 2px solid var(--palette-label);
+  outline-offset: 2px;
+}
+.price-direct-contact__field-error {
+  display: block;
+  margin: 0;
+  color: #a32424;
+  font-size: var(--text-11);
+  line-height: 1.4;
+  text-align: left;
+}
+.price-direct-contact__field-error[hidden] { display: none; }
+.prices-page:has(.price-direct-contact.has-errors),
+.home-page > .prices-page:has(.price-direct-contact.has-errors) { height: auto; }
+.prices-page .prices-card.is-direct-contact:has(.has-errors) {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: none;
+}
+.prices-page .price-direct-contact.has-errors { height: auto; }
+.price-direct-contact__space > .price-direct-contact__field-error { margin-top: var(--space-6); }
+.price-direct-contact input[aria-invalid="true"]:not([type="radio"]) { border-color: #a32424; }
 .price-direct-contact__submit:disabled { opacity: .55; cursor: wait; }
 .price-direct-contact__status {
   min-height: 18px;
@@ -1373,12 +1441,19 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
     align-self: start;
     margin-top: var(--space-10);
   }
-  .price-direct-contact__message { grid-column: auto; grid-row: auto; }
+  .price-direct-contact__space { grid-column: auto; grid-row: auto; }
   .price-direct-contact__phone { grid-template-columns: 112px minmax(0, 1fr); }
-  .price-direct-contact input { min-height: 40px; padding-block: 8px; }
+  .price-direct-contact input:not([type="radio"]) { min-height: 40px; padding-block: 8px; }
   .price-direct-contact .phone-prefix-button { min-height: 40px; padding-block: 8px; }
-  .price-direct-contact textarea { height: auto; min-height: 70px; }
   .price-direct-contact__submit { min-height: 44px; margin-top: var(--space-10); }
+  .prices-page:has(.prices-card.is-direct-contact),
+  .home-page > .prices-page:has(.prices-card.is-direct-contact) { height: auto; }
+  .prices-page .prices-card.is-direct-contact {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
+  }
+  .prices-page .prices-card.is-direct-contact .price-direct-contact { height: auto; }
   .prices-page .prices-card .service-expanded-title { font-size: var(--text-28); line-height: 1.2; }
   .prices-page .prices-card[data-view="condition"] .price-condition-step { grid-template-columns: 1fr; grid-template-rows: repeat(4, minmax(76px, auto)) auto; gap: 6px; }
   .prices-page .prices-card[data-view="condition"] .price-long-option { padding: 10px 12px; }
