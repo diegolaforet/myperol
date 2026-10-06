@@ -1,5 +1,7 @@
 ---
 import SectionCornerControls from "./SectionCornerControls.astro";
+import FlooringVariantSelector from "./FlooringVariantSelector.astro";
+import messages from "../i18n/json/es.json";
 ---
 
 <section
@@ -28,45 +30,54 @@ import SectionCornerControls from "./SectionCornerControls.astro";
 
     <div class="flooring-copy-stack" aria-live="polite">
       <article class="flooring-copy-panel is-active" data-flooring-panel="0">
-        <p class="flooring-eyebrow" data-i18n="mp_systems_intro_eyebrow">MP System</p>
-        <h2 id="flooring-title" data-i18n="mp_systems_intro_title">Un sistema construido capa a capa.</h2>
-        <p data-i18n="mp_systems_intro_text">Desliza para descubrir qué hay debajo de un acabado MyPerol.</p>
+        <p class="flooring-step">01</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_intro_eyebrow">{messages.mp_systems_intro_eyebrow}</p>
+        <h2 id="flooring-title" data-i18n="mp_systems_intro_title">{messages.mp_systems_intro_title}</h2>
+        <p data-i18n="mp_systems_intro_text">{messages.mp_systems_intro_text}</p>
       </article>
 
       <article class="flooring-copy-panel" data-flooring-panel="1">
-        <p class="flooring-step">01</p>
-        <p class="flooring-eyebrow" data-i18n="mp_systems_primer_eyebrow">ADHERENCIA</p>
-        <h2 data-i18n="mp_systems_primer_title">Imprimación</h2>
-        <p data-i18n="mp_systems_primer_text">Consolida el soporte y crea una unión fiable con el sistema de resina.</p>
+        <p class="flooring-step">02</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_primer_eyebrow">{messages.mp_systems_primer_eyebrow}</p>
+        <h2 data-i18n="mp_systems_primer_title">{messages.mp_systems_primer_title}</h2>
+        <p data-i18n="mp_systems_primer_text">{messages.mp_systems_primer_text}</p>
       </article>
 
       <article class="flooring-copy-panel" data-flooring-panel="2">
-        <p class="flooring-step">02</p>
-        <p class="flooring-eyebrow" data-i18n="mp_systems_silica_eyebrow">ESTRUCTURA</p>
-        <h2 data-i18n="mp_systems_silica_title">Árido de sílice</h2>
-        <p data-i18n="mp_systems_silica_text">Refuerza el conjunto, regula el espesor y mejora su comportamiento mecánico.</p>
+        <p class="flooring-step">03</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_silica_eyebrow">{messages.mp_systems_silica_eyebrow}</p>
+        <h2 data-i18n="mp_systems_silica_title">{messages.mp_systems_silica_title}</h2>
+        <p data-i18n="mp_systems_silica_text">{messages.mp_systems_silica_text}</p>
       </article>
 
       <article class="flooring-copy-panel" data-flooring-panel="3">
-        <p class="flooring-step">03</p>
-        <p class="flooring-eyebrow" data-i18n="mp_systems_epoxy_eyebrow">CONTINUIDAD</p>
-        <h2 data-i18n="mp_systems_epoxy_title">Resina epoxi</h2>
-        <p data-i18n="mp_systems_epoxy_text">Aporta continuidad, diseño y resistencia a toda la superficie.</p>
+        <p class="flooring-step">04</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_epoxy_eyebrow">{messages.mp_systems_epoxy_eyebrow}</p>
+        <h2 data-i18n="mp_systems_epoxy_title">{messages.mp_systems_epoxy_title}</h2>
+        <FlooringVariantSelector controls="flooring-epoxy-description" />
+        <div class="flooring-variant-copy" id="flooring-epoxy-description">
+          <h3 data-i18n="mp_systems_epoxy_variant_title" data-flooring-resin-key="mp_systems_epoxy_variant_title" data-flooring-mineral-key="mp_systems_mineral_variant_title">{messages.mp_systems_epoxy_variant_title}</h3>
+          <p data-i18n="mp_systems_epoxy_text" data-flooring-resin-key="mp_systems_epoxy_text" data-flooring-mineral-key="mp_systems_mineral_text">{messages.mp_systems_epoxy_text}</p>
+        </div>
       </article>
 
       <article class="flooring-copy-panel" data-flooring-panel="4">
-        <p class="flooring-step">04</p>
-        <p class="flooring-eyebrow" data-i18n="mp_systems_sealer_eyebrow">PROTECCIÓN</p>
-        <h2 data-i18n="mp_systems_sealer_title">Sellador transparente</h2>
-        <p data-i18n="mp_systems_sealer_text">La terminación final protege el sistema sin ocultar su acabado.</p>
+        <p class="flooring-step">05</p>
+        <p class="flooring-eyebrow" data-i18n="mp_systems_sealer_eyebrow">{messages.mp_systems_sealer_eyebrow}</p>
+        <h2 data-i18n="mp_systems_sealer_title">{messages.mp_systems_sealer_title}</h2>
+        <FlooringVariantSelector controls="flooring-sealer-description" />
+        <div class="flooring-variant-copy" id="flooring-sealer-description">
+          <h3 data-i18n="mp_systems_sealer_resin_title" data-flooring-resin-key="mp_systems_sealer_resin_title" data-flooring-mineral-key="mp_systems_sealer_mineral_title">{messages.mp_systems_sealer_resin_title}</h3>
+          <p data-i18n="mp_systems_sealer_text" data-flooring-resin-key="mp_systems_sealer_text" data-flooring-mineral-key="mp_systems_sealer_mineral_text">{messages.mp_systems_sealer_text}</p>
+        </div>
       </article>
 
       <article class="flooring-copy-panel flooring-copy-final" data-flooring-panel="5">
         <p class="flooring-eyebrow flooring-brand-logo">
           <img src="/assets/logo/logo-negro.png" width="1275" height="220" loading="lazy" decoding="async" alt="MyPerol" />
         </p>
-        <h2 data-i18n="mp_systems_final_title">La resistencia está en todo el sistema.</h2>
-        <p data-i18n="mp_systems_final_text">Cuatro capas trabajando sobre una base preparada para durar.</p>
+        <h2 data-i18n="mp_systems_final_title">{messages.mp_systems_final_title}</h2>
+        <p data-i18n="mp_systems_final_text">{messages.mp_systems_final_text}</p>
       </article>
     </div>
 
@@ -75,6 +86,7 @@ import SectionCornerControls from "./SectionCornerControls.astro";
     </div>
   </div>
 </section>
+<p class="flooring-disclaimer" data-i18n="mp_systems_disclaimer">{messages.mp_systems_disclaimer}</p>
 
 <script>
   import "../scripts/flooring/bootstrap";

@@ -289,6 +289,50 @@ test("home video and 3D render, move, reverse and fit the viewport", async ({ pa
   expect(errors).toEqual([]);
 });
 
+test("MP System switches resin and mineral copy without changing the scene", async ({ page }, testInfo) => {
+  await page.goto("/#mp-systems");
+  const stage = page.locator("[data-flooring-scroll]");
+  await expect(stage).toHaveAttribute("data-flooring-initialized", "ready", { timeout: 60000 });
+  const goToPanel = async (progress: number, index: number) => {
+    await stage.evaluate((el, progress) => {
+      scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.clientHeight - innerHeight) * progress, behavior: "instant" });
+    }, progress);
+    await expect(stage.locator(`[data-flooring-panel="${index}"]`)).toHaveClass(/is-active/);
+  };
+  await goToPanel(.6, 3);
+  const main = stage.locator('[data-flooring-panel="3"]');
+  const protection = stage.locator('[data-flooring-panel="4"]');
+  await expect(main.locator(".flooring-eyebrow")).toHaveText("CAPA PRINCIPAL");
+  await main.getByRole("button", { name: "Mineral", exact: true }).click();
+  await expect(main.locator(".flooring-variant-copy h3")).toHaveText("Cementoso autonivelante");
+  await expect(stage.locator('[data-flooring-variant="mineral"][aria-pressed="true"]')).toHaveCount(2);
+  await expect(protection.locator(".flooring-variant-copy h3")).toHaveText("Sobre cementoso");
+  await page.screenshot({ path: testInfo.outputPath("mp-system-mineral.png") });
+
+  for (const language of ["es", "en", "fr", "de", "ru", "uk"]) {
+    await page.evaluate(lang => window.selectLang(lang), language);
+    await expect(page.locator("html")).toHaveAttribute("lang", language);
+    await expect(main.locator(".flooring-variant-copy p")).toHaveAttribute("data-i18n", "mp_systems_mineral_text");
+    const bounds = await main.evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, right: rect.right, viewportWidth: innerWidth, viewportHeight: innerHeight };
+    });
+    expect(bounds.top, language).toBeGreaterThan(65);
+    expect(bounds.bottom, language).toBeLessThanOrEqual(bounds.viewportHeight);
+    expect(bounds.right, language).toBeLessThanOrEqual(bounds.viewportWidth);
+  }
+
+  await goToPanel(.7, 4);
+  const resin = protection.locator('[data-flooring-variant="resin"]');
+  await resin.focus();
+  await page.keyboard.press("Enter");
+  await expect(stage.locator('[data-flooring-variant="resin"][aria-pressed="true"]')).toHaveCount(2);
+  await expect(protection.locator(".flooring-variant-copy p")).toHaveAttribute("data-i18n", "mp_systems_sealer_text");
+  await goToPanel(.6, 3);
+  await expect(main.locator(".flooring-variant-copy p")).toHaveAttribute("data-i18n", "mp_systems_epoxy_text");
+  await expect(page.locator(".flooring-disclaimer")).toHaveAttribute("data-i18n", "mp_systems_disclaimer");
+});
+
 test("reduced motion keeps the final 3D view without a long scroll lock", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/#mp-systems");

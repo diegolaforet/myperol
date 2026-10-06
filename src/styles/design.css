@@ -305,9 +305,38 @@ img { max-width: 100%; }
 .flooring-shade { display: none; }
 .flooring-canvas { pointer-events: none; will-change: auto; }
 .flooring-scroll.is-render-active .flooring-canvas { will-change: transform, opacity; }
-.flooring-copy-panel { left: var(--model-edge-gutter); bottom: 6svh; width: min(600px, 44%); }
+.flooring-copy-panel { left: var(--model-edge-gutter); bottom: 6svh; width: min(420px, 21%); }
+.flooring-copy-final { width: min(600px, 44%); }
 .flooring-copy-panel h2 { font-size: var(--text-64); font-weight: 500; line-height: 1.08; margin-bottom: var(--space-20); }
-.flooring-copy-panel > p:last-child { font-size: var(--text-18); line-height: 1.6; max-width: 48ch; }
+.flooring-copy-panel:not(.flooring-copy-final):not([data-flooring-panel="0"]) h2 { font-size: var(--flooring-detail-heading-size, 42px); }
+.flooring-copy-panel > p:last-child,
+.flooring-variant-copy p { margin: 0; color: var(--color-card-muted); font-size: var(--text-18); line-height: 1.6; max-width: 48ch; text-align: left; }
+.flooring-variant-selector {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 4px;
+  margin-bottom: var(--space-18);
+  padding: 4px;
+  border: 1px solid var(--palette-tone-113);
+  border-radius: var(--radius-6);
+  background: var(--palette-smoke);
+  pointer-events: auto;
+}
+.flooring-variant-selector button {
+  min-height: 36px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: var(--radius-4);
+  background: transparent;
+  color: var(--palette-ink);
+  font: 500 var(--text-13)/1.4 var(--font-ui);
+  cursor: pointer;
+}
+.flooring-variant-selector button[aria-pressed="true"] { background: var(--palette-graphite); color: var(--palette-white); }
+.flooring-variant-selector button:focus-visible { outline: 2px solid var(--palette-label); outline-offset: 2px; }
+.flooring-variant-copy { min-height: 160px; }
+.flooring-variant-copy h3 { margin: 0 0 var(--space-8); color: var(--palette-ink); font-size: var(--text-16); font-weight: 500; line-height: 1.4; }
+.flooring-disclaimer { margin: 0; padding: var(--space-24) var(--model-edge-gutter); background: var(--palette-white); color: var(--color-card-muted); font-size: var(--text-12); line-height: 1.6; text-align: left; }
 .flooring-eyebrow { font-size: var(--text-11); font-weight: 500; margin-bottom: var(--space-18); }
 .flooring-brand-logo { display: flex; align-items: center; }
 .flooring-brand-logo img { display: block; width: 150px; max-width: 100%; height: auto; }
@@ -1342,6 +1371,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .prices-page .prices-card { gap: var(--space-28); padding: var(--space-32); }
 }
 @media (max-width: 902px) {
+  .flooring-scroll { --flooring-detail-heading-size: 34px; }
   .services-feature-cards { --section-intrinsic-height: 1240px; }
   .prices-page { --section-intrinsic-height: 900px; }
   :root { --page-gutter: 24px; }
@@ -1367,7 +1397,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .services-feature-cards .feature-card:nth-child(n) .service-card-media { aspect-ratio: auto; }
   .flooring-copy-panel { top: auto; bottom: 40px; left: var(--model-edge-gutter); right: auto; width: min(500px, calc(100% - 64px)); }
   .flooring-copy-panel h2 { font-size: var(--text-42); }
-  .flooring-copy-panel > p:last-child { font-size: var(--text-16); }
+  .flooring-copy-panel > p:last-child, .flooring-variant-copy p { font-size: var(--text-16); }
   .flooring-progress { right: 16px; height: 100px; }
   .service-expanded-overlay .service-expanded-card { grid-template-columns: 1fr; grid-template-rows: minmax(200px, 29dvh) minmax(0, 1fr); width: min(650px, calc(100vw - 32px)); height: min(860px, calc(100dvh - 32px)); }
   .service-expanded-overlay .service-expanded-content { padding: var(--space-32); }
@@ -1466,7 +1496,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .flooring-scroll { height: 540svh; }
   .flooring-copy-panel { bottom: 30px; left: var(--model-edge-gutter); width: calc(100% - 56px); }
   .flooring-copy-panel h2 { font-size: var(--text-34); }
-  .flooring-copy-panel > p:last-child { font-size: var(--text-15); line-height: 1.6; }
+  .flooring-copy-panel > p:last-child, .flooring-variant-copy p { font-size: var(--text-15); line-height: 1.6; }
   .flooring-eyebrow { margin-bottom: var(--space-12); }
   .service-expanded-overlay { padding: var(--space-12); }
   .service-expanded-overlay .service-expanded-card { grid-template-rows: clamp(175px, 26dvh, 230px) minmax(0, 1fr); width: calc(100vw - 24px); height: calc(100dvh - 24px); }
@@ -1542,13 +1572,18 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 }
 
 @media (max-height: 600px) and (min-width: 600px) {
+  .flooring-scroll { --flooring-detail-heading-size: 26px; }
+  .flooring-scroll:not(:has(.flooring-copy-final.is-active)) .flooring-canvas { transform: translateX(16%) scale(.65); }
   .hero-identity { bottom: 32px; }
   .hero-identity h1 { font-size: var(--text-64); }
   .hero-identity__copy { margin-block: 12px 20px; font-size: var(--text-20); }
   .flooring-canvas { left: 0; width: 100%; }
   .flooring-copy-panel { left: var(--model-edge-gutter); width: 38%; bottom: 24px; }
   .flooring-copy-panel h2 { font-size: var(--text-32); margin-bottom: var(--space-12); }
-  .flooring-copy-panel > p:last-child { font-size: var(--text-13); line-height: 1.5; }
+  .flooring-copy-panel > p:last-child, .flooring-variant-copy p { font-size: var(--text-13); line-height: 1.5; }
+  .flooring-variant-copy { min-height: 0; }
+  .flooring-copy-panel:has(.flooring-variant-selector) h2 { font-size: var(--text-26); }
+  .flooring-variant-selector { margin-bottom: var(--space-12); }
   .prices-page, .home-page > .prices-page { gap: 10px; padding-block: 72px 10px; }
   .prices-section-eyebrow { display: none; }
   .prices-section-heading h2 { font-size: var(--text-34); }

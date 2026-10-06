@@ -1,7 +1,10 @@
+import { initializeSystemOptions } from "./system-options";
+
 const section = document.querySelector<HTMLElement>("[data-flooring-scroll]");
 const flooringWindow = window as Window & { flooring3DReady?: Promise<void> };
 
 if (section) {
+  initializeSystemOptions(section);
   const start = () => {
     observer.disconnect();
     if (!flooringWindow.flooring3DReady) {
