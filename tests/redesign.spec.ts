@@ -765,9 +765,9 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await expect(form.getByRole("radio")).toHaveCount(5);
   await expect(form.getByRole("radio", { checked: true })).toHaveCount(0);
   expect(await form.evaluate((element: HTMLFormElement) => element.checkValidity())).toBe(false);
-  await form.getByRole("radio", { name: "Home", exact: true }).check();
-  await form.getByRole("radio", { name: "Business", exact: true }).check();
-  await expect(form.getByRole("radio", { name: "Home", exact: true })).not.toBeChecked();
+  await form.getByRole("radio", { name: "Vivienda", exact: true }).check();
+  await form.getByRole("radio", { name: "Local comercial", exact: true }).check();
+  await expect(form.getByRole("radio", { name: "Vivienda", exact: true })).not.toBeChecked();
   await expect(form.getByRole("radio", { checked: true })).toHaveCount(1);
   await expect(errors).toHaveCount(0);
   await expect(submit).not.toHaveClass(/is-incomplete/);

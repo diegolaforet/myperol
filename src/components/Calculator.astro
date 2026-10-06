@@ -1,6 +1,14 @@
 ---
 import SectionCornerControls from "./SectionCornerControls.astro";
 import messages from "../i18n/json/es.json";
+
+const contactSpaces = [
+  { value: "Home", key: "space_home" },
+  { value: "Garage", key: "space_garage" },
+  { value: "Business", key: "space_business" },
+  { value: "Industry", key: "space_industry" },
+  { value: "Outdoor", key: "space_outdoor" },
+] as const;
 ---
 <section id="calculadora" class="prices-page" aria-label={messages.calculator_aria} data-i18n-aria-label="calculator_aria">
     <SectionCornerControls instanceId="calculator" tone="dark" />
@@ -71,10 +79,10 @@ import messages from "../i18n/json/es.json";
             <fieldset class="price-direct-contact__space">
               <legend data-i18n="calculator_direct_space_question">{messages.calculator_direct_space_question}</legend>
               <div class="price-direct-contact__space-options">
-                {["Home", "Garage", "Business", "Industry", "Outdoor"].map((space) => (
+                {contactSpaces.map(({ value, key }) => (
                   <label class="price-direct-contact__space-option">
-                    <input type="radio" name="direct-space" value={space} required />
-                    <span>{space}</span>
+                    <input type="radio" name="direct-space" value={value} required />
+                    <span data-i18n={key}>{messages[key]}</span>
                   </label>
                 ))}
               </div>
