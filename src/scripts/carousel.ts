@@ -4,16 +4,16 @@ export const initializeFeatureCardsCarousel = (shell: HTMLElement) => {
   const prevButton = shell.querySelector<HTMLButtonElement>("[data-carousel-prev]");
   const nextButton = shell.querySelector<HTMLButtonElement>("[data-carousel-next]");
   const dotsContainer = shell.querySelector<HTMLElement>("[data-carousel-dots]");
-  if (!track || !prevButton || !nextButton || !dotsContainer || shell.classList.contains("is-carousel-ready")) return;
+  if (!track || !prevButton || !nextButton || shell.classList.contains("is-carousel-ready")) return;
 
   const cards = Array.from(track.querySelectorAll<HTMLElement>(".feature-card"));
-  const dots = cards.map((_, index) => {
+  const dots = dotsContainer ? cards.map((_, index) => {
     const dot = document.createElement("span");
     dot.className = "feature-cards-dot";
     dot.dataset.cardIndex = String(index);
     return dot;
-  });
-  dotsContainer.replaceChildren(...dots);
+  }) : [];
+  dotsContainer?.replaceChildren(...dots);
 
   const listeners = new AbortController();
   const { signal } = listeners;
@@ -27,6 +27,7 @@ export const initializeFeatureCardsCarousel = (shell: HTMLElement) => {
   let arrowCenter = "";
 
   const setActiveDot = (index: number) => {
+    if (!dots.length) return;
     const nextIndex = Math.max(0, Math.min(index, dots.length - 1));
     if (activeDotIndex === nextIndex) return;
     dots[activeDotIndex]?.classList.remove("is-active");
@@ -75,7 +76,7 @@ export const initializeFeatureCardsCarousel = (shell: HTMLElement) => {
     }
 
     let nextDot = hoveredCardIndex ?? 0;
-    if (hoveredCardIndex === null && cards.length) {
+    if (dots.length && hoveredCardIndex === null && cards.length) {
       const trackRect = track.getBoundingClientRect();
       let mostVisibleWidth = 0;
       cards.forEach((card, index) => {
