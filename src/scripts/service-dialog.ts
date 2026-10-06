@@ -39,7 +39,8 @@ export function enhanceServiceDialog(overlay: HTMLElement, trigger: HTMLElement,
 }
 
 export function initializeServiceCards(selector: string, priceActionKey: string) {
-  const cards = Array.from(document.querySelectorAll<HTMLElement>(selector));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>(selector))
+    .filter(card => card.getAttribute("aria-disabled") !== "true");
   if (!cards.length) return;
 
   const listeners = new AbortController();

@@ -4,7 +4,7 @@ import type { Service } from "../data/services";
 interface Props { service: Service; home?: boolean }
 const { service, home = false } = Astro.props;
 ---
-<article class="feature-card service-card-expandable" tabindex="0" data-price-space={service.space} data-service-technical={service.technicalKey ? messages[service.technicalKey] : undefined} data-service-technical-key={service.technicalKey}>
+<article class="feature-card service-card-expandable" tabindex={service.disabled ? undefined : "0"} aria-disabled={service.disabled ? "true" : undefined} data-price-space={service.space} data-service-technical={service.technicalKey ? messages[service.technicalKey] : undefined} data-service-technical-key={service.technicalKey}>
   <div class="service-card-media">
     <span class={home ? "service-card-label-text" : undefined}>MP System</span>
     {home && <img class="service-card-logo" src="/assets/logo/logo-blanco.png" loading="lazy" decoding="async" alt="" aria-hidden="true" />}

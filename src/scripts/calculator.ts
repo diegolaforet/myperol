@@ -450,6 +450,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     };
 
     let directValidationRequested = false;
+    let directValidationTimeout = 0;
     const directValidationGroups = Array.from(
       directForm?.querySelectorAll<HTMLElement>(".price-direct-contact__fields > label, .price-direct-contact__fields > fieldset") ?? [],
     ).map((group, index) => {
@@ -490,14 +491,22 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     updateDirectValidation();
 
     const submitDirectRequest = () => {
+      window.clearTimeout(directValidationTimeout);
       directValidationRequested = true;
       if (!updateDirectValidation()) {
+        directValidationTimeout = window.setTimeout(() => {
+          directValidationRequested = false;
+          updateDirectValidation();
+        }, 3000);
         directForm?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus({ preventScroll: true });
         return;
       }
       // The direct-contact submission is a preview until delivery is enabled.
+      directValidationRequested = false;
       setDirectStatus("calculator_direct_preview", "info");
     };
+
+    window.addEventListener("pagehide", () => window.clearTimeout(directValidationTimeout));
 
     const helpContent: Record<string, { title: string; body: string[] }> = {
       ceramic: { title: "help_ceramic_title", body: ["help_ceramic_one", "help_ceramic_two"] },

@@ -44,6 +44,30 @@ test("services grid, images, keyboard dialog and calculator navigation", async (
   await expect(page.locator("#calculadora [data-price-card]")).toHaveAttribute("data-selected-space", "vivienda");
 });
 
+test("industry and outdoor cards stay dimmed and cannot open", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const route of ["/", "/servicios"]) {
+    await page.goto(route);
+    for (const space of ["industria", "exterior"]) {
+      const card = page.locator(`.service-card-expandable[data-price-space="${space}"]`);
+      await card.scrollIntoViewIfNeeded();
+      await expect(card).toHaveAttribute("aria-disabled", "true");
+      await expect(card).not.toHaveAttribute("tabindex", "0");
+      await card.hover();
+      await expect(card.locator(".service-card-image-cover")).toHaveCSS("transform", "none");
+      expect(await card.evaluate(el => getComputedStyle(el, "::after").backgroundColor)).toBe("rgba(0, 0, 0, 0.6)");
+      expect(await card.evaluate(el => getComputedStyle(el, "::after").transform)).toBe("none");
+      await card.click();
+      await card.dispatchEvent("keydown", { key: "Enter" });
+      await card.dispatchEvent("keydown", { key: " " });
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    }
+    await page.locator('.service-card-expandable[data-price-space="vivienda"]').click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+  }
+});
+
 test("service cards keep their copy in an editorial dialog on both routes", async ({ page }, testInfo) => {
   for (const route of ["/#servicios", "/servicios"]) {
     await page.goto(route);
@@ -748,6 +772,7 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await expect(errors).toHaveCount(0);
   await expect(submit).not.toHaveClass(/is-incomplete/);
   await form.locator("[data-price-direct-email]").fill("invalid");
+  await submit.click();
   await expect(errors).toHaveCount(1);
   await expect(submit).toHaveClass(/is-incomplete/);
   await form.locator("[data-price-direct-email]").fill("");
@@ -762,6 +787,35 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await expect(form).toBeHidden();
   await card.locator("[data-price-action]").click();
   await expect(card).toHaveAttribute("data-view", "space");
+});
+
+test("contact errors expire three seconds after the latest attempt or when corrected", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/precios?reset=1");
+  await page.locator("[data-price-direct-open]").click();
+  const form = page.locator("[data-price-direct-form]");
+  const errors = form.locator(".price-direct-contact__field-error:visible");
+  const submit = form.locator("[data-price-direct-submit]");
+  await page.clock.install();
+  await page.clock.pauseAt(new Date());
+  await form.dispatchEvent("submit");
+  await expect(errors).toHaveCount(4);
+  await page.clock.runFor(2000);
+  await form.dispatchEvent("submit");
+  await page.clock.runFor(1500);
+  await expect(errors).toHaveCount(4);
+  await form.locator("[data-price-direct-name]").fill("Cliente");
+  await expect(errors).toHaveCount(3);
+  await page.clock.runFor(1499);
+  await expect(errors).toHaveCount(3);
+  await page.clock.runFor(1);
+  await expect(errors).toHaveCount(0);
+  await expect(form.locator('[aria-invalid="true"]')).toHaveCount(0);
+  await expect(submit).toHaveClass(/is-incomplete/);
+  await form.locator("[data-price-direct-last-name]").fill("Apellido");
+  await expect(errors).toHaveCount(0);
+  await form.dispatchEvent("submit");
+  await expect(errors).toHaveCount(2);
 });
 
 test("final polish reuses carousel pagination and exposes premium navigation cues", async ({ page }, testInfo) => {

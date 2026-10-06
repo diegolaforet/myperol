@@ -6,6 +6,7 @@ export interface Service {
   title: string;
   translationKey: keyof typeof messages;
   technicalKey?: keyof typeof messages;
+  disabled?: boolean;
 }
 
 // Product names are brands; all descriptive copy lives in the dictionaries.
@@ -33,6 +34,7 @@ export const homeServices: Service[] = [
   },
   {
     "space": "industria",
+    "disabled": true,
     "image": "/assets/card-images/services/industria-card.webp",
     "title": "INDUSTRY",
     "translationKey": "service_industry_summary",
@@ -40,6 +42,7 @@ export const homeServices: Service[] = [
   },
   {
     "space": "exterior",
+    "disabled": true,
     "image": "/assets/card-images/services/outdoor-card.webp",
     "title": "OUTDOOR",
     "translationKey": "service_outdoor_summary",
