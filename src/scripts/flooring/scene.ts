@@ -1,7 +1,9 @@
 import { createRenderController } from "./render-controller";
+import { createSurfaceMaterial } from "./surface-material";
+import { SYSTEM_VARIANT_EVENT, setSystemVariant } from "./system-options";
 import { loadFlooringResources } from "../spline/resources";
 import { observeSceneVisibility } from "../spline/visibility";
-import { getScenePixelRatio } from "../spline/resolution";
+import { getScenePixelRatio, syncSceneFrameSize } from "../spline/resolution";
 import { bindText } from "../../i18n/client";
 import type { Application } from "@splinetool/runtime";
 
@@ -185,6 +187,11 @@ export const buildSplineScroll = async () => {
   let renderResizeTimer = 0;
   let applyCurrentModelTransform: () => void = () => {};
   let sceneReady = false;
+  let surfaceMaterial: ReturnType<typeof createSurfaceMaterial> | undefined;
+  const changeMaterial = () => {
+    section.dataset.flooringMaterialTransition = "true";
+    surfaceMaterial?.select(section.dataset.flooringVariant === "mineral" ? "mineral" : "resin");
+  };
   let renderController: ReturnType<typeof createRenderController> | undefined;
   let isStageVisible = false;
   let syncVisibleScene: () => void = () => {};
@@ -294,6 +301,8 @@ export const buildSplineScroll = async () => {
     if (isDisposed) return;
 
     isDisposed = true;
+    surfaceMaterial?.dispose();
+    section.removeEventListener(SYSTEM_VARIANT_EVENT, changeMaterial);
     renderController?.dispose();
     timeline?.scrollTrigger?.kill();
     timeline?.kill();
@@ -426,6 +435,7 @@ export const buildSplineScroll = async () => {
       const cssHeight = canvas.clientHeight;
       if (cssWidth <= 0 || cssHeight <= 0) return;
 
+      syncSceneFrameSize(application, cssWidth, cssHeight);
       updateModelMotionBounds(cssWidth, cssHeight);
       applyCurrentModelTransform();
 
@@ -909,6 +919,18 @@ export const buildSplineScroll = async () => {
       },
       finalMotionStart
     );
+
+    surfaceMaterial = createSurfaceMaterial(
+      objects.epoxi, gsap, () => requestChangedSceneRender(true), () => reducedMotion.matches,
+      (variant, failed) => {
+        section.dataset.flooringMaterial = variant;
+        delete section.dataset.flooringMaterialTransition;
+        if (failed) setSystemVariant(section, variant);
+      },
+    );
+    section.dataset.flooringMaterial = "resin";
+    section.addEventListener(SYSTEM_VARIANT_EVENT, changeMaterial);
+    if (section.dataset.flooringVariant === "mineral") changeMaterial();
 
     updateMotionPreference();
     setActivePanel(getPanelIndex(sceneTimeline.progress()));
