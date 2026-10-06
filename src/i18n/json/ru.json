@@ -1,4 +1,13 @@
 {
+  "footer_tagline": "Полы из эпоксидной смолы. Бесшовный дизайн для пространств с характером.",
+  "footer_contact": "Контакты",
+  "footer_location": "Тенерифе, Канарские острова",
+  "footer_navigation": "Навигация",
+  "footer_legal_social": "Информация и соцсети",
+  "footer_legal_notice": "Правовая информация",
+  "footer_privacy": "Политика конфиденциальности",
+  "footer_cookies": "Политика cookie",
+  "footer_copyright": "© {year} MyPerol. Все права защищены.",
   "mp_systems_variant_aria": "Тип основного слоя",
   "mp_systems_resin_label": "Смола",
   "mp_systems_mineral_label": "Минеральный",
