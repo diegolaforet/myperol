@@ -4,6 +4,7 @@ import SectionCornerControls from "../components/SectionCornerControls.astro";
 import ServicesShowcase from "../components/ServicesShowcase.astro";
 import SplineScroll from "../components/SplineScroll.astro";
 import Calculator from "../components/Calculator.astro";
+import messages from "../i18n/json/es.json";
 ---
 
 <BaseLayout
@@ -28,14 +29,13 @@ import Calculator from "../components/Calculator.astro";
         <source src="/assets/videos/hero-1080.mp4" type="video/mp4" />
       </video>
       <div class="hero-identity">
-        <p class="hero-identity__eyebrow">MP SYSTEM</p>
+        <p class="hero-identity__eyebrow">MP System</p>
         <h1 class="hero-logo-title" aria-label="MyPerol">
           <img src="/assets/logo/logo-blanco.webp" width="512" height="84" decoding="async" alt="" aria-hidden="true" />
         </h1>
         <p class="hero-identity__copy" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</p>
         <div class="hero-identity__actions">
-          <a href="#servicios" data-i18n="nav_services">Servicios</a>
-          <a href="#calculadora" data-i18n="nav_prices">Calculadora</a>
+          <a href="#calculadora" data-price-contact-link data-i18n="hero_contact">{messages.hero_contact}</a>
         </div>
       </div>
       <a class="hero-scroll-cue" href="#experiencia" aria-label="Descubrir MyPerol" data-i18n-aria-label="hero_discover">
@@ -145,29 +145,43 @@ import Calculator from "../components/Calculator.astro";
       <div class="feature-cards-shell home-secondary-cards-shell">
         <div class="feature-cards-track home-secondary-cards-track">
           <article class="feature-card home-secondary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_1_title">Superficie continua</h2>
-            <p data-i18n="feature_card_1_text">Texto placeholder para describir una ventaja clave del acabado MyPerol.</p>
+            <h2 data-i18n="feature_card_1_title">{messages.feature_card_1_title}</h2>
+            <p data-i18n="feature_card_1_text">{messages.feature_card_1_text}</p>
+            <footer class="home-secondary-card-footer">
+              <small data-i18n="feature_card_1_note">{messages.feature_card_1_note}</small>
+            </footer>
           </article>
           <article class="feature-card home-secondary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_2_title">Acabado uniforme</h2>
-            <p data-i18n="feature_card_2_text">Texto placeholder para explicar una mejora visual del espacio.</p>
+            <h2 data-i18n="feature_card_2_title">{messages.feature_card_2_title}</h2>
+            <p data-i18n="feature_card_2_text">{messages.feature_card_2_text}</p>
+            <footer class="home-secondary-card-footer">
+              <small data-i18n="feature_card_2_note">{messages.feature_card_2_note}</small>
+            </footer>
           </article>
           <article class="feature-card home-secondary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_3_title">Sensación premium</h2>
-            <p data-i18n="feature_card_3_text">Texto placeholder para una tarjeta comercial sin imagen por ahora.</p>
+            <h2 data-i18n="feature_card_3_title">{messages.feature_card_3_title}</h2>
+            <p data-i18n="feature_card_3_text">{messages.feature_card_3_text}</p>
+            <footer class="home-secondary-card-footer">
+              <div class="home-secondary-card-metric">
+                <strong data-i18n="feature_card_3_metric">{messages.feature_card_3_metric}</strong>
+                <span data-i18n="feature_card_3_metric_label">{messages.feature_card_3_metric_label}</span>
+              </div>
+              <small data-i18n="feature_card_3_note">{messages.feature_card_3_note}</small>
+            </footer>
           </article>
           <article class="feature-card home-secondary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_4_title">Diseño limpio</h2>
-            <p data-i18n="feature_card_4_text">Texto placeholder para destacar orden, amplitud y continuidad.</p>
+            <h2 data-i18n="feature_card_4_title">{messages.feature_card_4_title}</h2>
+            <p data-i18n="feature_card_4_text">{messages.feature_card_4_text}</p>
+            <footer class="home-secondary-card-footer">
+              <small data-i18n="feature_card_4_note">{messages.feature_card_4_note}</small>
+            </footer>
           </article>
           <article class="feature-card home-secondary-card">
-            <span data-i18n="feature_card_label">Placeholder</span>
-            <h2 data-i18n="feature_card_5_title">Alta presencia</h2>
-            <p data-i18n="feature_card_5_text">Texto placeholder para explicar el impacto del suelo en el ambiente.</p>
+            <h2 data-i18n="feature_card_5_title">{messages.feature_card_5_title}</h2>
+            <p data-i18n="feature_card_5_text">{messages.feature_card_5_text}</p>
+            <footer class="home-secondary-card-footer">
+              <small data-i18n="feature_card_5_note">{messages.feature_card_5_note}</small>
+            </footer>
           </article>
         </div>
 

@@ -783,6 +783,15 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       }
     };
 
+    document.querySelectorAll<HTMLAnchorElement>("[data-price-contact-link]").forEach(link => {
+      link.addEventListener("click", event => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        setStepOne();
+        setDirectStatus();
+        setDirectContactMode(true, { animate: false });
+      });
+    });
+
     directOpenButton?.addEventListener("click", () => {
       if (priceCard.dataset.step !== "1") return;
       setDirectStatus();

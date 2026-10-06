@@ -553,6 +553,29 @@ test("hero cue and navbar animate internal navigation without changing the route
   await expect(page.locator("#servicios")).toBeInViewport({ timeout: 30000 });
 });
 
+test("hero contact opens the quote form, including after using the calculator", async ({ page }) => {
+  await page.goto("/");
+  const contact = page.locator(".hero-identity__actions a");
+  const form = page.locator("[data-price-direct-form]");
+  const card = page.locator("[data-price-card]");
+  await expect(contact).toHaveCount(1);
+  await expect(contact).toHaveText("Contacto");
+  await expect(contact).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await contact.click();
+  await expect(form).toBeVisible();
+  await expect(card).toHaveClass(/is-direct-contact/);
+  await expect(form).toBeInViewport();
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe("");
+  await page.locator("[data-price-direct-close]").click();
+  await expect(form).toBeHidden();
+  await page.locator("[data-price-action]").click();
+  await expect(card).toHaveAttribute("data-view", "space");
+  await contact.click();
+  await expect(card).toHaveAttribute("data-view", "intro");
+  await expect(form).toBeVisible();
+  await expect(form).toBeInViewport();
+});
+
 test("dark carousel centers when space allows and services use an asymmetric grid", async ({ page }, testInfo) => {
   await page.goto("/");
   if (testInfo.project.name === "desktop") await page.setViewportSize({ width: 2100, height: 1000 });
@@ -578,6 +601,42 @@ test("dark carousel centers when space allows and services use an asymmetric gri
     expect(geometry.scrollWidth).toBeGreaterThan(geometry.clientWidth);
     await track.evaluate(el => el.scrollBy({ left: 250, behavior: "instant" }));
     await expect.poll(() => track.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+  }
+});
+
+test("dark carousel technical copy fits in every language", async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const cards = page.locator(".home-secondary-card");
+  for (const language of ["es", "en", "fr", "de", "ru", "uk"]) {
+    await page.evaluate(lang => localStorage.setItem("lang", lang), language);
+    await page.reload();
+    await expect(cards).toHaveCount(5);
+    await expect(page.locator("html")).toHaveAttribute("lang", language);
+    await expect(cards.locator(":scope > span")).toHaveCount(0);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(cards.nth(2).locator(".home-secondary-card-metric strong")).toContainText("24");
+    const geometry = await cards.evaluateAll(elements => elements.map(card => {
+      const bounds = card.getBoundingClientRect();
+      const children = Array.from(card.querySelectorAll("h2, p, small, strong, span"));
+      return {
+        height: bounds.height,
+        fits: children.every(child => {
+          const rect = child.getBoundingClientRect();
+          return rect.left >= bounds.left && rect.right <= bounds.right + 1 && rect.bottom <= bounds.bottom - 16;
+        }),
+        noOverflow: card.scrollHeight <= card.clientHeight + 1 && card.scrollWidth <= card.clientWidth + 1,
+      };
+    }));
+    expect(geometry.every(card => card.fits && card.noOverflow), language).toBe(true);
+    expect(new Set(geometry.map(card => Math.round(card.height))).size, language).toBe(1);
+    if (language === "es") {
+      await expect(cards.locator("h2")).toHaveText([
+        "Hecho para tu espacio.", "Sin demoler, cuando es posible.", "Cada fase tiene su tiempo.",
+        "Todo empieza debajo.", "Diseñado también para después.",
+      ]);
+      await cards.nth(2).screenshot({ path: testInfo.outputPath("carousel-execution.png") });
+    }
   }
 });
 
