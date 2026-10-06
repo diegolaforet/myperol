@@ -5,6 +5,13 @@ import { getScenePixelRatio } from "../spline/resolution";
 import { bindText } from "../../i18n/client";
 import type { Application } from "@splinetool/runtime";
 
+const LAYER_DEPTHS = {
+  imprimacion: 134.598,
+  silice: 134.267,
+  epoxi: 133.021,
+  sellador: 134.595,
+};
+const CONCRETE_DEPTH = 364.706;
 const INTRO_DURATION = 15;
 const LAYER_BUILD_DURATION = 16;
 const LAYER_HOLD_DURATION = 4;
@@ -25,7 +32,20 @@ const MODEL_HORIZONTAL_TRAVEL_RATIO = 0.082;
 const MODEL_MAX_VERTICAL_TRAVEL = 90;
 const MODEL_VERTICAL_TRAVEL_RATIO = 0.1;
 const MODEL_MAX_PORTRAIT_CENTER_OFFSET = 70;
+const MODEL_MAX_LAYER_SEPARATION = 46;
+const MODEL_MAX_LAYER_SCATTER_X = 190;
+const MODEL_MAX_LAYER_SCATTER_Y = 36;
+const MODEL_MAX_LAYER_SCATTER_Z = 64;
 const MODEL_FINAL_OVERVIEW_SCALE = 0.72;
+const MODEL_FINAL_ACCORDION_OPEN = 1.5;
+const MODEL_FINAL_ACCORDION_REST = 0.82;
+const MODEL_LAYER_SCATTER_OFFSETS = [
+  { x: 0.3, y: -0.12, z: 0.2 },
+  { x: 0.9, y: 0.08, z: -0.48 },
+  { x: -1, y: 0.16, z: 0.42 },
+  { x: 0.88, y: -0.08, z: 0.3 },
+  { x: -0.7, y: 0.14, z: -0.52 },
+];
 const MODEL_LAYER_MOTIONS = [
   {
     xRatio: 0.08,
@@ -87,7 +107,7 @@ const MODEL_FINAL_CENTER_MOTION = {
   xRatio: -0.55,
   yRatio: 0,
 };
-const MODEL_FINAL_STAGE_MOTION = {
+const MODEL_FINAL_SCATTER_MOTION = {
   xRatio: 0,
   yRatio: -1.08,
 };
@@ -96,12 +116,12 @@ const CAMERA_FINAL_MOTION = {
   yaw: 0,
 };
 const FINAL_CENTER_DURATION = 4;
-const FINAL_STAGE_DURATION = 12;
+const FINAL_SCATTER_DURATION = 12;
 const FINAL_RESOLVE_DURATION = 10;
 const FINAL_POSITION_DURATION = 6;
 const FINAL_TEXT_REVEAL_DELAY = 4;
 const FINAL_SEQUENCE_DURATION =
-  FINAL_CENTER_DURATION + FINAL_STAGE_DURATION + FINAL_RESOLVE_DURATION;
+  FINAL_CENTER_DURATION + FINAL_SCATTER_DURATION + FINAL_RESOLVE_DURATION;
 const STANDARD_LAYER_TOTAL_DURATION = LAYER_BUILD_DURATION + LAYER_HOLD_DURATION;
 const SEALER_TOTAL_DURATION = SEALER_BUILD_DURATION + SEALER_HOLD_DURATION;
 const PRE_FINAL_TIMELINE_DURATION =
@@ -111,7 +131,7 @@ const FLOORING_TIMELINE_DURATION =
 const FINAL_TEXT_REVEAL_PROGRESS =
   (PRE_FINAL_TIMELINE_DURATION +
     FINAL_CENTER_DURATION +
-    FINAL_STAGE_DURATION +
+    FINAL_SCATTER_DURATION +
     FINAL_TEXT_REVEAL_DELAY) /
   FLOORING_TIMELINE_DURATION;
 const PANEL_PROGRESS_THRESHOLDS = [
@@ -349,6 +369,10 @@ export const buildSplineScroll = async () => {
       horizontalTravel: MODEL_MAX_HORIZONTAL_TRAVEL,
       verticalTravel: MODEL_MAX_VERTICAL_TRAVEL,
       horizontalCenterOffset: 0,
+      layerSeparation: MODEL_MAX_LAYER_SEPARATION,
+      layerScatterX: MODEL_MAX_LAYER_SCATTER_X,
+      layerScatterY: MODEL_MAX_LAYER_SCATTER_Y,
+      layerScatterZ: MODEL_MAX_LAYER_SCATTER_Z,
     };
 
     const updateModelMotionBounds = (width: number, height: number) => {
@@ -371,6 +395,7 @@ export const buildSplineScroll = async () => {
       const shortFit = width < height
         ? Math.min(1, Math.max(0.65, height / MODEL_REFERENCE_VIEWPORT_HEIGHT))
         : Math.min(1, Math.max(0.28, (height - 250) / 510));
+      const verticalMotionFit = Math.max(0.55, viewportFit);
       modelMotionBounds = {
         // Reduce the complete model on narrow viewports before applying any
         // layer focus, so rotation never pushes it outside the visible area.
@@ -387,6 +412,10 @@ export const buildSplineScroll = async () => {
           heightFit *
           aspectFit,
         horizontalCenterOffset: (1 - aspectFit) * MODEL_MAX_PORTRAIT_CENTER_OFFSET * 0.2,
+        layerSeparation: MODEL_MAX_LAYER_SEPARATION * verticalMotionFit,
+        layerScatterX: MODEL_MAX_LAYER_SCATTER_X * viewportFit,
+        layerScatterY: MODEL_MAX_LAYER_SCATTER_Y * verticalMotionFit,
+        layerScatterZ: MODEL_MAX_LAYER_SCATTER_Z * viewportFit,
       };
     };
 
@@ -474,6 +503,14 @@ export const buildSplineScroll = async () => {
       sellador: resolveObject("sellador"),
       camera: resolveOptionalObject("camera"),
     };
+    const requestedCoverageRatio = Number(section.dataset.layerCoverageRatio || 0.9);
+    const layerCoverageRatio = Math.min(1, Math.max(0.1, requestedCoverageRatio));
+    const layerSources = [
+      { object: objects.imprimacion, depth: LAYER_DEPTHS.imprimacion },
+      { object: objects.silice, depth: LAYER_DEPTHS.silice },
+      { object: objects.epoxi, depth: LAYER_DEPTHS.epoxi },
+      { object: objects.sellador, depth: LAYER_DEPTHS.sellador },
+    ];
     const modelObjects = [
       objects.hormigon,
       objects.imprimacion,
@@ -481,6 +518,9 @@ export const buildSplineScroll = async () => {
       objects.epoxi,
       objects.sellador,
     ];
+    const modelLayerIndexByObject = new Map(
+      modelObjects.map((object, layerIndex) => [object, layerIndex])
+    );
     const modelScaleOrigin = modelObjects.reduce(
       (origin, object) => ({
         x: origin.x + object.position.x / modelObjects.length,
@@ -501,18 +541,51 @@ export const buildSplineScroll = async () => {
       targetPositionZ:
         modelScaleOrigin.z + (object.position.z - modelScaleOrigin.z) * MODEL_SCALE_MULTIPLIER,
     }));
+    const targetScaleByObject = new Map(
+      modelScaleConfiguration.map((configuration) => [configuration.object, configuration])
+    );
+    const concreteTargetScale = targetScaleByObject.get(objects.hormigon);
+    if (!concreteTargetScale) throw new Error("No se pudo configurar la base del modelo MP Systems.");
+
+    let previousLayerDepth = CONCRETE_DEPTH * Math.abs(concreteTargetScale.targetScaleZ);
+    const layerConfiguration = layerSources.map(({ object, depth }) => {
+      const introScale = targetScaleByObject.get(object);
+      if (!introScale) throw new Error(`No se pudo configurar la capa 3D "${object.name}".`);
+
+      const initialDepth = depth * Math.abs(introScale.targetScaleZ);
+      const anchoredRearEdge = introScale.targetPositionZ - initialDepth / 2;
+      const scaleDirection = Math.sign(introScale.targetScaleZ) || 1;
+      const targetLayerDepth = previousLayerDepth * layerCoverageRatio;
+
+      previousLayerDepth = targetLayerDepth;
+
+      return {
+        object,
+        targetScaleZ: scaleDirection * (targetLayerDepth / depth),
+        targetPositionZ: anchoredRearEdge + targetLayerDepth / 2,
+      };
+    });
     const modelStateConfiguration = modelScaleConfiguration.map((configuration) => ({
       object: configuration.object,
-      scaleX: configuration.targetScaleX,
-      scaleY: configuration.targetScaleY,
-      scaleZ: configuration.targetScaleZ,
-      positionX: configuration.targetPositionX,
-      positionY: configuration.targetPositionY,
-      positionZ: configuration.targetPositionZ,
+      scaleX: configuration.object.scale.x,
+      scaleY: configuration.object.scale.y,
+      scaleZ: configuration.object.scale.z,
+      positionX: configuration.object.position.x,
+      positionY: configuration.object.position.y,
+      positionZ: configuration.object.position.z,
       rotationX: configuration.object.rotation.x,
       rotationY: configuration.object.rotation.y,
       rotationZ: configuration.object.rotation.z,
+      introScaleX: configuration.targetScaleX,
+      introScaleY: configuration.targetScaleY,
+      introScaleZ: configuration.targetScaleZ,
+      introPositionX: configuration.targetPositionX,
+      introPositionY: configuration.targetPositionY,
+      introPositionZ: configuration.targetPositionZ,
     }));
+    const modelStateByObject = new Map(
+      modelStateConfiguration.map((configuration) => [configuration.object, configuration])
+    );
     const cameraOrigin = objects.camera
       ? {
           rotationX: objects.camera.rotation.x,
@@ -529,6 +602,8 @@ export const buildSplineScroll = async () => {
       focus: 0,
       xRatio: 0,
       yRatio: 0,
+      explode: 0,
+      scatter: 0,
       overview: 0,
     };
     const applyModelTransform = () => {
@@ -551,12 +626,22 @@ export const buildSplineScroll = async () => {
         Math.max(1, effectiveScale);
 
       modelStateConfiguration.forEach((state) => {
+        const layerIndex = modelLayerIndexByObject.get(state.object) ?? 0;
+        const scatterOffset = MODEL_LAYER_SCATTER_OFFSETS[layerIndex];
+        const verticalOffset =
+          layerIndex * modelMotion.explode * modelMotionBounds.layerSeparation;
+        const scatterX =
+          scatterOffset.x * modelMotion.scatter * modelMotionBounds.layerScatterX;
+        const scatterY =
+          scatterOffset.y * modelMotion.scatter * modelMotionBounds.layerScatterY;
+        const scatterZ =
+          scatterOffset.z * modelMotion.scatter * modelMotionBounds.layerScatterZ;
         const relativeX =
-          (state.positionX - modelScaleOrigin.x) * effectiveScale;
+          (state.positionX + scatterX - modelScaleOrigin.x) * effectiveScale;
         const relativeY =
-          (state.positionY - modelScaleOrigin.y) * effectiveScale;
+          (state.positionY + verticalOffset + scatterY - modelScaleOrigin.y) * effectiveScale;
         const relativeZ =
-          (state.positionZ - modelScaleOrigin.z) * effectiveScale;
+          (state.positionZ + scatterZ - modelScaleOrigin.z) * effectiveScale;
 
         state.object.position.x =
           modelScaleOrigin.x + relativeX * cosY + relativeZ * sinY + horizontalPosition;
@@ -584,6 +669,7 @@ export const buildSplineScroll = async () => {
     };
     applyCurrentModelTransform = applySceneTransform;
 
+    gsap.set(canvas, { opacity: 0 });
     applySceneTransform();
 
     // Reuse storage on every tick instead of allocating arrays during scroll.
@@ -634,15 +720,52 @@ export const buildSplineScroll = async () => {
     });
     timeline = sceneTimeline;
 
-    // Keep the assembled model still during the introductory copy.
-    sceneTimeline.to({}, { duration: INTRO_DURATION });
+    sceneTimeline.to(
+      canvas,
+      {
+        opacity: 1,
+        duration: INTRO_DURATION,
+        ease: "power1.out",
+      },
+      0
+    );
 
-    MODEL_LAYER_MOTIONS.forEach((layerMotion, index) => {
-      const isSealer = index === MODEL_LAYER_MOTIONS.length - 1;
+    modelStateConfiguration.forEach((state) => {
+      sceneTimeline.to(
+        state,
+        {
+          scaleX: state.introScaleX,
+          scaleY: state.introScaleY,
+          scaleZ: state.introScaleZ,
+          positionX: state.introPositionX,
+          positionY: state.introPositionY,
+          positionZ: state.introPositionZ,
+          duration: INTRO_DURATION,
+          ease: "power1.inOut",
+        },
+        0
+      );
+    });
+
+    layerConfiguration.forEach(({ object, targetScaleZ, targetPositionZ }, index) => {
+      const isSealer = index === layerConfiguration.length - 1;
       const movementDuration = isSealer ? SEALER_BUILD_DURATION : LAYER_BUILD_DURATION;
       const holdDuration = isSealer ? SEALER_HOLD_DURATION : LAYER_HOLD_DURATION;
       const movementStart = sceneTimeline.duration();
+      const activeLayerState = modelStateByObject.get(object);
+      if (!activeLayerState) return;
+      const layerMotion = MODEL_LAYER_MOTIONS[index];
       const cameraLayerMotion = CAMERA_LAYER_MOTIONS[index];
+
+      sceneTimeline.to(
+        activeLayerState,
+        {
+          scaleZ: targetScaleZ,
+          positionZ: targetPositionZ,
+          duration: movementDuration,
+        },
+        movementStart
+      );
       if (index === 1) {
         const halfDuration = movementDuration / 2;
         const secondHalfStart = movementStart + halfDuration;
@@ -720,8 +843,8 @@ export const buildSplineScroll = async () => {
     });
 
     const finalMotionStart = sceneTimeline.duration();
-    const finalStageStart = finalMotionStart + FINAL_CENTER_DURATION;
-    const finalResolveStart = finalStageStart + FINAL_STAGE_DURATION;
+    const finalScatterStart = finalMotionStart + FINAL_CENTER_DURATION;
+    const finalResolveStart = finalScatterStart + FINAL_SCATTER_DURATION;
 
     sceneTimeline.to(
       modelMotion,
@@ -747,12 +870,14 @@ export const buildSplineScroll = async () => {
     sceneTimeline.to(
       modelMotion,
       {
-        xRatio: MODEL_FINAL_STAGE_MOTION.xRatio,
-        yRatio: MODEL_FINAL_STAGE_MOTION.yRatio,
-        duration: FINAL_STAGE_DURATION,
+        xRatio: MODEL_FINAL_SCATTER_MOTION.xRatio,
+        yRatio: MODEL_FINAL_SCATTER_MOTION.yRatio,
+        explode: MODEL_FINAL_ACCORDION_OPEN,
+        scatter: 1,
+        duration: FINAL_SCATTER_DURATION,
         ease: "sine.inOut",
       },
-      finalStageStart
+      finalScatterStart
     );
     sceneTimeline.to(
       modelMotion,
@@ -760,6 +885,16 @@ export const buildSplineScroll = async () => {
         xRatio: MODEL_FINAL_MOTION.xRatio,
         yRatio: MODEL_FINAL_MOTION.yRatio,
         duration: FINAL_POSITION_DURATION,
+        ease: "sine.inOut",
+      },
+      finalResolveStart
+    );
+    sceneTimeline.to(
+      modelMotion,
+      {
+        explode: MODEL_FINAL_ACCORDION_REST,
+        scatter: 0,
+        duration: FINAL_RESOLVE_DURATION,
         ease: "sine.inOut",
       },
       finalResolveStart
