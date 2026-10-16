@@ -21,10 +21,10 @@ export function initializeBudgetScrollSnap() {
   };
 
   const alignSection = () => {
+    if (snapped || !approachingSection || pointerDown || reducedMotion.matches) return;
     const distance = section.getBoundingClientRect().top;
     const activeElement = document.activeElement;
     if (
-      snapped || !approachingSection || pointerDown || reducedMotion.matches ||
       Math.abs(distance) < 2 || Math.abs(distance) > getSnapRange() ||
       Array.from(document.querySelectorAll<HTMLElement>('[aria-modal="true"]'))
         .some(modal => modal.getClientRects().length > 0) ||
@@ -52,7 +52,9 @@ export function initializeBudgetScrollSnap() {
     // Re-arm on either side, including when returning from a short footer.
     if (Math.abs(distance) > getSnapRange() + 64) snapped = false;
     window.clearTimeout(idleTimer);
-    idleTimer = window.setTimeout(alignSection, 160);
+    if (!snapped && approachingSection && !reducedMotion.matches) {
+      idleTimer = window.setTimeout(alignSection, 160);
+    }
   }, { passive: true, signal });
 
   window.addEventListener("wheel", cancelSnap, { passive: true, signal });

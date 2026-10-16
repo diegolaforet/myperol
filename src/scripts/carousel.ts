@@ -110,20 +110,22 @@ export const initializeFeatureCardsCarousel = (shell: HTMLElement) => {
 
   prevButton.addEventListener("click", () => track.scrollBy({ left: -scrollStep, behavior: "smooth" }), { signal });
   nextButton.addEventListener("click", () => track.scrollBy({ left: scrollStep, behavior: "smooth" }), { signal });
-  cards.forEach((card, index) => {
-    const activate = () => {
-      hoveredCardIndex = index;
-      setActiveDot(index);
-    };
-    const deactivate = () => {
-      hoveredCardIndex = null;
-      requestUpdate();
-    };
-    card.addEventListener("mouseenter", activate, { signal });
-    card.addEventListener("focusin", activate, { signal });
-    card.addEventListener("mouseleave", deactivate, { signal });
-    card.addEventListener("focusout", deactivate, { signal });
-  });
+  if (dots.length) {
+    cards.forEach((card, index) => {
+      const activate = () => {
+        hoveredCardIndex = index;
+        setActiveDot(index);
+      };
+      const deactivate = () => {
+        hoveredCardIndex = null;
+        requestUpdate();
+      };
+      card.addEventListener("mouseenter", activate, { signal });
+      card.addEventListener("focusin", activate, { signal });
+      card.addEventListener("mouseleave", deactivate, { signal });
+      card.addEventListener("focusout", deactivate, { signal });
+    });
+  }
   track.addEventListener("scroll", requestUpdate, { passive: true, signal });
   window.addEventListener("resize", invalidateGeometry, { passive: true, signal });
 

@@ -673,9 +673,11 @@ export const buildSplineScroll = async () => {
       objects.camera.rotation.y = cameraOrigin.rotationY + cameraMotion.yaw;
       objects.camera.rotation.z = cameraOrigin.rotationZ;
     };
+    let sceneTransformsDirty = true;
     const applySceneTransform = () => {
       applyModelTransform();
       applyCameraTransform();
+      sceneTransformsDirty = false;
     };
     applyCurrentModelTransform = applySceneTransform;
 
@@ -690,7 +692,9 @@ export const buildSplineScroll = async () => {
     const renderedSceneState = new Float64Array(trackedVectors.length * 3).fill(NaN);
     const vectorAxes = ["x", "y", "z"] as const;
     const commitScene = (force = false) => {
-      applySceneTransform();
+      // Antialiasing still settles for all 32 frames; unchanged transforms need no writes.
+      if (!sceneTransformsDirty && !force) return false;
+      if (sceneTransformsDirty) applySceneTransform();
       let changed = force;
       let offset = 0;
       for (const vector of trackedVectors) {
@@ -713,6 +717,7 @@ export const buildSplineScroll = async () => {
     const sceneTimeline = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onUpdate: () => {
+        sceneTransformsDirty = true;
         const progress = sceneTimeline.progress();
 
         if (progressBar instanceof HTMLElement) {

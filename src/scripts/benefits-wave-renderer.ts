@@ -119,8 +119,12 @@ export function createBenefitsWaveRenderer(canvas: HTMLCanvasElement) {
       for (let y = 0; y < heightSegments; y++) {
         const a = x * (heightSegments + 1) + y;
         const b = a + heightSegments + 1;
-        indices.set([a, b, a + 1, b, b + 1, a + 1], offset);
-        offset += 6;
+        indices[offset++] = a;
+        indices[offset++] = b;
+        indices[offset++] = a + 1;
+        indices[offset++] = b;
+        indices[offset++] = b + 1;
+        indices[offset++] = a + 1;
       }
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
@@ -134,6 +138,8 @@ export function createBenefitsWaveRenderer(canvas: HTMLCanvasElement) {
     const aspectLocation = gl.getUniformLocation(program, "uAspect");
     const verticalScaleLocation = gl.getUniformLocation(program, "uVerticalScale");
     const pointerLocation = gl.getUniformLocation(program, "uPointer");
+    let previousPointerX = NaN;
+    let previousPointerY = NaN;
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.CULL_FACE);
     gl.disable(gl.BLEND);
@@ -142,15 +148,19 @@ export function createBenefitsWaveRenderer(canvas: HTMLCanvasElement) {
     return {
       setProjection(aspect: number, verticalScale: number) {
         // Keep the original ribbon size inside the taller transparent canvas.
+        gl.viewport(0, 0, canvas.width, canvas.height);
         gl.uniform1f(aspectLocation, aspect);
         gl.uniform1f(verticalScaleLocation, verticalScale);
       },
       draw(time: number, pointerX: number, pointerY: number) {
         if (gl.isContextLost()) return;
-        gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.uniform1f(timeLocation, time);
-        gl.uniform2f(pointerLocation, pointerX, pointerY);
+        if (pointerX !== previousPointerX || pointerY !== previousPointerY) {
+          gl.uniform2f(pointerLocation, pointerX, pointerY);
+          previousPointerX = pointerX;
+          previousPointerY = pointerY;
+        }
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
       },
       dispose,
