@@ -1,5 +1,5 @@
 export const initializeScrollReveal = () => {
-  const revealItems = Array.from(document.querySelectorAll(".feature-card")).filter(
+  const revealItems = Array.from(document.querySelectorAll(".feature-card, [data-scroll-reveal]")).filter(
     (item) => item instanceof HTMLElement
   );
 

@@ -5,20 +5,22 @@ for (const shell of document.querySelectorAll<HTMLElement>(".feature-cards-shell
 }
 
 const carouselScrollCue = document.querySelector<HTMLAnchorElement>("[data-carousel-scroll-cue]");
-const flooringSection = document.querySelector<HTMLElement>("#mp-systems");
+const continuationTarget = carouselScrollCue
+  ? document.getElementById(carouselScrollCue.hash.slice(1))
+  : null;
 
-if (carouselScrollCue && flooringSection) {
+if (carouselScrollCue && continuationTarget) {
   const listeners = new AbortController();
   const observer = new IntersectionObserver(([entry]) => {
     carouselScrollCue.classList.toggle("is-hidden", entry.isIntersecting);
     carouselScrollCue.tabIndex = entry.isIntersecting ? -1 : 0;
   }, { rootMargin: "0px 0px -50% 0px", threshold: 0 });
 
-  observer.observe(flooringSection);
+  observer.observe(continuationTarget);
   carouselScrollCue.addEventListener("click", event => {
     event.preventDefault();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    flooringSection.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    continuationTarget.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
     if (window.location.hash !== carouselScrollCue.hash) {
       window.history.pushState(null, "", carouselScrollCue.hash);
     }

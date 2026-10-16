@@ -919,39 +919,43 @@ test("final polish reuses carousel pagination and exposes premium navigation cue
   }
 });
 
-test("carousel continuation cue matches the hero arrow and fades at MP Systems", async ({ page }, testInfo) => {
+test("MP Care precedes the delayed MP Systems continuation controls", async ({ page }, testInfo) => {
   await page.goto("/");
   const cue = page.locator("[data-carousel-scroll-cue]");
   const heroIcon = page.locator(".hero-scroll-cue .scroll-cue-icon");
   const cueIcon = cue.locator(".scroll-cue-icon");
+  const mpCare = page.locator("#mp-care");
+  const mpSystems = page.locator("#mp-systems");
+  const mpCareControls = page.locator('[data-section-corner-controls="mp-care"]');
+  const flooringControls = page.locator('[data-section-corner-controls="flooring"]');
 
-  await page.locator("#mp-systems").evaluate(section => {
+  await expect(mpCare.locator(".mp-care__step")).toHaveCount(3);
+  await expect(mpCare.locator("#mp-care-title")).toHaveText("¿Y dentro de unos años?");
+  if (testInfo.project.name === "desktop") {
+    await mpCare.scrollIntoViewIfNeeded();
+    await expect(mpCareControls).toHaveClass(/is-visible/);
+    const cornerPositions = await mpCareControls.evaluate(controls => {
+      const social = controls.querySelector(".social-float")!.getBoundingClientRect();
+      const language = controls.querySelector(".language-control")!.getBoundingClientRect();
+      return { socialLeft: social.left, languageRight: innerWidth - language.right };
+    });
+    expect(cornerPositions.socialLeft).toBeLessThan(80);
+    expect(cornerPositions.languageRight).toBeLessThan(80);
+  }
+  await mpSystems.evaluate(section => {
     const top = section.getBoundingClientRect().top + scrollY;
     scrollTo({ top: top - innerHeight * .62, behavior: "instant" });
   });
   await expect(cue).toBeVisible();
   await expect(cue).toHaveAttribute("href", "#mp-systems");
+  if (testInfo.project.name === "desktop") {
+    await expect(flooringControls).not.toHaveClass(/is-visible/);
+  }
   const geometry = await cue.evaluate(element => {
     const bounds = element.getBoundingClientRect();
     return { center: bounds.left + bounds.width / 2, viewportCenter: innerWidth / 2 };
   });
   expect(Math.abs(geometry.center - geometry.viewportCenter)).toBeLessThanOrEqual(1);
-  if (testInfo.project.name === "desktop") {
-    const rowAlignment = await page.locator('[data-section-corner-controls="flooring"]').evaluate((controls, cueElement) => {
-      const social = controls.querySelector(".social-float")!.getBoundingClientRect();
-      const language = controls.querySelector(".language-control")!.getBoundingClientRect();
-      const arrow = (cueElement as HTMLElement).getBoundingClientRect();
-      return {
-        arrowCenter: arrow.top + arrow.height / 2,
-        socialCenter: social.top + social.height / 2,
-        languageCenter: language.top + language.height / 2,
-      };
-    }, await cue.elementHandle());
-    expect(rowAlignment.arrowCenter - rowAlignment.socialCenter).toBeGreaterThanOrEqual(6);
-    expect(rowAlignment.arrowCenter - rowAlignment.socialCenter).toBeLessThanOrEqual(16);
-    expect(rowAlignment.arrowCenter - rowAlignment.languageCenter).toBeGreaterThanOrEqual(6);
-    expect(rowAlignment.arrowCenter - rowAlignment.languageCenter).toBeLessThanOrEqual(16);
-  }
   expect(await cueIcon.getAttribute("viewBox")).toBe(await heroIcon.getAttribute("viewBox"));
   expect(await cueIcon.locator("path").getAttribute("d")).toBe(await heroIcon.locator("path").getAttribute("d"));
   expect(await cueIcon.evaluate(element => getComputedStyle(element).animationName)).toBe("hero-scroll-bounce");
@@ -960,9 +964,16 @@ test("carousel continuation cue matches the hero arrow and fades at MP Systems",
   await cue.click();
   await expect(cue).toHaveClass(/is-hidden/);
   await expect(cue).toHaveCSS("opacity", "0");
-  await page.locator("#mp-systems").evaluate(section => {
+  if (testInfo.project.name === "desktop") {
+    await expect(flooringControls).toHaveClass(/is-visible/);
+  }
+  await page.screenshot({ path: testInfo.outputPath("mp-systems-entry.png") });
+  await mpSystems.evaluate(section => {
     const top = section.getBoundingClientRect().top + scrollY;
     scrollTo({ top: top - innerHeight * .62, behavior: "instant" });
   });
   await expect(cue).not.toHaveClass(/is-hidden/);
+  if (testInfo.project.name === "desktop") {
+    await expect(flooringControls).not.toHaveClass(/is-visible/);
+  }
 });
