@@ -1,4 +1,7 @@
 import { initializeFeatureCardsCarousel } from "./carousel";
+import { initializeBudgetScrollSnap } from "./budget-scroll-snap";
+
+initializeBudgetScrollSnap();
 
 for (const shell of document.querySelectorAll<HTMLElement>(".feature-cards-shell")) {
   initializeFeatureCardsCarousel(shell);
