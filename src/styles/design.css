@@ -307,8 +307,11 @@ img { max-width: 100%; }
 }
 .reveal-enabled .mp-care__step.is-visible { opacity: 1; transform: translateZ(0); }
 .home-secondary-cards-track {
-  justify-content: safe center;
+  width: 100%;
+  max-width: 1600px;
+  justify-content: space-between;
   align-items: stretch;
+  margin-inline: auto;
   margin-top: 0;
   padding-inline: var(--edge-gutter);
   padding-block: 12px calc(12px + var(--carousel-shadow-bleed));

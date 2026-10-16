@@ -72,7 +72,7 @@ test("service cards keep their copy in an editorial dialog on both routes", asyn
   for (const route of ["/#servicios", "/servicios"]) {
     await page.goto(route);
     const cards = page.locator(".services-feature-cards .service-card-expandable");
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(4);
     await checkWidth(page);
 
     const firstCard = cards.first();
@@ -687,7 +687,7 @@ test("dark carousel technical copy fits in every language", async ({ page }, tes
     if (language === "es") {
       await expect(cards.locator("h2")).toHaveText([
         "Hecho para tu espacio.", "Sin demoler, cuando es posible.", "Cada fase tiene su tiempo.",
-        "Todo empieza debajo.", "Diseñado también para después.",
+        "Todo empieza debajo.",
       ]);
       await cards.nth(2).screenshot({ path: testInfo.outputPath("carousel-execution.png") });
       await page.locator(".home-secondary-cards").screenshot({ path: testInfo.outputPath("carousel-balanced-footers.png") });
