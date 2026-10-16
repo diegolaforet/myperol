@@ -26,8 +26,8 @@ const year = new Date().getFullYear();
     <div>
       <h2 data-i18n="footer_contact">{messages.footer_contact}</h2>
       <address class="site-footer__contact">
-        <a href={`tel:${contact.phone}`}>{contact.phoneLabel}</a>
-        <a href={`mailto:${contact.email}`}>{contact.email}</a>
+        <span>{contact.phoneLabel}</span>
+        <span>{contact.email}</span>
         <span data-i18n="footer_location">{messages.footer_location}</span>
       </address>
     </div>

@@ -13,8 +13,9 @@ test("footer is shared, responsive and translated without dead legal links", asy
       const budgetBackground = await page.locator(".prices-page").evaluate(el => getComputedStyle(el).backgroundColor);
       await expect(footer).toHaveCSS("background-color", budgetBackground);
     }
-    await expect(footer.locator('a[href="mailto:myperolepoxy@gmail.com"]')).toBeVisible();
-    await expect(footer.locator('a[href="tel:+34663108027"]')).toBeVisible();
+    await expect(footer.locator('.site-footer__contact a[href^="mailto:"], .site-footer__contact a[href^="tel:"]')).toHaveCount(0);
+    await expect(footer.locator(".site-footer__contact span").filter({ hasText: "myperolepoxy@gmail.com" })).toBeVisible();
+    await expect(footer.locator(".site-footer__contact span").filter({ hasText: "+34 663 108 027" })).toBeVisible();
     await expect(footer.locator('a[href="https://wa.me/34663108027"]')).toBeVisible();
     await expect(footer.locator('a[href="https://www.instagram.com/myperol/"]')).toBeVisible();
     for (const social of await footer.locator(".social-link").all()) {
