@@ -36,12 +36,16 @@ function mountWave(root: HTMLElement) {
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
-    const width = Math.max(1, Math.round(root.clientWidth * dpr));
-    const height = Math.max(1, Math.round(root.clientHeight * dpr));
+    const width = Math.max(1, Math.round(canvas!.clientWidth * dpr));
+    const height = Math.max(1, Math.round(canvas!.clientHeight * dpr));
     if (canvas!.width !== width || canvas!.height !== height) {
       canvas!.width = width;
       canvas!.height = height;
     }
+    renderer?.setProjection(
+      root.clientWidth / Math.max(1, root.clientHeight),
+      root.clientHeight / Math.max(1, canvas!.clientHeight),
+    );
     renderer?.draw(elapsed, smoothX, smoothY);
   }
 
@@ -114,7 +118,7 @@ function mountWave(root: HTMLElement) {
     syncAnimation();
   });
   const sizeObserver = new ResizeObserver(resize);
-  intersection.observe(root);
+  intersection.observe(canvas);
   sizeObserver.observe(root);
 
   button.addEventListener("click", () => {

@@ -3,6 +3,7 @@
   --mp-wave-ink: #242b28;
   --mp-wave-muted: #3d4540;
   isolation: isolate;
+  z-index: 3;
   background: var(--palette-white);
 }
 
@@ -10,7 +11,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
 }
 
@@ -23,8 +24,14 @@
   height: 100%;
 }
 
-#myperol-benefits-wave .mp-wave-fallback { opacity: .8; }
-#myperol-benefits-wave .mp-wave-canvas { visibility: hidden; }
+#myperol-benefits-wave .mp-wave-fallback { opacity: .8; overflow: visible; }
+/* Only the drawing surface bleeds into adjacent sections, never the layout. */
+#myperol-benefits-wave .mp-wave-canvas {
+  top: -35%;
+  bottom: auto;
+  height: 170%;
+  visibility: hidden;
+}
 #myperol-benefits-wave[data-renderer="webgl"] .mp-wave-canvas { visibility: visible; }
 #myperol-benefits-wave[data-renderer="webgl"] .mp-wave-fallback { display: none; }
 #myperol-benefits-wave .home-secondary-cards-shell { z-index: 1; }

@@ -4,6 +4,7 @@ const vertexSource = `
   attribute vec2 aUV;
   uniform float uTime;
   uniform float uAspect;
+  uniform float uVerticalScale;
   uniform mediump vec2 uPointer;
   varying mediump vec3 vNormal;
   varying mediump vec3 vPosition;
@@ -32,7 +33,7 @@ const vertexSource = `
     vUV=aUV;
     float perspective=8.5/(8.5-p.z);
     float yScale=mix(.39,.60,clamp((uAspect-1.)/2.,0.,1.));
-    gl_Position=vec4(p.x/5.9*perspective,p.y*yScale*perspective,-p.z*.12,1.);
+    gl_Position=vec4(p.x/5.9*perspective,p.y*yScale*perspective*uVerticalScale,-p.z*.12,1.);
   }
 `;
 
@@ -131,6 +132,7 @@ export function createBenefitsWaveRenderer(canvas: HTMLCanvasElement) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
     const timeLocation = gl.getUniformLocation(program, "uTime");
     const aspectLocation = gl.getUniformLocation(program, "uAspect");
+    const verticalScaleLocation = gl.getUniformLocation(program, "uVerticalScale");
     const pointerLocation = gl.getUniformLocation(program, "uPointer");
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.CULL_FACE);
@@ -138,12 +140,16 @@ export function createBenefitsWaveRenderer(canvas: HTMLCanvasElement) {
     gl.clearColor(0, 0, 0, 0);
 
     return {
+      setProjection(aspect: number, verticalScale: number) {
+        // Keep the original ribbon size inside the taller transparent canvas.
+        gl.uniform1f(aspectLocation, aspect);
+        gl.uniform1f(verticalScaleLocation, verticalScale);
+      },
       draw(time: number, pointerX: number, pointerY: number) {
         if (gl.isContextLost()) return;
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.uniform1f(timeLocation, time);
-        gl.uniform1f(aspectLocation, canvas.width / canvas.height);
         gl.uniform2f(pointerLocation, pointerX, pointerY);
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
       },
