@@ -1,24 +1,20 @@
 ---
-import SectionCornerControls from "./SectionCornerControls.astro";
 import messages from "../i18n/json/es.json";
 
 const careSteps = [
   {
-    number: "01",
     titleKey: "mp_care_evaluate_title",
     title: messages.mp_care_evaluate_title,
     textKey: "mp_care_evaluate_text",
     text: messages.mp_care_evaluate_text,
   },
   {
-    number: "02",
     titleKey: "mp_care_intervene_title",
     title: messages.mp_care_intervene_title,
     textKey: "mp_care_intervene_text",
     text: messages.mp_care_intervene_text,
   },
   {
-    number: "03",
     titleKey: "mp_care_renew_title",
     title: messages.mp_care_renew_title,
     textKey: "mp_care_renew_text",
@@ -28,20 +24,21 @@ const careSteps = [
 ---
 
 <section id="mp-care" class="mp-care" aria-labelledby="mp-care-title">
-  <SectionCornerControls instanceId="mp-care" />
   <div class="mp-care__inner">
     <header class="mp-care__header">
       <div class="mp-care__heading">
-        <p class="mp-care__eyebrow" data-i18n="mp_care_eyebrow">{messages.mp_care_eyebrow}</p>
         <h2 id="mp-care-title" data-i18n="mp_care_title">{messages.mp_care_title}</h2>
       </div>
-      <p class="mp-care__intro" data-i18n="mp_care_intro">{messages.mp_care_intro}</p>
+      <div class="mp-care__summary">
+        <p class="mp-care__eyebrow" data-i18n="mp_care_eyebrow">{messages.mp_care_eyebrow}</p>
+        <h3 class="mp-care__summary-title" data-i18n="mp_care_summary_title">{messages.mp_care_summary_title}</h3>
+        <p class="mp-care__intro" data-i18n="mp_care_intro">{messages.mp_care_intro}</p>
+      </div>
     </header>
 
     <ol class="mp-care__steps">
       {careSteps.map((step) => (
         <li class="mp-care__step" data-scroll-reveal>
-          <span class="mp-care__number" aria-hidden="true">{step.number}</span>
           <h3 data-i18n={step.titleKey}>{step.title}</h3>
           <p data-i18n={step.textKey}>{step.text}</p>
         </li>

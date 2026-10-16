@@ -226,10 +226,9 @@ test("home video and 3D render, move, reverse and fit the viewport", async ({ pa
       heroLeft: document.querySelector(".hero-identity")!.getBoundingClientRect().left,
       titleLeft: document.querySelector(".hero-identity h1")!.getBoundingClientRect().left,
       copyLeft: document.querySelector(".hero-identity__copy")!.getBoundingClientRect().left,
-      actionsLeft: document.querySelector(".hero-identity__actions")!.getBoundingClientRect().left,
     };
   });
-  for (const left of [heroAlignment.heroLeft, heroAlignment.titleLeft, heroAlignment.copyLeft, heroAlignment.actionsLeft]) {
+  for (const left of [heroAlignment.heroLeft, heroAlignment.titleLeft, heroAlignment.copyLeft]) {
     expect(Math.abs(left - heroAlignment.modelLeft)).toBeLessThan(1);
   }
   expect(heroAlignment.heroLeft).toBeLessThan(page.viewportSize()!.width * .045);
@@ -621,27 +620,14 @@ test("hero cue and navbar animate internal navigation without changing the route
   await expect(page.locator("#servicios")).toBeInViewport({ timeout: 30000 });
 });
 
-test("hero contact opens the quote form, including after using the calculator", async ({ page }) => {
+test("hero keeps its identity low and does not render a contact action", async ({ page }) => {
   await page.goto("/");
-  const contact = page.locator(".hero-identity__actions a");
-  const form = page.locator("[data-price-direct-form]");
-  const card = page.locator("[data-price-card]");
-  await expect(contact).toHaveCount(1);
-  await expect(contact).toHaveText("Contacto");
-  await expect(contact).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await contact.click();
-  await expect(form).toBeVisible();
-  await expect(card).toHaveClass(/is-direct-contact/);
-  await expect(form).toBeInViewport();
-  await expect.poll(() => page.evaluate(() => location.hash)).toBe("");
-  await page.locator("[data-price-direct-close]").click();
-  await expect(form).toBeHidden();
-  await page.locator("[data-price-action]").click();
-  await expect(card).toHaveAttribute("data-view", "space");
-  await contact.click();
-  await expect(card).toHaveAttribute("data-view", "intro");
-  await expect(form).toBeVisible();
-  await expect(form).toBeInViewport();
+  await expect(page.locator(".hero-identity__actions")).toHaveCount(0);
+  const spacing = await page.locator(".hero-identity").evaluate(identity => {
+    const bounds = identity.getBoundingClientRect();
+    return { bottom: innerHeight - bounds.bottom };
+  });
+  expect(spacing.bottom).toBeLessThanOrEqual(72);
 });
 
 test("dark carousel centers when space allows and services use an asymmetric grid", async ({ page }, testInfo) => {
@@ -927,22 +913,14 @@ test("MP Care precedes the delayed MP Systems continuation controls", async ({ p
   const cueIcon = cue.locator(".scroll-cue-icon");
   const mpCare = page.locator("#mp-care");
   const mpSystems = page.locator("#mp-systems");
-  const mpCareControls = page.locator('[data-section-corner-controls="mp-care"]');
   const flooringControls = page.locator('[data-section-corner-controls="flooring"]');
 
   await expect(mpCare.locator(".mp-care__step")).toHaveCount(3);
+  await expect(mpCare.locator(".mp-care__number")).toHaveCount(0);
+  await expect(mpCare.locator(".mp-care__summary-title")).toHaveText("Más vida útil");
   await expect(mpCare.locator("#mp-care-title")).toHaveText("¿Y dentro de unos años?");
-  if (testInfo.project.name === "desktop") {
-    await mpCare.scrollIntoViewIfNeeded();
-    await expect(mpCareControls).toHaveClass(/is-visible/);
-    const cornerPositions = await mpCareControls.evaluate(controls => {
-      const social = controls.querySelector(".social-float")!.getBoundingClientRect();
-      const language = controls.querySelector(".language-control")!.getBoundingClientRect();
-      return { socialLeft: social.left, languageRight: innerWidth - language.right };
-    });
-    expect(cornerPositions.socialLeft).toBeLessThan(80);
-    expect(cornerPositions.languageRight).toBeLessThan(80);
-  }
+  await expect(page.locator('[data-section-corner-controls="mp-care"]')).toHaveCount(0);
+  await expect(page.locator('[data-section-corner-controls="services"]')).toHaveCount(0);
   await mpSystems.evaluate(section => {
     const top = section.getBoundingClientRect().top + scrollY;
     scrollTo({ top: top - innerHeight * .62, behavior: "instant" });

@@ -2,7 +2,6 @@
 import messages from "../i18n/json/es.json";
 import ServiceCard from "../components/ServiceCard.astro";
 import { homeServices } from "../data/services";
-import SectionCornerControls from "./SectionCornerControls.astro";
 ---
 
 <section
@@ -11,8 +10,6 @@ import SectionCornerControls from "./SectionCornerControls.astro";
   aria-label="Servicios MyPerol"
   data-i18n-aria-label="services_aria"
 >
-  <SectionCornerControls instanceId="services" />
-
   <div class="feature-cards-header">
     <h2 id="services-feature-heading" class="services-feature-heading" data-i18n="feature_cards_heading">Explora posibilidades para tu espacio.</h2>
     <div class="services-feature-subtitle">
