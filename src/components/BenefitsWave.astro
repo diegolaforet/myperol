@@ -1,0 +1,40 @@
+---
+import messages from "../i18n/json/es.json";
+import "../styles/benefits-wave.css";
+---
+
+<div class="mp-wave-layer" aria-hidden="true">
+  <canvas class="mp-wave-canvas"></canvas>
+  <svg class="mp-wave-fallback" viewBox="0 0 1400 520" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="mp-ribbon-gradient" x1="0" y1="0" x2="0.16" y2="1">
+        <stop offset="0" stop-color="#f4eee5" stop-opacity=".66" />
+        <stop offset=".15" stop-color="#a8a7a0" stop-opacity=".35" />
+        <stop offset=".55" stop-color="#3f4240" stop-opacity=".3" />
+        <stop offset=".88" stop-color="#807f77" stop-opacity=".45" />
+        <stop offset="1" stop-color="#e8e2d8" stop-opacity=".72" />
+      </linearGradient>
+    </defs>
+    <path d="M-150 55 C150 5 220 440 560 250 S1050 -70 1550 350 L1550 460 C1090 40 980 110 560 370 S150 150 -150 175 Z" fill="url(#mp-ribbon-gradient)" stroke="#f6f0e1" stroke-opacity=".25" />
+  </svg>
+</div>
+<button
+  class="mp-wave-motion"
+  type="button"
+  aria-label={messages.benefits_wave_pause}
+  title={messages.benefits_wave_pause}
+  data-i18n-aria-label="benefits_wave_pause"
+  data-i18n-title="benefits_wave_pause"
+  hidden
+>
+  <svg class="mp-wave-pause" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 5v14M15 5v14" />
+  </svg>
+  <svg class="mp-wave-play" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="m8 5 11 7-11 7Z" />
+  </svg>
+</button>
+
+<script>
+  import "../scripts/benefits-wave";
+</script>

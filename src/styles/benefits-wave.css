@@ -1,0 +1,109 @@
+/* Material only: the existing carousel owns all dimensions and typography. */
+#myperol-benefits-wave {
+  --mp-wave-ink: #242b28;
+  --mp-wave-muted: #3d4540;
+  isolation: isolate;
+  background: var(--palette-white);
+}
+
+#myperol-benefits-wave .mp-wave-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#myperol-benefits-wave .mp-wave-canvas,
+#myperol-benefits-wave .mp-wave-fallback {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#myperol-benefits-wave .mp-wave-fallback { opacity: .8; }
+#myperol-benefits-wave .mp-wave-canvas { visibility: hidden; }
+#myperol-benefits-wave[data-renderer="webgl"] .mp-wave-canvas { visibility: visible; }
+#myperol-benefits-wave[data-renderer="webgl"] .mp-wave-fallback { display: none; }
+#myperol-benefits-wave .home-secondary-cards-shell { z-index: 1; }
+
+#myperol-benefits-wave .home-secondary-card {
+  --mp-glare-x: 30%;
+  --mp-glare-y: 0%;
+  border-color: rgba(122, 135, 126, .22);
+  background: linear-gradient(145deg, rgba(255, 255, 255, .82), rgba(255, 255, 255, .68) 55%, rgba(251, 252, 250, .75));
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  backdrop-filter: blur(12px) saturate(110%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 1px 0 0 rgba(255, 255, 255, .65), inset 0 -1px 0 rgba(255, 255, 255, .5), 0 16px 38px -26px rgba(32, 43, 35, .3);
+}
+
+#myperol-benefits-wave .home-secondary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at var(--mp-glare-x) var(--mp-glare-y), rgba(255, 255, 255, .28), transparent 68%);
+  pointer-events: none;
+}
+
+#myperol-benefits-wave .home-secondary-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12%;
+  right: 18%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .95), transparent);
+  pointer-events: none;
+}
+
+#myperol-benefits-wave .home-secondary-card > * { position: relative; }
+#myperol-benefits-wave .home-secondary-card:hover { border-color: rgba(99, 117, 104, .35); }
+#myperol-benefits-wave .home-secondary-card h2,
+#myperol-benefits-wave .home-secondary-card-metric strong { color: var(--mp-wave-ink); }
+#myperol-benefits-wave .home-secondary-card p,
+#myperol-benefits-wave .home-secondary-card-footer small,
+#myperol-benefits-wave .home-secondary-card-metric span { color: var(--mp-wave-muted); }
+
+#myperol-benefits-wave .feature-cards-arrow,
+#myperol-benefits-wave .mp-wave-motion {
+  color: var(--mp-wave-ink);
+  border: 1px solid rgba(122, 135, 126, .3);
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 6px 20px -10px rgba(32, 43, 35, .3);
+}
+
+#myperol-benefits-wave .feature-cards-arrow:hover,
+#myperol-benefits-wave .feature-cards-arrow:focus-visible,
+#myperol-benefits-wave .mp-wave-motion:hover { border-color: rgba(85, 104, 91, .6); background: #fff; }
+
+#myperol-benefits-wave .mp-wave-motion {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  right: max(var(--edge-gutter), calc((100% - 1600px) / 2 + var(--edge-gutter)));
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#myperol-benefits-wave .mp-wave-motion[hidden],
+#myperol-benefits-wave .mp-wave-play,
+#myperol-benefits-wave .mp-wave-motion[data-paused="true"] .mp-wave-pause { display: none; }
+#myperol-benefits-wave .mp-wave-motion[data-paused="true"] .mp-wave-play { display: block; }
+#myperol-benefits-wave .mp-wave-motion svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#myperol-benefits-wave .mp-wave-motion:focus-visible { outline: 2px solid var(--mp-wave-ink); outline-offset: 2px; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  #myperol-benefits-wave .home-secondary-card { background: rgba(255, 255, 255, .94); }
+}
+
+@media (pointer: coarse) {
+  #myperol-benefits-wave .mp-wave-motion { top: 0; width: 44px; height: 44px; }
+}
