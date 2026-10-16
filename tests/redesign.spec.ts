@@ -704,6 +704,7 @@ test("dark carousel technical copy fits in every language", async ({ page }, tes
         "Todo empieza debajo.", "Diseñado también para después.",
       ]);
       await cards.nth(2).screenshot({ path: testInfo.outputPath("carousel-execution.png") });
+      await page.locator(".home-secondary-cards").screenshot({ path: testInfo.outputPath("carousel-balanced-footers.png") });
     }
   }
 });

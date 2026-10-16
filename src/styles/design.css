@@ -353,6 +353,11 @@ img { max-width: 100%; }
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
+.home-secondary-card-metric--statement strong {
+  font-size: var(--text-24);
+  font-weight: 600;
+  line-height: 1.25;
+}
 .home-secondary-card-metric span {
   margin: var(--space-6) 0 0;
   color: var(--palette-tone-73);
