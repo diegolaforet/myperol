@@ -1480,10 +1480,20 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .services-feature-cards { --section-intrinsic-height: 1240px; }
   .prices-page { --section-intrinsic-height: 900px; }
   :root { --page-gutter: 24px; }
-  .mp-care__header { grid-template-columns: 1fr; gap: var(--space-32); }
-  .mp-care__intro { max-width: 60ch; }
-  .mp-care__steps { grid-template-columns: 1fr; gap: var(--space-48); }
-  .mp-care__step { min-height: 0; }
+  .mp-care { padding-block: 88px 64px; }
+  .mp-care__inner { max-width: 600px; }
+  .mp-care__header { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-bottom: 32px; align-items: start; }
+  .mp-care__summary { display: contents; }
+  .mp-care__eyebrow { grid-row: 1; margin: 0; font-size: 14px; }
+  .mp-care__heading { grid-row: 2; margin-bottom: 12px; }
+  .mp-care__header h2 { max-width: 16ch; font-size: 44px; line-height: 1.1; }
+  .mp-care__summary-title { grid-row: 3; max-width: none; font-size: 26px; line-height: 1.25; }
+  .mp-care__intro { grid-row: 4; max-width: none; margin: 0; padding: 0; font-size: 16px; line-height: 1.65; }
+  .mp-care__steps { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .mp-care__step { min-height: 0; padding-block: 24px; }
+  .mp-care__step:last-child { padding-bottom: 0; }
+  .mp-care__step h3 { margin-bottom: 8px; font-size: 18px; font-weight: 500; text-transform: none; }
+  .mp-care__step p { max-width: none; font-size: 15px; line-height: 1.65; }
   .mobile-header-bar { background: var(--palette-tone-118); border-bottom: 1px solid var(--palette-tone-119); box-shadow: 0 14px 34px var(--palette-tone-90); backdrop-filter: var(--filter-glass-14); -webkit-backdrop-filter: var(--filter-glass-14); }
   .mobile-header-bar .language-control, .mobile-header-bar .mobile-menu-button { color: var(--palette-white); --color-fixed-control: var(--palette-white); }
   .mobile-logo img { filter: brightness(0) invert(1); width: 116px; height: auto; }
@@ -1635,15 +1645,10 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .hero-scroll-cue { right: var(--model-edge-gutter); bottom: calc(104px + env(safe-area-inset-bottom)); width: 48px; height: 70px; }
   .hero-scroll-cue .scroll-cue-icon { width: 26px; height: 60px; }
   .carousel-scroll-cue { top: 84px; }
-  .mp-care { padding-block: 164px 96px; }
-  .mp-care__header { gap: var(--space-24); padding-bottom: 64px; }
-  .mp-care__eyebrow { margin-bottom: var(--space-8); }
-  .mp-care__summary-title { font-size: 28px; }
-  .mp-care__header h2 { font-size: 42px; }
-  .mp-care__intro { font-size: var(--text-16); line-height: 1.65; }
-  .mp-care__steps { gap: var(--space-40); }
-  .mp-care__step h3 { font-size: var(--text-17); }
-  .mp-care__step p { font-size: var(--text-16); }
+  .mp-care { padding-block: 72px 56px; }
+  .mp-care__header h2 { max-width: 14ch; font-size: 38px; }
+  .mp-care__summary-title { font-size: 24px; }
+  .mp-care__intro { font-size: 15px; }
   .feature-cards-header h2, .services-feature-heading { font-size: var(--text-30); }
   .home-primary-cards-header { margin-bottom: var(--space-36); }
   .home-primary-cards-track { grid-template-columns: 1fr; }
