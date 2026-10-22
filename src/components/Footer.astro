@@ -10,7 +10,11 @@ const navigation = [
   { href: "/#mp-systems", key: "nav_mp_systems" },
   { href: "/#calculadora", key: "nav_prices" },
 ] as const;
-const legalLabels = ["footer_legal_notice", "footer_privacy", "footer_cookies"] as const;
+const legalLinks = [
+  { key: "footer_legal_notice", href: "/aviso-legal" },
+  { key: "footer_privacy", href: null },
+  { key: "footer_cookies", href: null },
+] as const;
 const year = new Date().getFullYear();
 ---
 
@@ -42,8 +46,11 @@ const year = new Date().getFullYear();
     <div>
       <h2 data-i18n="footer_legal_social">{messages.footer_legal_social}</h2>
       <ul class="site-footer__legal">
-        {/* Legal documents are not published yet; do not create dead links. */}
-        {legalLabels.map(key => <li><span data-i18n={key}>{messages[key]}</span></li>)}
+        {legalLinks.map(({ key, href }) => (
+          <li>
+            {href ? <a href={href} data-i18n={key}>{messages[key]}</a> : <span data-i18n={key}>{messages[key]}</span>}
+          </li>
+        ))}
       </ul>
       <SocialLinks inline />
     </div>
