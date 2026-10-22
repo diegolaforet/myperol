@@ -1,6 +1,8 @@
 import { t, bindText, bindAttribute, clearTranslation, currentLanguage, formatCurrency, applyTranslations } from "../i18n/client";
 import { createPhonePrefixControls } from "./calculator/phone-prefix";
 import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/request";
+import { allowsCalculatorStorage } from "./cookie-preferences";
+import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
 
     const priceCard = document.querySelector("[data-price-card]");
 
@@ -52,7 +54,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     const directPhonePrefixValue = priceCard.querySelector("[data-price-direct-phone-prefix-value]");
     const directSubmit = priceCard.querySelector("[data-price-direct-submit]");
     const directStatus = priceCard.querySelector("[data-price-direct-status]");
-    const storageKey = "myperol-price-calculator";
+    const storageKey = CALCULATOR_STORAGE_KEY;
     const whatsappUrl = "https://wa.me/34663108027";
     let surfaceErrorTimeout = 0;
     let actionLabelTimeout = 0;
@@ -97,6 +99,11 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     const saveState = () => {
       window.clearTimeout(saveStateTimeout);
       saveStateTimeout = 0;
+      if (!allowsCalculatorStorage()) return;
+      if (priceCard.dataset.step === "1") {
+        removeSavedState();
+        return;
+      }
       try {
         sessionStorage.setItem(storageKey, JSON.stringify(getState()));
       } catch {
@@ -1002,7 +1009,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
           return;
         }
 
-        const storedState = JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+        const storedState = allowsCalculatorStorage() ? JSON.parse(sessionStorage.getItem(storageKey) || "{}") : {};
 
         if (typeof storedState.selectedSpace === "string") {
           priceCard.dataset.selectedSpace = storedState.selectedSpace;
@@ -1080,6 +1087,15 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       }
       if (estimateAmount instanceof HTMLElement) {
         estimateAmount.textContent = formatEuros(Number(estimateAmount.dataset.amount || 130));
+      }
+    });
+
+    window.addEventListener("cookie-preferences:change", () => {
+      if (allowsCalculatorStorage()) saveState();
+      else {
+        window.clearTimeout(saveStateTimeout);
+        saveStateTimeout = 0;
+        removeSavedState();
       }
     });
 

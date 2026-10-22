@@ -51,6 +51,7 @@ const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_ad
           <h2 id={`${id}-title`} data-i18n={title}>{messages[title]}</h2>
           {paragraphs.map(key => <p data-i18n={key}>{messages[key]}</p>)}
           {id === "derechos" && <p><a href="https://www.aepd.es/derechos-y-deberes/ejerce-tus-derechos" data-i18n="privacy_rights_link">{messages.privacy_rights_link}</a></p>}
+          {id === "almacenamiento" && <p><a href="/politica-cookies" data-i18n="footer_cookies">{messages.footer_cookies}</a></p>}
         </section>
       ))}
       <p class="legal-document__source" data-i18n="privacy_version" data-i18n-params='{"version":"2026-10-22"}'>

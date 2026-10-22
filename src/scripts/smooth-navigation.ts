@@ -96,7 +96,7 @@ function handleAnchorNavigation(event: MouseEvent) {
   }
 
   if (!isSamePath) {
-    sessionStorage.setItem(NAVIGATION_HANDOFF_KEY, destination.hash);
+    try { sessionStorage.setItem(NAVIGATION_HANDOFF_KEY, destination.hash); } catch { /* The URL hash still provides native navigation. */ }
     return;
   }
 
@@ -109,10 +109,11 @@ function handleAnchorNavigation(event: MouseEvent) {
 }
 
 function resumeCrossPageNavigation() {
-  const targetHash = sessionStorage.getItem(NAVIGATION_HANDOFF_KEY);
+  let targetHash: string | null;
+  try { targetHash = sessionStorage.getItem(NAVIGATION_HANDOFF_KEY); } catch { return false; }
   if (!targetHash || targetHash !== window.location.hash) return false;
 
-  sessionStorage.removeItem(NAVIGATION_HANDOFF_KEY);
+  try { sessionStorage.removeItem(NAVIGATION_HANDOFF_KEY); } catch { /* Navigation does not require storage. */ }
 
   const navigate = () => {
     const target = getTargetFromHash(targetHash);

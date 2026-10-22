@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { contact } from "../data/contact";
+import { COOKIE_CHOICE_KEY, COOKIE_POLICY_VERSION, CALCULATOR_STORAGE_KEY } from "../data/cookies";
+import messages from "../i18n/json/es.json";
+import "../styles/legal.css";
+
+const sections = [
+  { id: "que-son", title: "cookies_definition_title", body: "cookies_definition_body" },
+  { id: "inventario", title: "cookies_inventory_title", body: "cookies_inventory_body" },
+  { id: "preferencias", title: "cookies_choices_title", body: "cookies_choices_body" },
+  { id: "terceros", title: "cookies_third_party_title", body: "cookies_third_party_body" },
+  { id: "responsable", title: "cookies_rights_title", body: "cookies_rights_body" },
+  { id: "cambios", title: "cookies_updates_title", body: "cookies_updates_body" },
+] as const;
+const storage = [
+  { name: COOKIE_CHOICE_KEY, description: "cookies_choice_storage" },
+  { name: "lang", description: "cookies_language_storage" },
+  { name: "myperol-smooth-navigation-target", description: "cookies_navigation_storage" },
+  { name: CALCULATOR_STORAGE_KEY, description: "cookies_calculator_storage" },
+] as const;
+---
+
+<BaseLayout titleKey="cookies_page_title" descriptionKey="cookies_page_description" bodyClass="legal-route controls-over-light">
+  <main class="legal-page">
+    <article class="legal-document" aria-labelledby="legal-title">
+      <header class="legal-document__header">
+        <p class="legal-document__brand">MyPerol</p>
+        <h1 id="legal-title" data-i18n="footer_cookies">{messages.footer_cookies}</h1>
+        <p class="legal-document__intro" data-i18n="cookies_intro">{messages.cookies_intro}</p>
+        <button class="cookies-settings-link" type="button" data-cookie-settings data-i18n="cookies_settings" hidden>{messages.cookies_settings}</button>
+      </header>
+      <p class="legal-document__notice" data-i18n="cookies_pending_notice">{messages.cookies_pending_notice}</p>
+      <nav class="legal-document__contents" aria-labelledby="legal-contents-title">
+        <h2 id="legal-contents-title" data-i18n="legal_contents">{messages.legal_contents}</h2>
+        <ol>{sections.map(({ id, title }) => <li><a href={`#${id}`} data-i18n={title}>{messages[title]}</a></li>)}</ol>
+      </nav>
+      {sections.map(({ id, title, body }) => (
+        <section class="legal-document__section" id={id} aria-labelledby={`${id}-title`}>
+          <h2 id={`${id}-title`} data-i18n={title}>{messages[title]}</h2>
+          <p data-i18n={body}>{messages[body]}</p>
+          {id === "inventario" && <dl class="legal-document__details">
+            {storage.map(({ name, description }) => <div><dt><code>{name}</code></dt><dd data-i18n={description}>{messages[description]}</dd></div>)}
+          </dl>}
+          {id === "preferencias" && <>
+            <p data-i18n="cookies_browser_body">{messages.cookies_browser_body}</p>
+          </>}
+          {id === "responsable" && <>
+            <p><a href="/aviso-legal" data-i18n="footer_legal_notice">{messages.footer_legal_notice}</a></p>
+            <p><a href="/politica-privacidad" data-i18n="footer_privacy">{messages.footer_privacy}</a></p>
+            <p><a href={`mailto:${contact.email}`}>{contact.email}</a></p>
+          </>}
+        </section>
+      ))}
+      <p class="legal-document__source" data-i18n="privacy_version" data-i18n-params={JSON.stringify({ version: COOKIE_POLICY_VERSION })}>{messages.privacy_version.replace("{version}", COOKIE_POLICY_VERSION)}</p>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  code { font-size: 14px; overflow-wrap: anywhere; }
+  .cookies-settings-link { margin: 12px 0 0; padding: 10px 0; min-height: 44px; border: 0; background: transparent; color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+  .cookies-settings-link:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+</style>

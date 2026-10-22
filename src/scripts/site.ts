@@ -25,10 +25,6 @@ function getLang() {
   const lang = normalizeLang(storedLang ?? selectedLanguage);
   selectedLanguage = lang;
 
-  if (lang !== storedLang) {
-    setLang(lang);
-  }
-
   return lang;
 }
 

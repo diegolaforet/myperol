@@ -1,0 +1,84 @@
+---
+import messages from "../i18n/json/es.json";
+---
+
+<section class="cookie-panel" data-cookie-panel role="dialog" aria-modal="false" aria-labelledby="cookie-title" aria-describedby="cookie-description" tabindex="-1" hidden>
+  <div class="cookie-panel__copy">
+    <h2 id="cookie-title" data-i18n="cookies_banner_title">{messages.cookies_banner_title}</h2>
+    <p id="cookie-description" data-i18n="cookies_banner_body">{messages.cookies_banner_body}</p>
+    <a href="/politica-cookies" data-i18n="footer_cookies">{messages.footer_cookies}</a>
+  </div>
+  <div class="cookie-panel__actions">
+    <button type="button" data-cookie-reject data-i18n="cookies_reject">{messages.cookies_reject}</button>
+    <button type="button" data-cookie-accept data-i18n="cookies_accept">{messages.cookies_accept}</button>
+  </div>
+  <details class="cookie-panel__settings">
+    <summary data-i18n="cookies_configure">{messages.cookies_configure}</summary>
+    <div class="cookie-panel__options">
+      <label><input type="checkbox" checked disabled /><span data-i18n="cookies_necessary">{messages.cookies_necessary}</span></label>
+      <label><input type="checkbox" data-cookie-optional /><span data-i18n="cookies_optional">{messages.cookies_optional}</span></label>
+      <button type="button" data-cookie-save data-i18n="cookies_save">{messages.cookies_save}</button>
+    </div>
+  </details>
+</section>
+
+<script>
+  import "../scripts/cookie-consent";
+</script>
+
+<style>
+  .cookie-panel[hidden] { display: none; }
+  .cookie-panel {
+    position: fixed;
+    z-index: 10000;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    inset-inline: 20px;
+    max-width: 960px;
+    max-height: calc(100dvh - 100px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin-inline: auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px 28px;
+    align-items: center;
+    color: var(--palette-ink);
+    background: var(--palette-white);
+    border: 1px solid var(--palette-silver);
+    border-radius: 8px;
+    box-shadow: 0 12px 48px rgb(0 0 0 / 18%);
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .cookie-panel h2 { margin: 0 0 8px; font-size: 18px; line-height: 1.3; font-weight: 500; }
+  .cookie-panel p { margin: 0 0 10px; font-size: inherit; color: var(--palette-label); }
+  .cookie-panel a { color: inherit; text-underline-offset: 4px; }
+  .cookie-panel__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .cookie-panel button {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--palette-graphite);
+    border-radius: 4px;
+    background: var(--palette-graphite);
+    color: var(--palette-white);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .cookie-panel button:hover { background: var(--palette-ink); }
+  .cookie-panel :is(button, a, summary, input):focus-visible { outline: 2px solid var(--palette-ink); outline-offset: 4px; }
+  .cookie-panel__settings { grid-column: 1 / -1; }
+  .cookie-panel summary { width: fit-content; padding-block: 8px; cursor: pointer; }
+  .cookie-panel__options { display: grid; gap: 12px; padding-top: 12px; border-top: 1px solid var(--palette-silver); }
+  .cookie-panel label { display: flex; gap: 12px; align-items: center; min-height: 44px; }
+  .cookie-panel input { flex: 0 0 18px; width: 18px; height: 18px; margin: 0; accent-color: var(--palette-graphite); }
+  .cookie-panel__options button { justify-self: start; }
+  @media (max-width: 700px) {
+    .cookie-panel { inset-inline: 12px; bottom: max(12px, env(safe-area-inset-bottom)); padding: 20px; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .cookie-panel__options button { width: 100%; }
+  }
+</style>
