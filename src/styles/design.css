@@ -1581,6 +1581,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .price-direct-contact .price-direct-contact__phone input { height: 48px; min-height: 48px; max-height: none; }
   .price-direct-contact__space-option { min-height: 48px; }
   .prices-page .prices-card .price-back-button { min-width: 44px; min-height: 44px; }
+  .prices-page .prices-card > .price-back-button { translate: 0 -10px; }
   .prices-page .prices-card[data-view="condition"] .price-condition-step { grid-template-rows: repeat(2, minmax(132px, auto)) auto; }
   .prices-page .prices-card[data-view="condition"] .price-help-trigger,
   .prices-page .prices-card[data-view="condition"] .prices-step-action { min-height: 44px; }

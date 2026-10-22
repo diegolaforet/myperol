@@ -37,11 +37,22 @@ export function initializeSectionControls() {
       document.querySelector<HTMLElement>(".site-header .language-control"),
       document.querySelector<HTMLElement>("body > .social-float"),
     ].filter((element): element is HTMLElement => element instanceof HTMLElement);
-    const exclusionObserver = new IntersectionObserver(([entry]) => {
-      const suppressed = entry.isIntersecting;
+    const mobileViewport = window.matchMedia("(max-width: 902px)");
+    let exclusionVisible = false;
+    const updateSuppression = () => {
+      const suppressed = exclusionVisible && !mobileViewport.matches;
       document.body.classList.toggle("floating-controls-suppressed", suppressed);
       primaryControls.forEach(element => { element.inert = suppressed; });
       if (suppressed) closeLanguageMenus();
+    };
+    mobileViewport.addEventListener("change", updateSuppression);
+    updateSuppression();
+    document.addEventListener("astro:before-swap", () => {
+      mobileViewport.removeEventListener("change", updateSuppression);
+    }, { once: true });
+    const exclusionObserver = new IntersectionObserver(([entry]) => {
+      exclusionVisible = entry.isIntersecting;
+      updateSuppression();
     }, { threshold: 0 });
     observers.push(exclusionObserver);
     exclusionObserver.observe(controlsExclusion);

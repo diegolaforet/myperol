@@ -1120,7 +1120,7 @@ main {
 
 .price-back-button:hover,
 .price-back-button:focus-visible {
-  background: var(--palette-tone-31);
+  background: transparent;
   color: var(--color-card-muted);
   transform: translateX(-2px);
   outline: none;

@@ -255,7 +255,8 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
         }
 
         if (stepContent instanceof HTMLElement) stepContent.classList.remove("is-view-switching");
-        if (enabled && directNameInput instanceof HTMLInputElement) directNameInput.focus({ preventScroll: true });
+        if (enabled && directNameInput instanceof HTMLInputElement &&
+            !window.matchMedia("(max-width: 902px)").matches) directNameInput.focus({ preventScroll: true });
         if (restoreFocus && directOpenButton instanceof HTMLButtonElement) directOpenButton.focus({ preventScroll: true });
       };
 
@@ -266,14 +267,26 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       }
 
       if (enabled && directForm instanceof HTMLFormElement) {
+        const mobile = window.matchMedia("(max-width: 902px)").matches;
         stepContent.classList.remove("is-view-switching");
         stepContent.classList.add("is-contact-fading");
+        if (mobile && directPanel instanceof HTMLElement) {
+          directPanel.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: "ease" });
+        }
         introModeTimeout = window.setTimeout(() => {
+          const previousHeight = mobile ? priceCard.getBoundingClientRect().height : 0;
           priceCard.classList.add("is-direct-contact");
           directForm.hidden = false;
           directForm.classList.remove("is-concealing");
           directForm.classList.add("is-revealing");
           stepContent.classList.remove("is-contact-fading");
+          if (mobile) {
+            const nextHeight = priceCard.getBoundingClientRect().height;
+            priceCard.animate(
+              [{ height: `${previousHeight}px` }, { height: `${nextHeight}px` }],
+              { duration: 380, easing: "cubic-bezier(.22, 1, .36, 1)" },
+            );
+          }
         }, 150);
         return;
       }
@@ -301,7 +314,8 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
         }
       } else if (directForm.classList.contains("is-revealing") && event.target === directSubmit) {
         directForm.classList.remove("is-revealing");
-        if (directNameInput instanceof HTMLInputElement) directNameInput.focus({ preventScroll: true });
+        if (directNameInput instanceof HTMLInputElement &&
+            !window.matchMedia("(max-width: 902px)").matches) directNameInput.focus({ preventScroll: true });
       }
     });
 
