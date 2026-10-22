@@ -459,7 +459,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       if (!(directStatus instanceof HTMLElement)) return;
 
       if (key) bindText(directStatus, key);
-      else directStatus.textContent = "";
+      else clearTranslation(directStatus);
       directStatus.dataset.status = type;
     };
 

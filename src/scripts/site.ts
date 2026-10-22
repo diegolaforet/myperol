@@ -23,6 +23,7 @@ function getLang() {
   let storedLang: string | null = null;
   try { storedLang = localStorage.getItem("lang"); } catch { /* Storage may be disabled. */ }
   const lang = normalizeLang(storedLang ?? selectedLanguage);
+  selectedLanguage = lang;
 
   if (lang !== storedLang) {
     setLang(lang);
@@ -172,7 +173,7 @@ function initializePage() {
 }
 
 function handleLanguageChange() {
-  syncLanguageUI(getLang());
+  syncLanguageUI(selectedLanguage);
 }
 
 document.addEventListener("click", (event) => {

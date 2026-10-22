@@ -11,6 +11,7 @@ export default defineConfig({
   use: {
     baseURL: externalURL || "http://127.0.0.1:4323",
     channel: "chrome",
+    launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE },
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },

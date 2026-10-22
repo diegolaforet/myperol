@@ -50,10 +50,4 @@ export const homeServices: Service[] = [
   }
 ];
 
-export const standaloneServices: Service[] = homeServices.map((service, index) =>
-  index === 0 ? service : {
-    ...service,
-    technicalKey: undefined,
-    translationKey: `feature_card_${index + 1}_text` as keyof typeof messages,
-  }
-);
+export const standaloneServices: Service[] = homeServices;

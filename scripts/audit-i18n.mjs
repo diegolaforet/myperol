@@ -1,13 +1,22 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { parse } from "@astrojs/compiler";
+import ts from "typescript";
 
 const locales = ["es", "en", "de", "fr", "ru", "uk"];
-const dictionaries = Object.fromEntries(await Promise.all(locales.map(async locale => [
-  locale, JSON.parse(await readFile(`src/i18n/json/${locale}.json`, "utf8")),
-])));
+const dictionaries = Object.fromEntries(await Promise.all(locales.map(async locale => {
+  const file = `src/i18n/json/${locale}.json`;
+  const source = await readFile(file, "utf8");
+  const dictionary = JSON.parse(source);
+  const object = ts.parseJsonText(file, source).statements[0]?.expression;
+  assert.ok(object && ts.isObjectLiteralExpression(object), `${locale}: expected a dictionary object`);
+  const keys = object.properties.map(property => property.name.text);
+  assert.equal(new Set(keys).size, keys.length, `${locale}: duplicate keys`);
+  return [locale, dictionary];
+})));
 const entries = Object.entries(dictionaries.es);
 const placeholders = text => [...text.matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort();
+const htmlTags = text => [...text.matchAll(/<[^>]+>/g)].map(match => match[0]);
 for (const [locale, dictionary] of Object.entries(dictionaries)) {
   assert.deepEqual(Object.keys(dictionary).sort(), Object.keys(dictionaries.es).sort(), `${locale}: keys differ`);
   for (const [key, value] of entries) {
@@ -15,6 +24,8 @@ for (const [locale, dictionary] of Object.entries(dictionaries)) {
     assert.ok(dictionary[key].trim(), `${locale}.${key}: empty`);
     assert.deepEqual(placeholders(dictionary[key]), placeholders(value), `${locale}.${key}: placeholders differ`);
     assert.ok(!/<(?!\/?b>|br\s*\/?>)/i.test(dictionary[key]), `${locale}.${key}: unapproved HTML`);
+    assert.deepEqual(htmlTags(dictionary[key]), htmlTags(value), `${locale}.${key}: HTML structure differs`);
+    assert.ok(!dictionary[key].includes("\uFFFD"), `${locale}.${key}: invalid encoding`);
   }
 }
 
@@ -60,5 +71,5 @@ for (const file of await sourceFiles("src")) {
   if (file.endsWith(".astro")) checkTemplate((await parse(source)).ast, file);
 }
 assert.deepEqual(findings, [], `Unlocalized template text:\n${findings.join("\n")}`);
-console.log(`${locales.length} dictionaries x ${entries.length} keys: matching keys, nonempty values and matching placeholders.`);
+console.log(`${locales.length} dictionaries x ${entries.length} keys: unique matching keys, nonempty values, valid encoding, matching placeholders and HTML.`);
 console.log("Astro templates: no unmarked descriptive text or accessible labels. Brands and decorative content excluded.");
