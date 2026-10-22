@@ -81,6 +81,13 @@ export const handler = async (event) => {
     return jsonResponse(400, { error: "JSON invalido." });
   }
 
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return jsonResponse(400, { error: "JSON invalido." });
+  }
+  if (data.privacyAccepted !== "true") {
+    return jsonResponse(400, { code: "PRIVACY_REQUIRED", error: "Debes aceptar la politica de privacidad." });
+  }
+
   const isDirectRequest = data.requestType === "direct-quote";
   const requiredFields = isDirectRequest
     ? ["fullName", "email", "phone", "space"]
@@ -123,6 +130,7 @@ export const handler = async (event) => {
   const subject = isDirectRequest
     ? `Solicitud de presupuesto MyPerol - ${sanitizeText(data.fullName)}`
     : `Solicitud de estudio tecnico MyPerol - ${sanitizeText(data.fullName)}`;
+  const privacyRecord = `Politica de privacidad leida y aceptada. Version: 2026-10-22. Recepcion (UTC): ${new Date().toISOString()}.`;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -133,8 +141,8 @@ export const handler = async (event) => {
       from: fromEmail,
       to: [toEmail],
       subject,
-      html: isDirectRequest ? buildDirectEmailHtml(data) : buildEmailHtml(data),
-      text: isDirectRequest ? buildDirectEmailText(data) : buildEmailText(data),
+      html: `${isDirectRequest ? buildDirectEmailHtml(data) : buildEmailHtml(data)}<p>${escapeHtml(privacyRecord)}</p>`,
+      text: `${isDirectRequest ? buildDirectEmailText(data) : buildEmailText(data)}\n\n${privacyRecord}`,
     }),
   });
 

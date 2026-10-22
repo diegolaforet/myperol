@@ -3,7 +3,7 @@ const PRICE_REQUEST_ENDPOINT = "/.netlify/functions/price-request";
 export type PriceRequestPayload = Record<string, string>;
 
 export class PriceRequestError extends Error {
-  constructor(public readonly translationKey: "request_missing" | "request_error") {
+  constructor(public readonly translationKey: "request_missing" | "request_error" | "privacy_required_error") {
     super(translationKey);
     this.name = "PriceRequestError";
   }
@@ -19,7 +19,8 @@ export async function sendPriceRequest(payload: PriceRequestPayload) {
   if (response.ok) return;
 
   const result = await response.json().catch(() => ({}));
-  throw new PriceRequestError(result.code === "MISSING_FIELDS" ? "request_missing" : "request_error");
+  throw new PriceRequestError(result.code === "PRIVACY_REQUIRED" ? "privacy_required_error"
+    : result.code === "MISSING_FIELDS" ? "request_missing" : "request_error");
 }
 
 export function getRequestErrorTranslation(error: unknown) {

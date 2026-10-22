@@ -200,6 +200,8 @@ for (const ceramic of [false, true]) {
     await expect(submit).toBeDisabled();
     await page.locator("[data-price-result-name]").fill("Prueba local");
     await page.locator("[data-price-result-phone]").fill("600123456");
+    await expect(submit).toBeDisabled();
+    await page.locator("#result-privacy-accepted").check();
     let payload: Record<string, string> | undefined;
     // Never send a real lead from the test suite.
     await page.route("**/.netlify/functions/price-request", route => {
@@ -208,6 +210,7 @@ for (const ceramic of [false, true]) {
     });
     await submit.click();
     await expect.poll(() => payload?.squareMeters).toBe("100");
+    expect(payload?.privacyAccepted).toBe("true");
     expect(errors).toEqual([]);
   });
 }
@@ -560,6 +563,8 @@ test("home calculator completes within the continuous page", async ({ page }, te
   await page.screenshot({ path: testInfo.outputPath("home-calculator-result.png") });
   await card.locator("[data-price-result-name]").fill("Prueba local");
   await card.locator("[data-price-result-phone]").fill("600123456");
+  await expect(card.locator("[data-price-result-submit]")).toBeDisabled();
+  await card.locator("#result-privacy-accepted").check();
   let payload: Record<string, string> | undefined;
   await page.route("**/.netlify/functions/price-request", route => {
     payload = route.request().postDataJSON();
@@ -567,6 +572,7 @@ test("home calculator completes within the continuous page", async ({ page }, te
   });
   await card.locator("[data-price-result-submit]").click();
   await expect.poll(() => payload?.squareMeters).toBe("100");
+  expect(payload?.privacyAccepted).toBe("true");
   await card.locator("[data-price-back]").click();
   await expect(card).toHaveAttribute("data-view", "intro");
   await expect(calculator).toBeInViewport();
@@ -782,7 +788,7 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await submit.hover();
   expect(await submit.evaluate(el => ({ background: getComputedStyle(el).backgroundColor, transform: getComputedStyle(el).transform }))).toEqual(initialStyle);
   await submit.click();
-  await expect(errors).toHaveCount(4);
+  await expect(errors).toHaveCount(5);
   await expect(errors.first()).toHaveText("Rellena este campo para continuar");
   await expect(form.locator("[data-price-direct-email]")).not.toHaveAttribute("required");
   await expect(form.locator('[data-i18n="form_email_optional"]')).toContainText("opcional");
@@ -800,6 +806,8 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await form.getByRole("radio", { name: "Local comercial", exact: true }).check();
   await expect(form.getByRole("radio", { name: "Vivienda", exact: true })).not.toBeChecked();
   await expect(form.getByRole("radio", { checked: true })).toHaveCount(1);
+  await expect(submit).toHaveClass(/is-incomplete/);
+  await form.locator("#direct-privacy-accepted").check();
   await expect(errors).toHaveCount(0);
   await expect(submit).not.toHaveClass(/is-incomplete/);
   await form.locator("[data-price-direct-email]").fill("invalid");
@@ -830,15 +838,15 @@ test("contact errors expire three seconds after the latest attempt or when corre
   await page.clock.install();
   await page.clock.pauseAt(new Date());
   await form.dispatchEvent("submit");
-  await expect(errors).toHaveCount(4);
+  await expect(errors).toHaveCount(5);
   await page.clock.runFor(2000);
   await form.dispatchEvent("submit");
   await page.clock.runFor(1500);
-  await expect(errors).toHaveCount(4);
+  await expect(errors).toHaveCount(5);
   await form.locator("[data-price-direct-name]").fill("Cliente");
-  await expect(errors).toHaveCount(3);
+  await expect(errors).toHaveCount(4);
   await page.clock.runFor(1499);
-  await expect(errors).toHaveCount(3);
+  await expect(errors).toHaveCount(4);
   await page.clock.runFor(1);
   await expect(errors).toHaveCount(0);
   await expect(form.locator('[aria-invalid="true"]')).toHaveCount(0);
@@ -846,7 +854,7 @@ test("contact errors expire three seconds after the latest attempt or when corre
   await form.locator("[data-price-direct-last-name]").fill("Apellido");
   await expect(errors).toHaveCount(0);
   await form.dispatchEvent("submit");
-  await expect(errors).toHaveCount(2);
+  await expect(errors).toHaveCount(3);
 });
 
 test("final polish reuses carousel pagination and exposes premium navigation cues", async ({ page }, testInfo) => {

@@ -126,6 +126,8 @@ for (const lang of languages) {
     await page.locator('[data-country="ZA"]').click();
     await page.locator("[data-price-result-name]").fill("Test User");
     await page.locator("[data-price-result-phone]").fill("600000000");
+    await expect(page.locator("[data-price-result-submit]")).toBeDisabled();
+    await page.locator("#result-privacy-accepted").check();
     await page.route("**/.netlify/functions/price-request", route => route.fulfill({ status: 500, json: { error: "Internal Spanish server message" } }));
     await page.locator("[data-price-result-submit]").click();
     await expect(page.locator("[data-price-result-status]")).toHaveText(dictionaries[lang].request_error);
@@ -148,11 +150,12 @@ for (const lang of languages) {
     await expect(form.locator("[data-i18n='form_email_optional']")).toHaveText(dictionaries[lang].form_email_optional);
     await form.locator("[data-price-direct-submit]").click();
     await expect(form.locator(".price-direct-contact__field-error:visible"))
-      .toHaveText(Array(4).fill(dictionaries[lang].form_required_error));
+      .toHaveText([...Array(4).fill(dictionaries[lang].form_required_error), dictionaries[lang].privacy_required_error]);
     await form.locator("[data-price-direct-name]").fill("Test");
     await form.locator("[data-price-direct-last-name]").fill("User");
     await form.locator("[data-price-direct-phone]").fill("600000000");
     await form.locator("input[value='Home']").check();
+    await form.locator("#direct-privacy-accepted").check();
     await form.locator("[data-price-direct-email]").fill("invalid");
     await form.locator("[data-price-direct-submit]").click();
     await expect(form.locator(".price-direct-contact__field-error:visible")).toHaveText([dictionaries[lang].form_email_error]);
@@ -168,6 +171,7 @@ for (const lang of languages) {
     await expect(form.locator("[data-price-direct-status]")).toHaveText("");
     await expect(form.locator("[data-price-direct-name]")).toHaveValue("Updated");
     await expect(form.locator("input[value='Home']")).toBeChecked();
+    await expect(form.locator("#direct-privacy-accepted")).toBeChecked();
     await checkBindings(page, nextLanguage);
   });
 }

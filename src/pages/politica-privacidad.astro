@@ -1,0 +1,61 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { contact } from "../data/contact";
+import messages from "../i18n/json/es.json";
+import "../styles/legal.css";
+
+const sections = [
+  { id: "datos", title: "privacy_data_title", paragraphs: ["privacy_data_body"] },
+  { id: "finalidad", title: "privacy_purpose_title", paragraphs: ["privacy_purpose_body", "privacy_basis_body"] },
+  { id: "conservacion", title: "privacy_retention_title", paragraphs: ["privacy_retention_body"] },
+  { id: "destinatarios", title: "privacy_recipients_title", paragraphs: ["privacy_recipients_body", "privacy_transfers_body"] },
+  { id: "derechos", title: "privacy_rights_title", paragraphs: ["privacy_rights_body"] },
+  { id: "almacenamiento", title: "privacy_storage_title", paragraphs: ["privacy_storage_body"] },
+  { id: "actualizaciones", title: "privacy_updates_title", paragraphs: ["privacy_updates_body"] },
+] as const;
+const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_address"] as const;
+---
+
+<BaseLayout titleKey="privacy_page_title" descriptionKey="privacy_page_description" bodyClass="legal-route controls-over-light">
+  <main class="legal-page">
+    <article class="legal-document" aria-labelledby="legal-title">
+      <header class="legal-document__header">
+        <p class="legal-document__brand">MyPerol</p>
+        <h1 id="legal-title" data-i18n="footer_privacy">{messages.footer_privacy}</h1>
+        <p class="legal-document__intro" data-i18n="privacy_intro">{messages.privacy_intro}</p>
+      </header>
+      <p class="legal-document__notice" data-i18n="privacy_pending_notice">{messages.privacy_pending_notice}</p>
+      <nav class="legal-document__contents" aria-labelledby="legal-contents-title">
+        <h2 id="legal-contents-title" data-i18n="legal_contents">{messages.legal_contents}</h2>
+        <ol>
+          <li><a href="#responsable" data-i18n="privacy_controller_title">{messages.privacy_controller_title}</a></li>
+          {sections.map(({ id, title }) => <li><a href={`#${id}`} data-i18n={title}>{messages[title]}</a></li>)}
+        </ol>
+      </nav>
+      <section class="legal-document__section" id="responsable" aria-labelledby="privacy-controller-title">
+        <h2 id="privacy-controller-title" data-i18n="privacy_controller_title">{messages.privacy_controller_title}</h2>
+        <p data-i18n="privacy_controller_body">{messages.privacy_controller_body}</p>
+        <dl class="legal-document__details">
+          {pendingFields.map(key => (
+            <div>
+              <dt data-i18n={key}>{messages[key]}</dt>
+              <dd class="legal-document__pending" data-i18n="legal_pending">{messages.legal_pending}</dd>
+            </div>
+          ))}
+          <div><dt data-i18n="form_email">{messages.form_email}</dt><dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd></div>
+          <div><dt data-i18n="form_phone">{messages.form_phone}</dt><dd><a href={`tel:${contact.phone}`}>{contact.phoneLabel}</a></dd></div>
+        </dl>
+      </section>
+      {sections.map(({ id, title, paragraphs }) => (
+        <section class="legal-document__section" id={id} aria-labelledby={`${id}-title`}>
+          <h2 id={`${id}-title`} data-i18n={title}>{messages[title]}</h2>
+          {paragraphs.map(key => <p data-i18n={key}>{messages[key]}</p>)}
+          {id === "derechos" && <p><a href="https://www.aepd.es/derechos-y-deberes/ejerce-tus-derechos" data-i18n="privacy_rights_link">{messages.privacy_rights_link}</a></p>}
+        </section>
+      ))}
+      <p class="legal-document__source" data-i18n="privacy_version" data-i18n-params='{"version":"2026-10-22"}'>
+        {messages.privacy_version.replace("{version}", "2026-10-22")}
+      </p>
+    </article>
+  </main>
+</BaseLayout>

@@ -1,6 +1,7 @@
 ---
 import SectionCornerControls from "./SectionCornerControls.astro";
 import QuoteBenefits from "./QuoteBenefits.astro";
+import PrivacyConsent from "./PrivacyConsent.astro";
 import messages from "../i18n/json/es.json";
 
 const contactSpaces = [
@@ -88,6 +89,7 @@ const contactSpaces = [
               </div>
             </fieldset>
           </div>
+          <PrivacyConsent id="direct-privacy-accepted" />
           <button class="price-direct-contact__submit is-incomplete" type="submit" data-price-direct-submit>
             <span data-i18n="calculator_direct_submit">{messages.calculator_direct_submit}</span>
             <span aria-hidden="true">&rarr;</span>
@@ -200,12 +202,13 @@ const contactSpaces = [
             <p data-i18n="result_start_copy">{messages.result_start_copy}</p>
           </section>
 
-          <form class="price-result-form">
+          <form class="price-result-form" id="price-result-form">
             <label>
               <span class="visually-hidden" data-i18n="form_name">{messages.form_name}</span>
               <input
                 type="text"
                 name="full-name"
+                required
                 autocomplete="name"
                 placeholder={messages.form_name}
                 data-i18n-placeholder="form_name"
@@ -226,6 +229,7 @@ const contactSpaces = [
                 <input
                   type="tel"
                   name="phone"
+                  required
                   autocomplete="tel"
                   placeholder={messages.form_phone}
                   data-i18n-placeholder="form_phone"
@@ -233,6 +237,7 @@ const contactSpaces = [
                 />
               </span>
             </label>
+            <PrivacyConsent id="result-privacy-accepted" />
           </form>
 
           <section class="price-result-panel">
@@ -245,7 +250,7 @@ const contactSpaces = [
             <p data-i18n="result_next_copy">{messages.result_next_copy}</p>
           </section>
 
-          <button class="service-expanded-action price-result-action" type="button" data-price-result-submit disabled>
+          <button class="service-expanded-action price-result-action" type="submit" form="price-result-form" data-price-result-submit disabled>
             <span data-i18n="result_submit">{messages.result_submit}</span>
           </button>
           <p class="price-result-submit-status" data-price-result-status aria-live="polite"></p>

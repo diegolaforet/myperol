@@ -36,6 +36,8 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     const estimateAmount = document.querySelector("[data-price-estimate-amount]");
     const resultNameInput = priceCard.querySelector("[data-price-result-name]");
     const resultPhoneInput = priceCard.querySelector("[data-price-result-phone]");
+    const resultForm = priceCard.querySelector<HTMLFormElement>(".price-result-form");
+    const resultPrivacy = resultForm?.querySelector<HTMLInputElement>("[data-privacy-checkbox]");
     const resultSubmit = priceCard.querySelector("[data-price-result-submit]");
     const resultStatus = priceCard.querySelector("[data-price-result-status]");
     const directPanel = priceCard.querySelector("[data-price-direct-panel]");
@@ -189,7 +191,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
 
       const hasName = resultNameInput instanceof HTMLInputElement && resultNameInput.value.trim().length > 0;
       const hasPhone = resultPhoneInput instanceof HTMLInputElement && resultPhoneInput.value.trim().length > 0;
-      resultSubmit.disabled = !(hasName && hasPhone);
+      resultSubmit.disabled = !(hasName && hasPhone && resultPrivacy?.checked) || resultSubmit.classList.contains("is-loading");
     };
 
     const setActionLabel = (key: string) => {
@@ -421,6 +423,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
         support: getSupportLabel(),
         ceramicRemoval: getCeramicRemovalLabel(),
         condition: getConditionLabel(),
+        privacyAccepted: String(resultPrivacy?.checked === true),
       };
     };
 
@@ -435,7 +438,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       if (!(resultSubmit instanceof HTMLButtonElement) || resultSubmit.disabled) return;
 
       const payload = getPriceRequestPayload();
-      if (!payload.fullName || !payload.phone) {
+      if (!payload.fullName || !payload.phone || payload.privacyAccepted !== "true") {
         updateResultSubmitState();
         return;
       }
@@ -444,14 +447,16 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       resultSubmit.classList.add("is-loading");
       setResultStatus("request_sending", "loading");
 
+      let sent = false;
       try {
         await sendPriceRequest(payload);
+        sent = true;
         setResultStatus("request_success", "success");
       } catch (error) {
         setResultStatus(getRequestErrorTranslation(error), "error");
-        updateResultSubmitState();
       } finally {
         resultSubmit.classList.remove("is-loading");
+        if (!sent) updateResultSubmitState();
       }
     };
 
@@ -466,7 +471,7 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     let directValidationRequested = false;
     let directValidationTimeout = 0;
     const directValidationGroups = Array.from(
-      directForm?.querySelectorAll<HTMLElement>(".price-direct-contact__fields > label, .price-direct-contact__fields > fieldset") ?? [],
+      directForm?.querySelectorAll<HTMLElement>(".price-direct-contact__fields > label, .price-direct-contact__fields > fieldset, [data-privacy-consent]") ?? [],
     ).map((group, index) => {
       const inputs = Array.from(group.querySelectorAll<HTMLInputElement>('input:not([type="hidden"])'));
       const error = document.createElement("span");
@@ -483,12 +488,14 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
       let valid = true;
       for (const { inputs, error } of directValidationGroups) {
         const missing = inputs.some(input => input.required && (
-          input.type === "radio" ? !inputs.some(option => option.checked) : !input.value.trim()
+          input.type === "radio" ? !inputs.some(option => option.checked)
+            : input.type === "checkbox" ? !input.checked : !input.value.trim()
         ));
         const invalid = missing || inputs.some(input => !input.validity.valid);
         valid = valid && !invalid;
         const showError = directValidationRequested && invalid;
-        if (showError) bindText(error, missing ? "form_required_error" : "form_email_error");
+        if (showError) bindText(error, inputs.some(input => input.type === "checkbox")
+          ? "privacy_required_error" : missing ? "form_required_error" : "form_email_error");
         error.hidden = !showError;
         inputs.forEach(input => input.setAttribute("aria-invalid", String(showError)));
       }
@@ -708,6 +715,9 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
     const resetCalculator = () => {
       clearEstimateLoadingTimers();
       removeSavedState();
+
+      if (resultPrivacy) resultPrivacy.checked = false;
+      updateResultSubmitState();
 
       delete priceCard.dataset.selectedSpace;
       delete priceCard.dataset.selectedSupport;
@@ -966,8 +976,10 @@ import { getRequestErrorTranslation, sendPriceRequest } from "./calculator/reque
 
     resultNameInput?.addEventListener("input", updateResultSubmitState);
     resultPhoneInput?.addEventListener("input", updateResultSubmitState);
+    resultPrivacy?.addEventListener("change", updateResultSubmitState);
 
-    resultSubmit?.addEventListener("click", () => {
+    resultForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
       submitPriceRequest();
     });
 
