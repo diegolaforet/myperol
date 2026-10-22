@@ -1456,6 +1456,10 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .price-result-submit-status[data-status="error"] { color: var(--palette-ink); font-weight: 500; }
 .price-result-form input[aria-invalid="true"] { border-color: var(--palette-label); }
 
+@media (min-width: 903px) {
+  .prices-page .prices-card[data-view="intro"] > .prices-step-content { grid-column: 1; grid-row: 1; }
+  .prices-page .prices-card[data-view="intro"] > .price-intro-direct { grid-column: 2; grid-row: 1; }
+}
 @media (min-width: 1700px) {
   .hero-logo-title img { width: min(32.3vw, 612px); }
 }
@@ -1543,10 +1547,12 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
   }
+  .prices-page .prices-card[data-view="intro"] > .prices-step-content { grid-row: 1; }
+  .prices-page .prices-card[data-view="intro"] > .price-intro-direct { grid-row: 2; }
   .prices-page .prices-card[data-view="intro"].is-direct-contact { grid-template-rows: minmax(0, 1fr); }
   .prices-page .prices-card[data-view="intro"].is-direct-contact .price-intro-direct { display: none; }
   .prices-page .prices-card[data-view="intro"].is-direct-contact .prices-step-content { grid-row: 1; }
-  .price-intro-direct { justify-content: center; padding: var(--space-24); }
+  .price-intro-direct { justify-content: center; padding: 56px var(--space-24); }
   .price-intro-direct h3 { max-width: 18ch; font-size: var(--text-30); }
   .price-intro-direct > p:not(.price-intro-direct__kicker) { margin-top: var(--space-10); font-size: var(--text-13); line-height: 1.45; }
   .price-intro-direct__kicker { margin-bottom: var(--space-8); }
@@ -1678,7 +1684,7 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .prices-section-heading h2 { font-size: var(--text-36); }
   .prices-section-intro { margin-top: 7px; font-size: var(--text-13); }
   .prices-page .prices-card { padding: var(--space-18); gap: var(--space-16); }
-  .price-intro-direct { padding: var(--space-18); }
+  .price-intro-direct { padding: 50px var(--space-18); }
   .price-intro-direct h3 { font-size: var(--text-26); }
   .price-intro-direct > p:not(.price-intro-direct__kicker) { display: none; }
   .price-direct-contact h3 { font-size: var(--text-26); }
