@@ -1,5 +1,6 @@
 ---
 import SectionCornerControls from "./SectionCornerControls.astro";
+import QuoteBenefits from "./QuoteBenefits.astro";
 import messages from "../i18n/json/es.json";
 
 const contactSpaces = [
@@ -27,7 +28,7 @@ const contactSpaces = [
 
       <aside class="price-intro-direct" data-price-direct-panel>
         <h3 data-i18n="calculator_direct_title">{messages.calculator_direct_title}</h3>
-        <p data-i18n="calculator_direct_copy">{messages.calculator_direct_copy}</p>
+        <QuoteBenefits />
         <button class="price-intro-direct__action" type="button" data-price-direct-open>
           <span data-i18n="calculator_direct_action">{messages.calculator_direct_action}</span>
           <span aria-hidden="true">&rarr;</span>
