@@ -1471,6 +1471,11 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   .prices-page .prices-card { gap: var(--space-28); padding: var(--space-32); }
 }
 @media (max-width: 902px) {
+  .hero-placeholder.home-video-hero {
+    height: min(100svh, 520px);
+    min-height: 0;
+    max-height: 520px;
+  }
   .flooring-scroll { --flooring-detail-heading-size: 34px; }
   .services-feature-cards { --section-intrinsic-height: 1240px; }
   .prices-page { --section-intrinsic-height: 900px; }
