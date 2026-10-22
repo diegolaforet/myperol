@@ -2083,14 +2083,6 @@ main {
     color 0.32s ease;
 }
 
-body.services-route:not(.controls-over-light) .lang-menu {
-  background: var(--surface-dropdown-background);
-  border-color: var(--glass-border-dropdown);
-  color: var(--color-dropdown-control);
-  backdrop-filter: var(--filter-glass-4);
-  -webkit-backdrop-filter: var(--filter-glass-4);
-}
-
 .lang-menu,
 #primaryNav {
   position: absolute;
@@ -2275,6 +2267,13 @@ html.section-controls-reveal-enabled
     color 0.32s ease,
     text-shadow 0.32s ease;
   will-change: opacity, transform;
+}
+
+/* An opacity backdrop root would prevent the menu from blurring the page. */
+html.section-controls-reveal-enabled
+  .section-corner-controls--reveal
+  .language-control {
+  will-change: transform;
 }
 
 html.section-controls-reveal-enabled
