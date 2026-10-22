@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
-const languages = ["es", "en", "de", "fr", "ru", "uk"];
+const languages = ["es", "en", "de", "fr", "ru", "uk", "pl"];
 const dictionaries = Object.fromEntries(languages.map(lang => [
   lang, JSON.parse(readFileSync(`src/i18n/json/${lang}.json`, "utf8")),
 ]));
@@ -219,6 +219,7 @@ test("language menus apply every choice and preserve it on reload", async ({ pag
     }
   }
   await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("lang", "uk");
-  await checkBindings(page, "uk");
+  const lastLanguage = languages[languages.length - 1];
+  await expect(page.locator("html")).toHaveAttribute("lang", lastLanguage);
+  await checkBindings(page, lastLanguage);
 });

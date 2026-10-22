@@ -1,13 +1,13 @@
 import es from "./json/es.json";
 
-export const supportedLanguages = ["es", "en", "de", "fr", "ru", "uk"] as const;
+export const supportedLanguages = ["es", "en", "de", "fr", "ru", "uk", "pl"] as const;
 export type Language = typeof supportedLanguages[number];
 export type MessageParams = Record<string, string | number>;
 export const messages: Record<string, Record<string, string>> = { es };
 const loaders = {
   en: () => import("./json/en.json"), de: () => import("./json/de.json"),
   fr: () => import("./json/fr.json"), ru: () => import("./json/ru.json"),
-  uk: () => import("./json/uk.json"),
+  uk: () => import("./json/uk.json"), pl: () => import("./json/pl.json"),
 };
 const pending = new Map<Language, Promise<void>>();
 

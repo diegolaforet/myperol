@@ -3,7 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { parse } from "@astrojs/compiler";
 import ts from "typescript";
 
-const locales = ["es", "en", "de", "fr", "ru", "uk"];
+const locales = ["es", "en", "de", "fr", "ru", "uk", "pl"];
 const dictionaries = Object.fromEntries(await Promise.all(locales.map(async locale => {
   const file = `src/i18n/json/${locale}.json`;
   const source = await readFile(file, "utf8");
