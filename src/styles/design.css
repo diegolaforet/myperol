@@ -624,7 +624,12 @@ img { max-width: 100%; }
   -webkit-backdrop-filter: none;
   transition: opacity 160ms ease;
 }
-body:has(.service-expanded-overlay) { overflow: hidden; }
+html:has(.service-expanded-overlay),
+body:has(.service-expanded-overlay) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.service-expanded-overlay { overscroll-behavior: contain; }
 .service-expanded-close {
   position: absolute;
   top: 20px;
