@@ -30,7 +30,6 @@ const storage = [
         <p class="legal-document__intro" data-i18n="cookies_intro">{messages.cookies_intro}</p>
         <button class="cookies-settings-link" type="button" data-cookie-settings data-i18n="cookies_settings" hidden>{messages.cookies_settings}</button>
       </header>
-      <p class="legal-document__notice" data-i18n="cookies_pending_notice">{messages.cookies_pending_notice}</p>
       <nav class="legal-document__contents" aria-labelledby="legal-contents-title">
         <h2 id="legal-contents-title" data-i18n="legal_contents">{messages.legal_contents}</h2>
         <ol>{sections.map(({ id, title }) => <li><a href={`#${id}`} data-i18n={title}>{messages[title]}</a></li>)}</ol>

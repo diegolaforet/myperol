@@ -14,7 +14,7 @@ const sections = [
   { id: "legislacion", title: "legal_law_title", paragraphs: ["legal_law_body", "legal_contact_body"] },
 ] as const;
 
-const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_address"] as const;
+// const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_address"] as const;
 ---
 
 <BaseLayout titleKey="legal_page_title" descriptionKey="legal_page_description" bodyClass="legal-route controls-over-light">
@@ -26,7 +26,6 @@ const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_ad
         <p class="legal-document__intro" data-i18n="legal_intro">{messages.legal_intro}</p>
       </header>
 
-      <p class="legal-document__notice" data-i18n="legal_pending_notice">{messages.legal_pending_notice}</p>
 
       <nav class="legal-document__contents" aria-labelledby="legal-contents-title">
         <h2 id="legal-contents-title" data-i18n="legal_contents">{messages.legal_contents}</h2>
@@ -44,6 +43,7 @@ const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_ad
             <dt data-i18n="legal_owner_brand">{messages.legal_owner_brand}</dt>
             <dd>MyPerol</dd>
           </div>
+          {/* Restore these fields when the owner's details are available.
           {pendingFields.map(key => (
             <div>
               <dt data-i18n={key}>{messages[key]}</dt>
@@ -54,6 +54,7 @@ const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_ad
             <dt data-i18n="legal_owner_registry">{messages.legal_owner_registry}</dt>
             <dd class="legal-document__pending" data-i18n="legal_registry_pending">{messages.legal_registry_pending}</dd>
           </div>
+          */}
           <div>
             <dt data-i18n="legal_owner_area">{messages.legal_owner_area}</dt>
             <dd data-i18n="footer_location">{messages.footer_location}</dd>
