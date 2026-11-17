@@ -771,6 +771,8 @@ test("calculator intro offers a direct quote without changing the calculator flo
   });
 
   await page.goto("/precios?reset=1");
+  const cookieReject = page.locator("[data-cookie-reject]");
+  if (await cookieReject.isVisible()) await cookieReject.click();
   const card = page.locator("[data-price-card]");
   const form = card.locator("[data-price-direct-form]");
 
@@ -817,9 +819,10 @@ test("calculator intro offers a direct quote without changing the calculator flo
   await form.locator("[data-price-direct-email]").fill("");
   await expect(submit).not.toHaveClass(/is-incomplete/);
   await submit.click();
-  await expect(form.locator("[data-price-direct-status]")).toHaveAttribute("data-status", "info");
-  await expect(form.locator("[data-price-direct-status]")).toContainText("no est");
-  expect(requestCount).toBe(0);
+  await expect(form.locator("[data-price-direct-status]")).toHaveAttribute("data-status", "success");
+  await expect(form.locator("[data-price-direct-status]")).toContainText("Solicitud enviada");
+  expect(requestCount).toBe(1);
+  await expect(submit).toBeDisabled();
   await expect(form.getByRole("radio", { checked: true })).toHaveCount(1);
 
   await card.locator("[data-price-direct-close]").click();

@@ -2,6 +2,23 @@
 
 Astro static site for the MyPerol redesign.
 
+## Contact email on Netlify
+
+Both contact forms POST to `/.netlify/functions/price-request`. The function sends through Gmail SMTP using Nodemailer. Configure these server-only variables in Netlify with the Functions scope, then redeploy:
+
+| Variable | Value |
+| --- | --- |
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `465` (TLS) |
+| `SMTP_USER` | `myperolepoxi@gmail.com` |
+| `SMTP_PASS` | Google app password, stored only in Netlify |
+| `PRICE_REQUEST_FROM_EMAIL` | `myperolepoxi@gmail.com` |
+| `PRICE_REQUEST_TO_EMAIL` | `myperolepoxi@gmail.com` |
+
+Enable Google 2-Step Verification and generate an app password for this site. Never commit the app password or expose it with a public environment variable. `RESEND_API_KEY` is no longer used. The direct form's customer email is optional and, when supplied, is used as Reply-To. Sender and recipient always come from server configuration.
+
+Run the function through Netlify Dev or a Netlify deploy; the Astro dev server alone does not serve Netlify Functions. After deployment, verify both forms and receipt in the mailbox. SMTP acceptance is not proof of inbox delivery. reCAPTCHA is not integrated yet.
+
 ## Current State
 
 - `/` is the main landing page.

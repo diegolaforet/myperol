@@ -1,7 +1,10 @@
+import nodemailer from "nodemailer";
+
 const jsonResponse = (statusCode, body) => ({
   statusCode,
   headers: {
     "Content-Type": "application/json",
+    "Cache-Control": "no-store",
   },
   body: JSON.stringify(body),
 });
@@ -73,6 +76,9 @@ export const handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { error: "Metodo no permitido." });
   }
+  if ((event.body || "").length > 16384) {
+    return jsonResponse(413, { error: "Solicitud demasiado grande." });
+  }
 
   let data;
   try {
@@ -89,8 +95,17 @@ export const handler = async (event) => {
   }
 
   const isDirectRequest = data.requestType === "direct-quote";
+  if (data.requestType !== undefined && !isDirectRequest) {
+    return jsonResponse(400, { error: "Tipo de solicitud no valido." });
+  }
+  if (Object.values(data).some(value => typeof value !== "string" || value.length > 1000 || /[\r\n\u0000]/.test(value))) {
+    return jsonResponse(400, { error: "Datos no validos." });
+  }
+  if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    return jsonResponse(400, { error: "Email no valido." });
+  }
   const requiredFields = isDirectRequest
-    ? ["fullName", "email", "phone", "space"]
+    ? ["fullName", "phone", "phonePrefix", "space"]
     : [
         "fullName",
         "phone",
@@ -112,18 +127,16 @@ export const handler = async (event) => {
     return jsonResponse(400, { code: "INVALID_SPACE", error: "Tipo de espacio no valido." });
   }
 
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+  const smtpPort = Number(process.env.SMTP_PORT || "465");
   const toEmail = process.env.PRICE_REQUEST_TO_EMAIL;
   const fromEmail = process.env.PRICE_REQUEST_FROM_EMAIL;
 
-  if (!resendApiKey || !toEmail || !fromEmail) {
+  if (!smtpUser || !smtpPass || !toEmail || !fromEmail || ![465, 587].includes(smtpPort)) {
     return jsonResponse(500, {
-      error: "Faltan variables de entorno para enviar emails.",
-      requiredEnv: [
-        "RESEND_API_KEY",
-        "PRICE_REQUEST_TO_EMAIL",
-        "PRICE_REQUEST_FROM_EMAIL",
-      ],
+      error: "El servicio de correo no esta configurado.",
     });
   }
 
@@ -131,25 +144,33 @@ export const handler = async (event) => {
     ? `Solicitud de presupuesto MyPerol - ${sanitizeText(data.fullName)}`
     : `Solicitud de estudio tecnico MyPerol - ${sanitizeText(data.fullName)}`;
   const privacyRecord = `Politica de privacidad leida y aceptada. Version: 2026-10-22. Recepcion (UTC): ${new Date().toISOString()}.`;
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: [toEmail],
+  const transport = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
+    requireTLS: true,
+    auth: { user: smtpUser, pass: smtpPass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+    disableFileAccess: true,
+    disableUrlAccess: true,
+  });
+  try {
+    const result = await transport.sendMail({
+      from: { name: "MyPerol", address: fromEmail },
+      to: [{ address: toEmail }],
+      ...(isDirectRequest && data.email ? { replyTo: { address: data.email } } : {}),
       subject,
       html: `${isDirectRequest ? buildDirectEmailHtml(data) : buildEmailHtml(data)}<p>${escapeHtml(privacyRecord)}</p>`,
       text: `${isDirectRequest ? buildDirectEmailText(data) : buildEmailText(data)}\n\n${privacyRecord}`,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("Resend email error:", errorBody);
+    });
+    if (!result.accepted?.length) throw new Error("Recipient not accepted");
+  } catch {
+    console.error("SMTP delivery failed");
     return jsonResponse(502, { error: "No se pudo enviar el email." });
+  } finally {
+    transport.close();
   }
 
   return jsonResponse(200, { ok: true });

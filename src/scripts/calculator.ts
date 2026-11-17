@@ -476,6 +476,8 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     };
 
     let directValidationRequested = false;
+    let directSending = false;
+    let directSent = false;
     let directValidationTimeout = 0;
     const directValidationGroups = Array.from(
       directForm?.querySelectorAll<HTMLElement>(".price-direct-contact__fields > label, .price-direct-contact__fields > fieldset, [data-privacy-consent]") ?? [],
@@ -507,18 +509,29 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
         inputs.forEach(input => input.setAttribute("aria-invalid", String(showError)));
       }
       directSubmit?.classList.toggle("is-incomplete", !valid);
+      if (directSubmit instanceof HTMLButtonElement) directSubmit.disabled = directSending || directSent;
       directForm?.classList.toggle("has-errors", directValidationRequested && !valid);
       return valid;
     };
 
     directForm?.addEventListener("input", () => {
-      setDirectStatus();
+      if (!directSending) {
+        directSent = false;
+        setDirectStatus();
+      }
       updateDirectValidation();
     });
-    directForm?.addEventListener("change", updateDirectValidation);
+    directForm?.addEventListener("change", () => {
+      if (!directSending) {
+        directSent = false;
+        setDirectStatus();
+      }
+      updateDirectValidation();
+    });
     updateDirectValidation();
 
-    const submitDirectRequest = () => {
+    const submitDirectRequest = async () => {
+      if (directSending || directSent || !(directForm instanceof HTMLFormElement)) return;
       window.clearTimeout(directValidationTimeout);
       directValidationRequested = true;
       if (!updateDirectValidation()) {
@@ -529,9 +542,34 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
         directForm?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus({ preventScroll: true });
         return;
       }
-      // The direct-contact submission is a preview until delivery is enabled.
       directValidationRequested = false;
-      setDirectStatus("calculator_direct_preview", "info");
+      const fields = new FormData(directForm);
+      const payload = {
+        requestType: "direct-quote",
+        fullName: `${String(fields.get("direct-full-name") || "").trim()} ${String(fields.get("direct-last-name") || "").trim()}`,
+        email: String(fields.get("direct-email") || "").trim(),
+        phone: String(fields.get("direct-phone") || "").trim(),
+        phonePrefix: String(fields.get("direct-phone-prefix") || ""),
+        space: String(fields.get("direct-space") || ""),
+        privacyAccepted: String(directForm.querySelector<HTMLInputElement>("[data-privacy-checkbox]")?.checked === true),
+      };
+      directSending = true;
+      directForm.setAttribute("aria-busy", "true");
+      directSubmit?.classList.add("is-loading");
+      updateDirectValidation();
+      setDirectStatus("request_sending", "loading");
+      try {
+        await sendPriceRequest(payload);
+        directSent = true;
+        setDirectStatus("request_success", "success");
+      } catch (error) {
+        setDirectStatus(getRequestErrorTranslation(error), "error");
+      } finally {
+        directSending = false;
+        directForm.removeAttribute("aria-busy");
+        directSubmit?.classList.remove("is-loading");
+        updateDirectValidation();
+      }
     };
 
     window.addEventListener("pagehide", () => window.clearTimeout(directValidationTimeout));

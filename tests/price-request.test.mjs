@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import nodemailer from "nodemailer";
 import { handler } from "../netlify/functions/price-request.mjs";
 
 const request = body => handler({ httpMethod: "POST", body: JSON.stringify(body) });
@@ -20,10 +21,11 @@ const directRequest = {
   email: "privacy@example.invalid",
   phone: "600000000",
   space: "Home",
+  phonePrefix: "+34",
 };
 
 test("both request types reject missing or invalid privacy acceptance before sending", async t => {
-  const fetchMock = t.mock.method(globalThis, "fetch", () => {
+  const fetchMock = t.mock.method(nodemailer, "createTransport", () => {
     throw new Error("Unexpected network request");
   });
   for (const payload of [calculatorRequest, directRequest]) {
@@ -43,7 +45,7 @@ test("invalid request bodies are rejected without sending", async () => {
 });
 
 test("accepted requests include policy version and server receipt time in the email", async t => {
-  const names = ["RESEND_API_KEY", "PRICE_REQUEST_TO_EMAIL", "PRICE_REQUEST_FROM_EMAIL"];
+  const names = ["SMTP_USER", "SMTP_PASS", "PRICE_REQUEST_TO_EMAIL", "PRICE_REQUEST_FROM_EMAIL"];
   const previous = names.map(name => process.env[name]);
   names.forEach(name => { process.env[name] = "privacy-test"; });
   t.after(() => names.forEach((name, index) => {
@@ -51,15 +53,18 @@ test("accepted requests include policy version and server receipt time in the em
     else process.env[name] = previous[index];
   }));
   const emails = [];
-  t.mock.method(globalThis, "fetch", async (url, options) => {
-    assert.equal(url, "https://api.resend.com/emails");
-    emails.push(JSON.parse(options.body));
-    return { ok: true };
+  t.mock.method(nodemailer, "createTransport", options => {
+    assert.equal(options.host, "smtp.gmail.com");
+    assert.equal(options.port, 465);
+    assert.equal(options.secure, true);
+    assert.equal(options.auth.pass, "privacy-test");
+    return { sendMail: async email => { emails.push(email); return { accepted: ["privacy-test"] }; }, close() {} };
   });
   for (const payload of [calculatorRequest, directRequest]) {
     assert.equal((await request({ ...payload, privacyAccepted: "true" })).statusCode, 200);
   }
   assert.equal(emails.length, 2);
+  assert.deepEqual(emails[1].replyTo, { address: directRequest.email });
   for (const email of emails) {
     for (const content of [email.html, email.text]) {
       assert.match(content, /Politica de privacidad leida y aceptada/);
@@ -67,4 +72,31 @@ test("accepted requests include policy version and server receipt time in the em
       assert.match(content, /Recepcion \(UTC\): \d{4}-\d{2}-\d{2}T/);
     }
   }
+});
+
+test("direct requests allow an omitted email, reject malformed input and handle SMTP failures", async t => {
+  const names = ["SMTP_USER", "SMTP_PASS", "PRICE_REQUEST_TO_EMAIL", "PRICE_REQUEST_FROM_EMAIL"];
+  const previous = names.map(name => process.env[name]);
+  names.forEach(name => { process.env[name] = "smtp-test"; });
+  t.after(() => names.forEach((name, index) => {
+    if (previous[index] === undefined) delete process.env[name];
+    else process.env[name] = previous[index];
+  }));
+  let sent = 0;
+  t.mock.method(nodemailer, "createTransport", () => ({
+    sendMail: async email => {
+      sent++;
+      assert.equal(email.replyTo, undefined);
+      if (sent === 2) throw new Error("SMTP unavailable");
+      return { accepted: ["smtp-test"] };
+    },
+    close() {},
+  }));
+  const payload = { ...directRequest, email: "", privacyAccepted: "true" };
+  assert.equal((await request(payload)).statusCode, 200);
+  assert.equal((await request(payload)).statusCode, 502);
+  for (const patch of [{ email: "bad" }, { fullName: {} }, { fullName: "Bad\r\nHeader" }, { space: "invalid" }]) {
+    assert.equal((await request({ ...payload, ...patch })).statusCode, 400);
+  }
+  assert.equal(sent, 2);
 });

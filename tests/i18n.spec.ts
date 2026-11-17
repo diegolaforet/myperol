@@ -141,6 +141,7 @@ for (const lang of languages) {
   });
 
   test(`${lang}: direct contact localizes validation without reviving cleared messages`, async ({ page }) => {
+    await page.route("**/.netlify/functions/price-request", route => route.fulfill({ json: { ok: true } }));
     await page.addInitScript(lang => localStorage.setItem("lang", lang), lang);
     await page.goto("/precios");
     await expect(page).toHaveTitle(dictionaries[lang].prices_page_title);
@@ -162,7 +163,7 @@ for (const lang of languages) {
     await form.locator("[data-price-direct-email]").fill("");
     await expect(form.locator(".price-direct-contact__field-error:visible")).toHaveCount(0);
     await form.locator("[data-price-direct-submit]").click();
-    await expect(form.locator("[data-price-direct-status]")).toHaveText(dictionaries[lang].calculator_direct_preview);
+    await expect(form.locator("[data-price-direct-status]")).toHaveText(dictionaries[lang].request_success);
     await form.locator("[data-price-direct-name]").fill("Updated");
     await expect(form.locator("[data-price-direct-status]")).toHaveText("");
     const nextLanguage = languages[(languages.indexOf(lang) + 1) % languages.length];
