@@ -1,4 +1,6 @@
 {
+  "request_sent_label": "Zapytanie wysłane",
+  "request_cooldown": "Poczekaj minutę przed wysłaniem kolejnego zgłoszenia.",
   "request_rate_limited": "Wysłano zbyt wiele zgłoszeń. Poczekaj 3 minuty przed ponowną próbą.",
   "cookies_page_title": "Polityka plików cookie | MyPerol",
   "cookies_page_description": "Informacje o pamięci przeglądarki i ustawieniach prywatności MyPerol.",

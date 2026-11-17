@@ -1,4 +1,6 @@
 {
+  "request_sent_label": "Demande envoyée",
+  "request_cooldown": "Veuillez patienter une minute avant d’envoyer une autre demande.",
   "request_rate_limited": "Vous avez envoyé trop de demandes. Veuillez patienter 3 minutes avant de réessayer.",
   "cookies_page_title": "Politique relative aux cookies | MyPerol",
   "cookies_page_description": "Informations sur le stockage du navigateur et les choix de confidentialité de MyPerol.",

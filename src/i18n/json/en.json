@@ -1,4 +1,6 @@
 {
+  "request_sent_label": "Request sent",
+  "request_cooldown": "Please wait one minute before sending another request.",
   "request_rate_limited": "You have sent too many requests. Please wait 3 minutes before trying again.",
   "cookies_page_title": "Cookie policy | MyPerol",
   "cookies_page_description": "Information about browser storage and MyPerol privacy choices.",

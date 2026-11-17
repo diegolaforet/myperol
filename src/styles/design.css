@@ -1189,6 +1189,13 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
 .price-direct-contact__space > .price-direct-contact__field-error { margin-top: var(--space-6); }
 .price-direct-contact input[aria-invalid="true"]:not([type="radio"]) { border-color: #a32424; }
 .price-direct-contact__submit:disabled { opacity: .55; cursor: wait; }
+.price-direct-contact__submit[aria-disabled="true"],
+.price-direct-contact__submit[aria-disabled="true"]:hover {
+  opacity: .55;
+  cursor: default;
+  background: var(--palette-graphite);
+  transform: none;
+}
 .price-direct-contact__status {
   min-height: 18px;
   margin: var(--space-8) 0 0;

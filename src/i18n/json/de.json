@@ -1,4 +1,6 @@
 {
+  "request_sent_label": "Anfrage gesendet",
+  "request_cooldown": "Bitte warte eine Minute, bevor du eine weitere Anfrage sendest.",
   "request_rate_limited": "Du hast zu viele Anfragen gesendet. Bitte warte 3 Minuten, bevor du es erneut versuchst.",
   "cookies_page_title": "Cookie-Richtlinie | MyPerol",
   "cookies_page_description": "Informationen zum Browserspeicher und zu Ihren Datenschutzeinstellungen bei MyPerol.",
