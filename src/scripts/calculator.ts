@@ -480,6 +480,23 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     let directValidationRequested = false;
     let directSending = false;
     let directSent = false;
+    let directCooldownUntil = 0;
+    let directCooldownTimer = 0;
+    const directSubmitLabel = directSubmit?.querySelector("[data-i18n]") ?? null;
+    const finishDirectCooldown = () => {
+      if (!directSent) return;
+      const remaining = directCooldownUntil - Date.now();
+      if (remaining > 0) {
+        window.clearTimeout(directCooldownTimer);
+        directCooldownTimer = window.setTimeout(finishDirectCooldown, remaining);
+        return;
+      }
+      directSent = false;
+      directSubmit?.removeAttribute("aria-disabled");
+      bindText(directSubmitLabel, "calculator_direct_submit");
+      setDirectStatus();
+      updateDirectValidation();
+    };
     let directValidationTimeout = 0;
     const directValidationGroups = Array.from(
       directForm?.querySelectorAll<HTMLElement>(".price-direct-contact__fields > label, .price-direct-contact__fields > fieldset, [data-privacy-consent]") ?? [],
@@ -511,21 +528,19 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
         inputs.forEach(input => input.setAttribute("aria-invalid", String(showError)));
       }
       directSubmit?.classList.toggle("is-incomplete", !valid);
-      if (directSubmit instanceof HTMLButtonElement) directSubmit.disabled = directSending || directSent;
+      if (directSubmit instanceof HTMLButtonElement) directSubmit.disabled = directSending;
       directForm?.classList.toggle("has-errors", directValidationRequested && !valid);
       return valid;
     };
 
     directForm?.addEventListener("input", () => {
-      if (!directSending) {
-        directSent = false;
+      if (!directSending && !directSent) {
         setDirectStatus();
       }
       updateDirectValidation();
     });
     directForm?.addEventListener("change", () => {
-      if (!directSending) {
-        directSent = false;
+      if (!directSending && !directSent) {
         setDirectStatus();
       }
       updateDirectValidation();
@@ -533,7 +548,12 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     updateDirectValidation();
 
     const submitDirectRequest = async () => {
-      if (directSending || directSent || !(directForm instanceof HTMLFormElement)) return;
+      finishDirectCooldown();
+      if (directSent) {
+        setDirectStatus("request_cooldown", "info");
+        return;
+      }
+      if (directSending || !(directForm instanceof HTMLFormElement)) return;
       window.clearTimeout(directValidationTimeout);
       directValidationRequested = true;
       if (!updateDirectValidation()) {
@@ -563,6 +583,11 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
       try {
         await sendPriceRequest(payload);
         directSent = true;
+        directCooldownUntil = Date.now() + 60000;
+        window.clearTimeout(directCooldownTimer);
+        directCooldownTimer = window.setTimeout(finishDirectCooldown, 60000);
+        directSubmit?.setAttribute("aria-disabled", "true");
+        bindText(directSubmitLabel, "request_sent_label");
         setDirectStatus("request_success", "success");
       } catch (error) {
         setDirectStatus(getRequestErrorTranslation(error), "error");

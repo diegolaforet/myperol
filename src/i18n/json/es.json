@@ -1,4 +1,6 @@
 {
+  "request_sent_label": "Solicitud enviada",
+  "request_cooldown": "Espere un minuto para volver a mandar una solicitud.",
   "footer_tagline": "Pavimentos de resina epoxi. Diseño continuo para espacios con carácter.",
   "footer_contact": "Contacto",
   "footer_location": "Tenerife, Islas Canarias",
