@@ -48,7 +48,7 @@ const year = new Date().getFullYear();
       <ul class="site-footer__legal">
         {legalLinks.map(({ key, href }) => (
           <li>
-            {href ? <a href={href} data-i18n={key}>{messages[key]}</a> : <span data-i18n={key}>{messages[key]}</span>}
+            {href ? <a href={href} target="_blank" rel="noopener noreferrer" data-i18n={key}>{messages[key]}</a> : <span data-i18n={key}>{messages[key]}</span>}
           </li>
         ))}
       </ul>
