@@ -1,4 +1,5 @@
 {
+  "request_rate_limited": "Du hast zu viele Anfragen gesendet. Bitte warte 3 Minuten, bevor du es erneut versuchst.",
   "cookies_page_title": "Cookie-Richtlinie | MyPerol",
   "cookies_page_description": "Informationen zum Browserspeicher und zu Ihren Datenschutzeinstellungen bei MyPerol.",
   "cookies_intro": "Was wir in Ihrem Browser speichern, wofür wir es verwenden und wie Sie darüber entscheiden.",

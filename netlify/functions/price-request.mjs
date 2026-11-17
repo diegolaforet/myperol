@@ -1,5 +1,15 @@
 import nodemailer from "nodemailer";
 
+export const config = {
+  path: "/.netlify/functions/price-request",
+  rateLimit: {
+    windowLimit: 3,
+    windowSize: 180,
+    aggregateBy: ["ip", "domain"],
+    action: "rate_limit",
+  },
+};
+
 const jsonResponse = (statusCode, body) => ({
   statusCode,
   headers: {
@@ -72,7 +82,7 @@ const buildDirectEmailText = (data) => [
   `Tipo de espacio: ${sanitizeText(data.space)}`,
 ].join("\n");
 
-export const handler = async (event) => {
+const handleRequest = async (event) => {
   if (event.httpMethod !== "POST") {
     return jsonResponse(405, { error: "Metodo no permitido." });
   }
@@ -174,4 +184,18 @@ export const handler = async (event) => {
   }
 
   return jsonResponse(200, { ok: true });
+};
+
+export default async (request) => {
+  if (Number(request.headers.get("content-length")) > 16384) {
+    return new Response(JSON.stringify({ error: "Solicitud demasiado grande." }), {
+      status: 413,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+  const result = await handleRequest({
+    httpMethod: request.method,
+    body: request.method === "POST" ? await request.text() : "",
+  });
+  return new Response(result.body, { status: result.statusCode, headers: result.headers });
 };

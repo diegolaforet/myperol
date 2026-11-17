@@ -4,6 +4,10 @@ Astro static site for the MyPerol redesign.
 
 ## Contact email on Netlify
 
+The shared endpoint uses Netlify's native rate limiter: 3 requests per 180 seconds per IP and domain, across both forms. HTTP 429 is displayed as a localized wait message, including when Netlify returns a non-JSON response. The endpoint uses the modern Netlify Functions Request/Response API so its exported rate-limit configuration is applied by the platform.
+
+Rate limiting requires a Netlify deploy and is not enforced by calling the function directly in unit tests or by Astro Dev. After deployment, confirm the rule in the deploy log and check HTTP 429 using invalid test submissions (never send real leads just to test the limit). Netlify documents an enforcement delay of up to 10 seconds, so this is not an exact email quota or a global cap across different IPs. See https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/.
+
 Both contact forms POST to `/.netlify/functions/price-request`. The function sends through Gmail SMTP using Nodemailer. Configure these server-only variables in Netlify with the Functions scope, then redeploy:
 
 | Variable | Value |

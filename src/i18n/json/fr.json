@@ -1,4 +1,5 @@
 {
+  "request_rate_limited": "Vous avez envoyé trop de demandes. Veuillez patienter 3 minutes avant de réessayer.",
   "cookies_page_title": "Politique relative aux cookies | MyPerol",
   "cookies_page_description": "Informations sur le stockage du navigateur et les choix de confidentialité de MyPerol.",
   "cookies_intro": "Ce que nous conservons dans votre navigateur, pourquoi et comment vous pouvez en décider.",

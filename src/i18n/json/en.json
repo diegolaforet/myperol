@@ -1,4 +1,5 @@
 {
+  "request_rate_limited": "You have sent too many requests. Please wait 3 minutes before trying again.",
   "cookies_page_title": "Cookie policy | MyPerol",
   "cookies_page_description": "Information about browser storage and MyPerol privacy choices.",
   "cookies_intro": "What we store in your browser, why we use it and how you can choose.",

@@ -1,4 +1,5 @@
 {
+  "request_rate_limited": "Wysłano zbyt wiele zgłoszeń. Poczekaj 3 minuty przed ponowną próbą.",
   "cookies_page_title": "Polityka plików cookie | MyPerol",
   "cookies_page_description": "Informacje o pamięci przeglądarki i ustawieniach prywatności MyPerol.",
   "cookies_intro": "Co zapisujemy w Twojej przeglądarce, do czego to służy i jak możesz o tym decydować.",

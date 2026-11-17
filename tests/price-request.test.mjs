@@ -1,9 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import nodemailer from "nodemailer";
-import { handler } from "../netlify/functions/price-request.mjs";
+import handler, { config } from "../netlify/functions/price-request.mjs";
 
-const request = body => handler({ httpMethod: "POST", body: JSON.stringify(body) });
+const request = async body => {
+  const response = await handler(new Request("https://example.test/.netlify/functions/price-request", {
+    method: "POST", body: JSON.stringify(body), headers: { "Content-Type": "application/json" },
+  }));
+  return { statusCode: response.status, body: await response.text() };
+};
+
+test("both forms share a platform-enforced rate limit at the public endpoint", () => {
+  assert.equal(config.path, "/.netlify/functions/price-request");
+  assert.deepEqual(config.rateLimit, {
+    windowLimit: 3, windowSize: 180, aggregateBy: ["ip", "domain"], action: "rate_limit",
+  });
+});
 const calculatorRequest = {
   fullName: "Privacy test",
   phone: "600000000",

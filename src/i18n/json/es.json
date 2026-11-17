@@ -313,6 +313,7 @@
   "request_success": "Solicitud enviada. Te contactaremos lo antes posible.",
   "request_error": "No se pudo enviar la solicitud. Inténtalo de nuevo.",
   "request_missing": "Faltan datos obligatorios.",
+  "request_rate_limited": "Has enviado demasiadas solicitudes. Espera 3 minutos antes de intentarlo de nuevo.",
   "estimate_kicker": "MYPEROL / CÁLCULO",
   "estimate_title": "Estimando precio",
   "estimate_status": "Analizando las necesidades de tu superficie.",
