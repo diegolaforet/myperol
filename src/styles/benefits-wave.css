@@ -107,6 +107,31 @@
 #myperol-benefits-wave .mp-wave-motion svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 #myperol-benefits-wave .mp-wave-motion:focus-visible { outline: 2px solid var(--mp-wave-ink); outline-offset: 2px; }
 
+.reveal-enabled #myperol-benefits-wave :is(.home-secondary-card, .mp-wave-motion) {
+  transition:
+    opacity var(--reveal-duration) var(--reveal-easing),
+    transform var(--reveal-duration) var(--reveal-easing),
+    visibility 0s;
+  transition-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger));
+}
+.reveal-enabled #myperol-benefits-wave :is(.home-secondary-card, .mp-wave-motion):not(.is-visible) {
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, var(--reveal-distance), 0);
+  pointer-events: none;
+}
+.reveal-enabled #myperol-benefits-wave .mp-wave-motion.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-enabled #myperol-benefits-wave :is(.home-secondary-card, .mp-wave-motion) {
+    transition: none;
+  }
+}
+
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   #myperol-benefits-wave .home-secondary-card { background: rgba(255, 255, 255, .94); }
 }
