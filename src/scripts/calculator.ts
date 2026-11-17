@@ -7,6 +7,7 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     const priceCard = document.querySelector("[data-price-card]");
 
   if (priceCard instanceof HTMLElement) {
+    const calculatorUnavailable = priceCard.hasAttribute("data-calculator-unavailable");
     const media = priceCard.querySelector("[data-price-media]");
     const stepContent = priceCard.querySelector(".prices-step-content");
     const label = priceCard.querySelector("[data-price-label]");
@@ -190,7 +191,7 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     };
 
     const setActionEnabled = (enabled: boolean) => {
-      if (action instanceof HTMLButtonElement) action.disabled = !enabled;
+      if (action instanceof HTMLButtonElement) action.disabled = calculatorUnavailable || !enabled;
     };
 
     const updateResultSubmitState = () => {
@@ -202,6 +203,7 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     };
 
     const setActionLabel = (key: string) => {
+      if (calculatorUnavailable) key = "calculator_unavailable";
       const text = t(key);
       if (!actionLabel) return;
 
@@ -878,6 +880,7 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     });
 
     action?.addEventListener("click", () => {
+      if (calculatorUnavailable) return;
       if (priceCard.dataset.step === "1") {
         setStepTwo({ animate: true });
         return;
@@ -1029,6 +1032,11 @@ import { CALCULATOR_STORAGE_KEY } from "../data/cookies";
     });
 
     const restoreState = () => {
+      if (calculatorUnavailable) {
+        removeSavedState();
+        setStepOne();
+        return;
+      }
       try {
         const urlParams = new URLSearchParams(window.location.search);
         const requestedReset = urlParams.get("reset") === "1";

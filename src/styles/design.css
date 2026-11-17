@@ -1221,6 +1221,18 @@ body.controls-over-calculator .site-header .lang-button:focus-visible {
   margin: calc(-1 * var(--price-frame-padding));
   padding: var(--price-intro-padding);
 }
+.prices-page .prices-card[data-calculator-unavailable] .prices-step-action:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  pointer-events: auto;
+  transform: none;
+  box-shadow: none;
+  background: var(--palette-graphite);
+  border-color: var(--palette-graphite);
+  color: var(--palette-white);
+}
+.prices-card[data-calculator-unavailable] .prices-step-action .composition-shift-arrow { display: none; }
+.prices-card[data-calculator-unavailable] .prices-step-action .composition-shift-label { transform: none; }
 .prices-page .service-expanded-label { width: 100%; margin-bottom: var(--space-18); padding-bottom: var(--space-12); border-bottom: 0; color: var(--palette-tone-108); }
 .prices-page .price-brand-logo {
   display: flex;
