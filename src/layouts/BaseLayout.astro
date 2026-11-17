@@ -1,33 +1,26 @@
 ---
+import messages from "../i18n/json/es.json";
+import SocialLinks from "../components/SocialLinks.astro";
 import Header from "../components/Header.astro";
-import deMessages from "../i18n/json/de.json";
-import enMessages from "../i18n/json/en.json";
-import esMessages from "../i18n/json/es.json";
-import itMessages from "../i18n/json/it.json";
-import plMessages from "../i18n/json/pl.json";
-import roMessages from "../i18n/json/ro.json";
-import ruMessages from "../i18n/json/ru.json";
-import ukMessages from "../i18n/json/uk.json";
-import zhMessages from "../i18n/json/zh.json";
+import Footer from "../components/Footer.astro";
+import CookieConsent from "../components/CookieConsent.astro";
+import "@fontsource-variable/lexend";
+import latinFont from "@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url";
+import "../styles/tokens.css";
+import "../styles/base.css";
+import "../styles/design.css";
 
 const {
-  title = "MyPerol",
-  description = "Landing page multilingual de MyPerol con acceso a folletos y página informativa.",
+  titleKey = "page_title",
+  descriptionKey = "page_description",
   isHome = false,
+  bodyClass = "",
 } = Astro.props;
-const i18nMessages = {
-  es: esMessages,
-  en: enMessages,
-  de: deMessages,
-  it: itMessages,
-  ro: roMessages,
-  ru: ruMessages,
-  uk: ukMessages,
-  pl: plMessages,
-  zh: zhMessages,
-};
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.es");
 
+
+const title = messages[titleKey];
+const description = messages[descriptionKey];
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.es");
 ---
 
 <!DOCTYPE html>
@@ -35,294 +28,38 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://myperol.
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <link rel="preload" href={latinFont} as="font" type="font/woff2" crossorigin />
+    {isHome && <link rel="preload" href="/assets/videos/hero-poster.webp" as="image" fetchpriority="high" />}
+    <title data-i18n={titleKey}>{title}</title>
+    <meta name="description" content={description} data-i18n-content={descriptionKey} />
     <meta name="theme-color" content="#ffffff" />
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={title} data-i18n-content={titleKey} />
+    <meta property="og:description" content={description} data-i18n-content={descriptionKey} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="MyPerol" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={title} data-i18n-content={titleKey} />
+    <meta name="twitter:description" content={description} data-i18n-content={descriptionKey} />
 
-    <!-- Favicon básico -->
     <link rel="icon" href="/favicon.ico" />
-
-    <!-- PNGs -->
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-
-    <!-- Apple -->
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-
-    <!-- PWA / Android -->
     <link rel="manifest" href="/site.webmanifest" />
 
-    <link rel="stylesheet" href="/styles/global.css" />
+    <script>
+      import "../scripts/site";
+    </script>
   </head>
 
-<script define:vars={{ i18nMessages }}>
-  const DEFAULT_LANG = "es";
-  const SUPPORTED_LANGS = ["es", "en", "de", "it", "ro", "ru", "uk", "pl", "zh"];
-
-  function normalizeLang(lang) {
-    return SUPPORTED_LANGS.includes(lang) ? lang : DEFAULT_LANG;
-  }
-
-  function getLang() {
-    const lang = normalizeLang(localStorage.getItem("lang"));
-
-    if (lang !== localStorage.getItem("lang")) {
-      localStorage.setItem("lang", lang);
-    }
-
-    return lang;
-  }
-
-  function setLang(lang) {
-    localStorage.setItem("lang", normalizeLang(lang));
-  }
-
-  function updateLangLabel() {
-    const lang = getLang().toUpperCase();
-    const label = document.getElementById("currentLang");
-    if (label) label.textContent = lang;
-  }
-
-  function updateDocumentLang(lang) {
-    document.documentElement.lang = normalizeLang(lang);
-  }
-
-  function setLangMenuOpen(isOpen) {
-    const menu = document.getElementById("langMenu");
-    const toggle = document.getElementById("langToggle");
-
-    if (menu) {
-      menu.classList.toggle("open", isOpen);
-      menu.hidden = !isOpen;
-    }
-
-    if (toggle) {
-      toggle.setAttribute("aria-expanded", String(isOpen));
-    }
-  }
-
-  function toggleLangMenu() {
-    const menu = document.getElementById("langMenu");
-    const isOpen = menu ? !menu.classList.contains("open") : false;
-
-    setLangMenuOpen(isOpen);
-  }
-
-  function closeLangMenu() {
-    setLangMenuOpen(false);
-  }
-
-  function selectLang(lang) {
-    const normalizedLang = normalizeLang(lang);
-
-    setLang(normalizedLang);
-    closeLangMenu();
-
-    window.dispatchEvent(new Event("language-change"));
-  }
-
-  function markActiveLang(lang) {
-    const items = document.querySelectorAll(".lang-option");
-
-    items.forEach((item) => {
-      if (item.dataset.lang === lang) {
-        item.classList.add("active");
-        item.setAttribute("aria-pressed", "true");
-      } else {
-        item.classList.remove("active");
-        item.setAttribute("aria-pressed", "false");
-      }
-    });
-  }
-
-  function updateBrochure(lang) {
-    const img1 = document.getElementById("brochureImage1");
-    const img2 = document.getElementById("brochureImage2");
-
-    if (img1) img1.src = `/assets/brochures/brochure-${lang}1.jpg`;
-    if (img2) img2.src = `/assets/brochures/brochure-${lang}2.jpg`;
-  }
-
-  // Cerrar menú al hacer click fuera
-  document.addEventListener("click", (e) => {
-    const dropdown = document.querySelector(".lang-dropdown");
-    if (dropdown && !dropdown.contains(e.target)) {
-      closeLangMenu();
-    }
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeLangMenu();
-    }
-  });
-
-  // Exponer funciones
-  window.toggleLangMenu = toggleLangMenu;
-  window.selectLang = selectLang;
-
-  let zoomLevel = 1;
-  const ZOOM_STEP = 0.1;
-  const ZOOM_MIN = 0.7;
-  const ZOOM_MAX = 1.5;
-
-  function applyZoom() {
-    const brochure = document.querySelector(".brochure");
-    if (brochure) {
-      brochure.style.transform = `scale(${zoomLevel})`;
-    }
-  }
-
-  function zoomIn() {
-    zoomLevel = Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX);
-    applyZoom();
-  }
-
-  function zoomOut() {
-    zoomLevel = Math.max(zoomLevel - ZOOM_STEP, ZOOM_MIN);
-    applyZoom();
-  }
-
-  function resetZoom() {
-    zoomLevel = 1;
-    applyZoom();
-  }
-
-  function handleResize() {
-    if (window.innerWidth < 1280) {
-      resetZoom();
-    }
-  }
-  
-  window.addEventListener("resize", handleResize);
-
-  window.zoomIn = zoomIn;
-  window.zoomOut = zoomOut;
-
-  window.I18N_MESSAGES = i18nMessages;
-
-  function updateWhatsappText(lang = getLang()) {
-    const messages = window.I18N_MESSAGES;
-
-    const el = document.getElementById("whatsappText");
-    if (!el || !messages) return;
-
-    el.textContent =
-      messages[lang]?.whatsapp_cta ||
-      messages.es.whatsapp_cta;
-  }
-
-  function updateNavigationText(lang = getLang()) {
-    const messages = window.I18N_MESSAGES;
-    const homeLink = document.getElementById("homeLink");
-    const homeLinkText = document.getElementById("homeLinkText");
-    const backToBrochureLink = document.getElementById("backToBrochureLink");
-
-    if (!messages) return;
-
-    const homeText =
-      messages[lang]?.nav_home ||
-      messages.es.nav_home;
-
-    const backToBrochureText =
-      messages[lang]?.back_to_brochure ||
-      messages.es.back_to_brochure;
-
-    if (homeLink) {
-      homeLink.setAttribute("aria-label", homeText);
-    }
-
-    if (homeLinkText) {
-      homeLinkText.textContent = homeText;
-    }
-
-    if (backToBrochureLink) {
-      backToBrochureLink.setAttribute("aria-label", backToBrochureText);
-    }
-  }
-
-  function syncLanguageUI(lang) {
-    updateDocumentLang(lang);
-    updateLangLabel();
-    updateBrochure(lang);
-    markActiveLang(lang);
-    updateWhatsappText(lang);
-    updateNavigationText(lang);
-  }
-
-  function initializePage() {
-    const lang = getLang();
-
-    syncLanguageUI(lang);
-
-    if (window.innerWidth < 1280) {
-      resetZoom();
-    }
-  }
-
-  function handleLanguageChange() {
-    syncLanguageUI(getLang());
-  }
-
-  document.addEventListener("DOMContentLoaded", initializePage);
-  window.addEventListener("language-change", handleLanguageChange);
-
-</script>
-
-  <body>
+  <body class={bodyClass || undefined}>
     <Header currentPath={Astro.url.pathname} />
     <slot />
+    <Footer />
 
-      <!-- SOCIAL FLOAT BUTTONS -->
-    <div class="social-float">
-      <a
-        href="https://www.instagram.com/myperol/"
-        target="_blank"
-        rel="noopener"
-        aria-label="Instagram"
-        class="social-btn"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M7 2C4.24 2 2 4.24 2 7v10c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5H7zm10 2a3 3 0 013 3v10a3 3 0 01-3 3H7a3 3 0 01-3-3V7a3 3 0 013-3h10zm-5 3a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6zm4.8-.9a1.1 1.1 0 11-2.2 0 1.1 1.1 0 012.2 0z"/>
-        </svg>
-      </a>
-
-      {isHome ? (
-        <a
-          href="https://wa.me/34663108027"
-          target="_blank"
-          rel="noopener"
-          aria-label="WhatsApp"
-          class="whatsapp-cta"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12.04 2C6.53 2 2 6.53 2 12c0 1.96.57 3.86 1.65 5.48L2 22l4.67-1.62A9.96 9.96 0 0012.04 22C17.55 22 22 17.47 22 12S17.55 2 12.04 2zm0 18a8 8 0 01-4.08-1.12l-.29-.17-2.77.96.94-2.69-.18-.3A8 8 0 1112.04 20zm4.65-5.35c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.3.18-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.1-.5.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.37-.78-1.88-.2-.48-.4-.41-.57-.42h-.49c-.17 0-.45.06-.68.32-.23.25-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.12.17 1.81 2.76 4.39 3.87.61.26 1.09.42 1.46.54.61.19 1.17.16 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/>
-          </svg>
-          <span id="whatsappText"></span>
-        </a>
-      ) : (
-        <a
-          href="https://wa.me/34663108027"
-          target="_blank"
-          rel="noopener"
-          aria-label="WhatsApp"
-          class="social-btn"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12.04 2C6.53 2 2 6.53 2 12c0 1.96.57 3.86 1.65 5.48L2 22l4.67-1.62A9.96 9.96 0 0012.04 22C17.55 22 22 17.47 22 12S17.55 2 12.04 2zm0 18a8 8 0 01-4.08-1.12l-.29-.17-2.77.96.94-2.69-.18-.3A8 8 0 1112.04 20zm4.65-5.35c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.65.8-.8.96-.15.17-.3.18-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.1-.5.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.37-.78-1.88-.2-.48-.4-.41-.57-.42h-.49c-.17 0-.45.06-.68.32-.23.25-.9.88-.9 2.15 0 1.27.92 2.5 1.05 2.67.12.17 1.81 2.76 4.39 3.87.61.26 1.09.42 1.46.54.61.19 1.17.16 1.6.1.49-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.28z"/>
-          </svg>
-        </a>
-      )}
-
-    </div>
+    <SocialLinks primary />
+    <CookieConsent />
   </body>
 </html>

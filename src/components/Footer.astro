@@ -1,0 +1,62 @@
+---
+import SocialLinks from "./SocialLinks.astro";
+import "../styles/footer.css";
+import { contact } from "../data/contact";
+import messages from "../i18n/json/es.json";
+
+const navigation = [
+  { href: "/", key: "nav_home" },
+  { href: "/#servicios", key: "nav_services" },
+  { href: "/#mp-systems", key: "nav_mp_systems" },
+  { href: "/#calculadora", key: "footer_quotes" },
+] as const;
+const legalLinks = [
+  { key: "footer_legal_notice", href: "/aviso-legal" },
+  { key: "footer_privacy", href: "/politica-privacidad" },
+  { key: "footer_cookies", href: "/politica-cookies" },
+] as const;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="site-footer__grid">
+    <div class="site-footer__brand">
+      <a class="site-footer__logo" href="/" aria-label="MyPerol">
+        <img src="/assets/logo/logo-blanco.webp" width="512" height="84" alt="MyPerol" loading="lazy" decoding="async" />
+      </a>
+      <p data-i18n="footer_tagline">{messages.footer_tagline}</p>
+    </div>
+
+    <div>
+      <h2 data-i18n="footer_contact">{messages.footer_contact}</h2>
+      <address class="site-footer__contact">
+        <span>{contact.phoneLabel}</span>
+        <span>{contact.email}</span>
+        <span data-i18n="footer_location">{messages.footer_location}</span>
+      </address>
+    </div>
+
+    <nav aria-labelledby="footer-navigation-title">
+      <h2 id="footer-navigation-title" data-i18n="footer_navigation">{messages.footer_navigation}</h2>
+      <ul>
+        {navigation.map(({ href, key }) => <li><a href={href} data-i18n={key}>{messages[key]}</a></li>)}
+      </ul>
+    </nav>
+
+    <div>
+      <h2 data-i18n="footer_legal_social">{messages.footer_legal_social}</h2>
+      <ul class="site-footer__legal">
+        {legalLinks.map(({ key, href }) => (
+          <li>
+            {href ? <a href={href} target="_blank" rel="noopener noreferrer" data-i18n={key}>{messages[key]}</a> : <span data-i18n={key}>{messages[key]}</span>}
+          </li>
+        ))}
+      </ul>
+      <SocialLinks inline />
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <small data-i18n="footer_copyright" data-i18n-params={JSON.stringify({ year })}>{messages.footer_copyright.replace("{year}", String(year))}</small>
+  </div>
+</footer>

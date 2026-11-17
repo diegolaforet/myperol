@@ -1,0 +1,86 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { contact } from "../data/contact";
+import messages from "../i18n/json/es.json";
+import "../styles/legal.css";
+
+const sections = [
+  { id: "objeto", title: "legal_purpose_title", paragraphs: ["legal_purpose_body"] },
+  { id: "estimaciones", title: "legal_estimates_title", paragraphs: ["legal_estimates_body", "legal_technical_body"] },
+  { id: "uso", title: "legal_use_title", paragraphs: ["legal_use_body"] },
+  { id: "propiedad-intelectual", title: "legal_ip_title", paragraphs: ["legal_ip_body"] },
+  { id: "responsabilidad", title: "legal_responsibility_title", paragraphs: ["legal_responsibility_body"] },
+  { id: "privacidad", title: "legal_privacy_title", paragraphs: ["legal_privacy_body"] },
+  { id: "legislacion", title: "legal_law_title", paragraphs: ["legal_law_body", "legal_contact_body"] },
+] as const;
+
+// const pendingFields = ["legal_owner_name", "legal_owner_tax_id", "legal_owner_address"] as const;
+---
+
+<BaseLayout titleKey="legal_page_title" descriptionKey="legal_page_description" bodyClass="legal-route controls-over-light">
+  <main class="legal-page">
+    <article class="legal-document" aria-labelledby="legal-title">
+      <header class="legal-document__header">
+        <p class="legal-document__brand">MyPerol</p>
+        <h1 id="legal-title" data-i18n="footer_legal_notice">{messages.footer_legal_notice}</h1>
+        <p class="legal-document__intro" data-i18n="legal_intro">{messages.legal_intro}</p>
+      </header>
+
+
+      <nav class="legal-document__contents" aria-labelledby="legal-contents-title">
+        <h2 id="legal-contents-title" data-i18n="legal_contents">{messages.legal_contents}</h2>
+        <ol>
+          <li><a href="#titular" data-i18n="legal_owner_title">{messages.legal_owner_title}</a></li>
+          {sections.map(({ id, title }) => <li><a href={`#${id}`} data-i18n={title}>{messages[title]}</a></li>)}
+        </ol>
+      </nav>
+
+      <section class="legal-document__section" id="titular" aria-labelledby="legal-owner-title">
+        <h2 id="legal-owner-title" data-i18n="legal_owner_title">{messages.legal_owner_title}</h2>
+        <p data-i18n="legal_owner_intro">{messages.legal_owner_intro}</p>
+        <dl class="legal-document__details">
+          <div>
+            <dt data-i18n="legal_owner_brand">{messages.legal_owner_brand}</dt>
+            <dd>MyPerol</dd>
+          </div>
+          {/* Restore these fields when the owner's details are available.
+          {pendingFields.map(key => (
+            <div>
+              <dt data-i18n={key}>{messages[key]}</dt>
+              <dd class="legal-document__pending" data-i18n="legal_pending">{messages.legal_pending}</dd>
+            </div>
+          ))}
+          <div>
+            <dt data-i18n="legal_owner_registry">{messages.legal_owner_registry}</dt>
+            <dd class="legal-document__pending" data-i18n="legal_registry_pending">{messages.legal_registry_pending}</dd>
+          </div>
+          */}
+          <div>
+            <dt data-i18n="legal_owner_area">{messages.legal_owner_area}</dt>
+            <dd data-i18n="footer_location">{messages.footer_location}</dd>
+          </div>
+          <div>
+            <dt data-i18n="form_email">{messages.form_email}</dt>
+            <dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+          </div>
+          <div>
+            <dt data-i18n="form_phone">{messages.form_phone}</dt>
+            <dd><a href={`tel:${contact.phone}`}>{contact.phoneLabel}</a></dd>
+          </div>
+        </dl>
+        <p class="legal-document__source">
+          <a href="https://www.boe.es/buscar/act.php?id=BOE-A-2002-13758#a10" data-i18n="legal_source">{messages.legal_source}</a>
+        </p>
+      </section>
+
+      {sections.map(({ id, title, paragraphs }) => (
+        <section class="legal-document__section" id={id} aria-labelledby={`${id}-title`}>
+          <h2 id={`${id}-title`} data-i18n={title}>{messages[title]}</h2>
+          {paragraphs.map(key => <p data-i18n={key}>{messages[key]}</p>)}
+          {id === "privacidad" && <p><a href="/politica-privacidad" data-i18n="footer_privacy">{messages.footer_privacy}</a></p>}
+          {id === "privacidad" && <p><a href="/politica-cookies" data-i18n="footer_cookies">{messages.footer_cookies}</a></p>}
+        </section>
+      ))}
+    </article>
+  </main>
+</BaseLayout>

@@ -1,55 +1,53 @@
-# MyPerol Landing Page
+# MyPerol Web
 
-A multilingual Astro landing page built for **MyPerol**, an early-stage flooring company focused on **resin and epoxy-style surface solutions**.
+Astro static site for the MyPerol redesign.
 
-This project is designed as a lightweight digital entry point for people who scan a **QR code printed on real brochures**. From that first touchpoint, visitors can switch language, review the brochure content in their preferred language, and access a future company home page that is already prepared in the project structure.
+## Contact email on Netlify
 
-## Overview
+The shared endpoint uses Netlify's native rate limiter: 3 requests per 180 seconds per IP and domain, across both forms. HTTP 429 is displayed as a localized wait message, including when Netlify returns a non-JSON response. The endpoint uses the modern Netlify Functions Request/Response API so its exported rate-limit configuration is applied by the platform.
 
-The current site is not a traditional corporate website yet. It is a focused landing experience that supports an offline-to-online flow:
+Rate limiting requires a Netlify deploy and is not enforced by calling the function directly in unit tests or by Astro Dev. After deployment, confirm the rule in the deploy log and check HTTP 429 using invalid test submissions (never send real leads just to test the limit). Netlify documents an enforcement delay of up to 10 seconds, so this is not an exact email quota or a global cap across different IPs. See https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/.
 
-1. A potential customer receives a printed brochure.
-2. The brochure includes a QR code.
-3. The QR code opens the landing page.
-4. The visitor can switch language instantly.
-5. The brochure visuals update to the selected language.
-6. The user can also move toward a future `/home` page, which is currently marked as under construction.
+Both contact forms POST to `/.netlify/functions/price-request`. The function sends through Gmail SMTP using Nodemailer. Configure these server-only variables in Netlify with the Functions scope, then redeploy:
 
-This makes the project especially useful for multilingual lead capture and presentation in real-world distribution contexts such as flyers, handouts, and local promotional material.
+| Variable | Value |
+| --- | --- |
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `465` (TLS) |
+| `SMTP_USER` | `myperolepoxi@gmail.com` |
+| `SMTP_PASS` | Google app password, stored only in Netlify |
+| `PRICE_REQUEST_FROM_EMAIL` | `myperolepoxi@gmail.com` |
+| `PRICE_REQUEST_TO_EMAIL` | `myperolepoxi@gmail.com` |
 
-## Current Features
+Enable Google 2-Step Verification and generate an app password for this site. Never commit the app password or expose it with a public environment variable. `RESEND_API_KEY` is no longer used. The direct form's customer email is optional and, when supplied, is used as Reply-To. Sender and recipient always come from server configuration.
 
-- Built with **Astro** as a static site.
-- Main brochure landing page at `/`.
-- Future home page scaffold at `/home`.
-- Persistent language selection via `localStorage`.
-- Multilingual brochure swapping based on the selected language.
-- Sticky header with language selector and navigation.
-- WhatsApp and Instagram quick-access buttons.
-- Desktop zoom controls for brochure reading.
-- Static deployment-ready setup with sitemap generation.
-- Redirect rule that currently sends `/home` back to `/`.
+Run the function through Netlify Dev or a Netlify deploy; the Astro dev server alone does not serve Netlify Functions. After deployment, verify both forms and receipt in the mailbox. SMTP acceptance is not proof of inbox delivery. reCAPTCHA is not integrated yet.
 
-## Supported Languages
+## Current State
 
-The project currently includes brochure assets and language options for:
-
-- Spanish (`es`)
-- English (`en`)
-- German (`de`)
-- Italian (`it`)
-- Russian (`ru`)
-- Ukrainian (`uk`)
-- Polish (`pl`)
-- Chinese (`zh`)
+- `/` is the main landing page.
+- `/servicios` is the services page and is linked from the navbar.
+- `/precios` is the price calculator page. It prepares a lead request and sends it through a Netlify Function.
+- There is no `/home` route; the previous home content now lives directly in `src/pages/index.astro`.
+- The old brochure pages and brochure assets have been removed from the project.
+- The hero uses responsive MP4 variants generated from `source-assets/videos/videointro_hero.mov`; run `node scripts/optimize-video.mjs` after replacing the source video.
+- The site supports Spanish, English, German, French, Russian and Ukrainian through local JSON dictionaries.
 
 ## Tech Stack
 
-- **Astro 5**
-- **@astrojs/sitemap**
-- Static assets served from `public/`
-- Custom global CSS
-- Client-side JavaScript for language state and brochure updates
+- Astro 5
+- Static output
+- `@astrojs/sitemap`
+- Custom CSS in `public/styles/global.css`
+- No frontend framework dependency
+
+## Routes
+
+```text
+/             Main landing page
+/servicios    Services page
+/precios      Price calculator page
+```
 
 ## Project Structure
 
@@ -57,112 +55,143 @@ The project currently includes brochure assets and language options for:
 .
 |-- public/
 |   |-- assets/
-|   |   |-- brochures/
 |   |   |-- icons/
-|   |   `-- logo/
+|   |   |   `-- home.svg
+|   |   |-- logo/
+|   |   |   `-- logo-blanco.png
+|   |   `-- placeholder/
+|   |       `-- placeholder-index.jpg
 |   |-- styles/
 |   |   `-- global.css
-|   |-- site.webmanifest
-|   `-- favicon assets
+|   |-- favicon.ico
+|   |-- favicon-16x16.png
+|   |-- favicon-32x32.png
+|   |-- apple-touch-icon.png
+|   |-- android-chrome-192x192.png
+|   |-- android-chrome-512x512.png
+|   `-- site.webmanifest
 |-- src/
 |   |-- components/
-|   |   |-- Brochure.astro
 |   |   `-- Header.astro
 |   |-- i18n/
 |   |   `-- json/
+|   |       |-- de.json
+|   |       |-- en.json
+|   |       |-- es.json
+|   |       |-- fr.json
+|   |       |-- ru.json
+|   |       `-- uk.json
 |   |-- layouts/
 |   |   `-- BaseLayout.astro
 |   `-- pages/
 |       |-- index.astro
-|       `-- home.astro
+|       |-- precios.astro
+|       `-- servicios.astro
+|-- netlify/
+|   `-- functions/
+|       `-- price-request.mjs
 |-- astro.config.mjs
-`-- package.json
+|-- package.json
+|-- package-lock.json
+`-- tsconfig.json
 ```
 
-## How It Works
+## Main Files
 
-### Landing Page
+- `src/pages/index.astro`: main page content, hero section, intro text, automatic entry scroll and duplicated card carousels.
+- `src/pages/servicios.astro`: services page with the shared card carousel pattern.
+- `src/pages/precios.astro`: price calculator flow and final lead form.
+- `src/components/Header.astro`: desktop floating navbar, mobile header, language selector and mobile menu markup.
+- `src/layouts/BaseLayout.astro`: shared document shell, i18n runtime logic, dropdown behavior and social contact buttons.
+- `public/styles/global.css`: global design tokens, responsive rules, glassmorphism surfaces, header, hero, cards and carousel styling.
+- `src/i18n/json/*.json`: translations for the supported languages.
+- `netlify/functions/price-request.mjs`: serverless email sender for price calculator requests.
 
-The main route renders a two-page brochure experience using image assets stored in `public/assets/brochures/`. The default language is Spanish, and the selected language updates the brochure image sources dynamically in the browser.
+## Styling Notes
 
-### Language Switching
+Shared visual values are centralized in the design token section at the top of `public/styles/global.css`.
 
-Language selection is handled on the client side and stored in `localStorage`, so returning users keep their preferred language during future visits on the same device.
+Important token groups:
 
-### Home Page Preparation
+- Page and text colors
+- Fixed top controls
+- Glassmorphism surfaces and dropdowns
+- Hover and divider colors
+- Hero image treatment
+- Shared shadows
+- Card carousel sizing
+- Content typography
+- Control typography
 
-The `/home` page already exists as a placeholder for the future company website. It currently displays an "under construction" message that adapts to the selected language.
-
-### Redirect Behavior
-
-There is a redirect rule in `public/assets/_redirects` that maps `/home` to `/`. This suggests the project is prepared for staged rollout, where the route structure exists but public navigation can still be controlled during deployment.
+The navbar, dropdowns and translucent UI use shared CSS variables so their surface, border, text and hover colors can be adjusted consistently.
 
 ## Local Development
 
-### Requirements
-
-- Node.js
-- npm
-
-### Install
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Start the Development Server
+Start the local dev server:
 
 ```bash
 npm run dev
 ```
 
-The site will be available at `http://localhost:4321`.
+Default local URL:
 
-### Build for Production
+```text
+http://localhost:4321
+```
+
+## Build
+
+Generate the static production build:
 
 ```bash
 npm run build
 ```
 
-### Preview the Production Build
+The output is written to:
+
+```text
+dist/
+```
+
+## Netlify Email Function
+
+The price calculator posts final requests to:
+
+```text
+/.netlify/functions/price-request
+```
+
+The function sends email through the Resend HTTP API. Configure these Netlify environment variables before production:
+
+```text
+RESEND_API_KEY=...
+PRICE_REQUEST_TO_EMAIL=empresa@myperol.com
+PRICE_REQUEST_FROM_EMAIL=MyPerol <no-reply@myperol.com>
+```
+
+`PRICE_REQUEST_FROM_EMAIL` must use a sender domain verified in Resend.
+
+## Preview
+
+Preview the production build locally:
 
 ```bash
 npm run preview
 ```
 
-## Deployment Notes
+## Git Ignore Notes
 
-The project is configured as a **static Astro site** and is suitable for deployment on platforms such as Netlify or similar static hosting providers.
+The repository ignores:
 
-Relevant implementation details:
-
-- `astro.config.mjs` sets `output: 'static'`
-- sitemap generation is enabled
-- the site URL is configured as `https://myperol.es`
-- redirect behavior is managed through a `_redirects` file
-
-## Branding and UX Direction
-
-The implementation prioritizes:
-
-- simple access from printed marketing material
-- low-friction multilingual browsing
-- readable brochure presentation on mobile and desktop
-- lightweight static delivery
-- a transition path from brochure landing page to a future fuller website
-
-## Roadmap Opportunities
-
-Natural next steps for the project would be:
-
-- replace the `/home` placeholder with a full company website
-- connect CTA buttons to lead capture or quote request forms
-- move translation strings into a single structured i18n system
-- improve accessibility for language menu interactions
-- add analytics for QR traffic and language usage
-- optimize brochure delivery with modern image formats if needed
-- define clearer SEO metadata per route and per language
-
-## Repository Purpose
-
-This repository is the foundation of MyPerol's first digital presence: a practical multilingual landing page that bridges **physical brochures and online contact**, while leaving room for the brand's future homepage and broader web presence.
+- `node_modules/`
+- `dist/`
+- `.astro/`
+- environment files
+- package-manager debug logs
+- local dev-server logs: `dev-server.err.log` and `dev-server.out.log`

@@ -11,6 +11,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+dev-server.err.log
+dev-server.out.log
+astro-inspect.err.log
+astro-inspect.out.log
 
 
 # environment variables
@@ -22,3 +26,11 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+#codex capture files
+.codex-capture.msj
+
+# Browser verification artifacts
+test-results/
+playwright-report/
+performance-artifacts/

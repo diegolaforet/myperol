@@ -1,0 +1,99 @@
+---
+import SectionCornerControls from "./SectionCornerControls.astro";
+import FlooringVariantSelector from "./FlooringVariantSelector.astro";
+import messages from "../i18n/json/es.json";
+---
+
+<section
+  id="mp-systems"
+  class="flooring-scroll is-loading"
+  data-flooring-scroll
+  data-layer-coverage-ratio="0.9"
+  aria-labelledby="flooring-title"
+>
+  <div class="flooring-sticky">
+    <SectionCornerControls instanceId="flooring" />
+    <a
+      class="carousel-scroll-cue"
+      href="#mp-systems"
+      aria-label={messages.mp_systems_continue}
+      data-i18n-aria-label="mp_systems_continue"
+      data-carousel-scroll-cue
+    >
+      <svg class="scroll-cue-icon" viewBox="0 0 24 56" aria-hidden="true">
+        <path d="M12 2v48m-5-5 5 5 5-5"></path>
+      </svg>
+    </a>
+
+    <canvas
+      class="flooring-canvas"
+      data-flooring-canvas
+      aria-label="Modelo tridimensional de un sistema de suelo multicapa"
+      data-i18n-aria-label="mp_systems_canvas_aria"
+    ></canvas>
+
+    <div class="flooring-shade" aria-hidden="true"></div>
+
+    <div class="flooring-loader" data-flooring-loader role="status" aria-live="polite">
+      <span class="flooring-loading-spinner" aria-hidden="true"></span>
+      <p data-flooring-loader-message data-i18n="mp_systems_loading">Cargando sistema 3D</p>
+    </div>
+
+    <div class="flooring-copy-stack" aria-live="polite">
+      <article class="flooring-copy-panel is-active" data-flooring-panel="0">
+        <p class="flooring-eyebrow">1 <span data-i18n="mp_systems_intro_eyebrow">{messages.mp_systems_intro_eyebrow}</span></p>
+        <h2 id="flooring-title" data-i18n="mp_systems_intro_title">{messages.mp_systems_intro_title}</h2>
+        <p data-i18n="mp_systems_intro_text">{messages.mp_systems_intro_text}</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="1">
+        <p class="flooring-eyebrow">2 <span data-i18n="mp_systems_primer_eyebrow">{messages.mp_systems_primer_eyebrow}</span></p>
+        <h2 data-i18n="mp_systems_primer_title">{messages.mp_systems_primer_title}</h2>
+        <p data-i18n="mp_systems_primer_text">{messages.mp_systems_primer_text}</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="2">
+        <p class="flooring-eyebrow">3 <span data-i18n="mp_systems_silica_eyebrow">{messages.mp_systems_silica_eyebrow}</span></p>
+        <h2 data-i18n="mp_systems_silica_title">{messages.mp_systems_silica_title}</h2>
+        <p data-i18n="mp_systems_silica_text">{messages.mp_systems_silica_text}</p>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="3">
+        <p class="flooring-eyebrow">4 <span data-i18n="mp_systems_epoxy_eyebrow">{messages.mp_systems_epoxy_eyebrow}</span></p>
+        <h2 data-i18n="mp_systems_epoxy_title">{messages.mp_systems_epoxy_title}</h2>
+        <FlooringVariantSelector controls="flooring-epoxy-description" />
+        <div class="flooring-variant-copy" id="flooring-epoxy-description">
+          <h3 data-i18n="mp_systems_epoxy_variant_title" data-flooring-resin-key="mp_systems_epoxy_variant_title" data-flooring-mineral-key="mp_systems_mineral_variant_title">{messages.mp_systems_epoxy_variant_title}</h3>
+          <p data-i18n="mp_systems_epoxy_text" data-flooring-resin-key="mp_systems_epoxy_text" data-flooring-mineral-key="mp_systems_mineral_text">{messages.mp_systems_epoxy_text}</p>
+        </div>
+      </article>
+
+      <article class="flooring-copy-panel" data-flooring-panel="4">
+        <p class="flooring-eyebrow">5 <span data-i18n="mp_systems_sealer_eyebrow">{messages.mp_systems_sealer_eyebrow}</span></p>
+        <h2 data-i18n="mp_systems_sealer_title">{messages.mp_systems_sealer_title}</h2>
+        <FlooringVariantSelector controls="flooring-sealer-description" />
+        <div class="flooring-variant-copy" id="flooring-sealer-description">
+          <h3 data-i18n="mp_systems_sealer_resin_title" data-flooring-resin-key="mp_systems_sealer_resin_title" data-flooring-mineral-key="mp_systems_sealer_mineral_title">{messages.mp_systems_sealer_resin_title}</h3>
+          <p data-i18n="mp_systems_sealer_text" data-flooring-resin-key="mp_systems_sealer_text" data-flooring-mineral-key="mp_systems_sealer_mineral_text">{messages.mp_systems_sealer_text}</p>
+        </div>
+      </article>
+
+      <article class="flooring-copy-panel flooring-copy-final" data-flooring-panel="5">
+        <p class="flooring-eyebrow flooring-brand-logo">
+          <img src="/assets/logo/logo-negro.png" width="1275" height="220" loading="lazy" decoding="async" alt="MyPerol" />
+        </p>
+        <h2 data-i18n="mp_systems_final_title">{messages.mp_systems_final_title}</h2>
+        <p data-i18n="mp_systems_final_text">{messages.mp_systems_final_text}</p>
+      </article>
+    </div>
+
+    <div class="flooring-progress" aria-hidden="true">
+      <span class="flooring-progress-bar"></span>
+    </div>
+  </div>
+</section>
+<p class="flooring-disclaimer" data-i18n="mp_systems_disclaimer">{messages.mp_systems_disclaimer}</p>
+
+<script>
+  import "../scripts/flooring/bootstrap";
+</script>

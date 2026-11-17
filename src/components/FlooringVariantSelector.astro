@@ -1,0 +1,9 @@
+---
+import messages from "../i18n/json/es.json";
+interface Props { controls: string }
+const { controls } = Astro.props;
+---
+<div class="flooring-variant-selector" role="group" aria-label={messages.mp_systems_variant_aria} data-i18n-aria-label="mp_systems_variant_aria">
+  <button type="button" data-flooring-variant="resin" aria-pressed="true" aria-controls={controls} data-i18n="mp_systems_resin_label">{messages.mp_systems_resin_label}</button>
+  <button type="button" data-flooring-variant="mineral" aria-pressed="false" aria-controls={controls} data-i18n="mp_systems_mineral_label">{messages.mp_systems_mineral_label}</button>
+</div>

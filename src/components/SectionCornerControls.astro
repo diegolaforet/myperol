@@ -1,0 +1,18 @@
+---
+import SocialLinks from "./SocialLinks.astro";
+import LanguageControl from "./LanguageControl.astro";
+const { instanceId, reveal = true, tone = "light" } = Astro.props;
+const menuId = `langMenu-${instanceId}`;
+---
+
+<div
+  class:list={[
+    "section-corner-controls",
+    `section-corner-controls--${tone}`,
+    { "section-corner-controls--reveal": reveal },
+  ]}
+  data-section-corner-controls={instanceId}
+>
+  <SocialLinks />
+  <LanguageControl menuId={menuId} />
+</div>

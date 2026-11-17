@@ -1,16 +1,223 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Brochure from "../components/Brochure.astro";
+import SectionCornerControls from "../components/SectionCornerControls.astro";
+import MPCare from "../components/MPCare.astro";
+import BenefitsWave from "../components/BenefitsWave.astro";
+import ServicesShowcase from "../components/ServicesShowcase.astro";
+import SplineScroll from "../components/SplineScroll.astro";
+import Calculator from "../components/Calculator.astro";
+import messages from "../i18n/json/es.json";
 ---
 
 <BaseLayout
-  title="MyPerol - EPOXI"
-  description="Landing page de MyPerol con folletos multilingües para conocer soluciones de superficies en resina y epoxi."
+  titleKey="page_title"
+  descriptionKey="page_description"
+  isHome
 >
-  <main>
-    <Brochure />
-  </main>
+  <main class="home-page">
+    <section class="hero-placeholder home-video-hero" aria-label="MyPerol">
+      <video
+        class="home-video-hero__media"
+        poster="/assets/videos/hero-poster.webp"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        <source src="/assets/videos/hero-720.mp4" type="video/mp4" media="(max-width: 767px)" />
+        <source src="/assets/videos/hero-1080.mp4" type="video/mp4" />
+      </video>
+      <div class="hero-identity">
+        <p class="hero-identity__eyebrow">MP System</p>
+        <h1 class="hero-logo-title" aria-label="MyPerol">
+          <img src="/assets/logo/logo-blanco.webp" width="512" height="84" decoding="async" alt="" aria-hidden="true" />
+        </h1>
+        <p class="hero-identity__copy" data-i18n="hero_identity_copy">{messages.hero_identity_copy}</p>
+      </div>
+      <a class="hero-scroll-cue" href="#experiencia" aria-label="Descubrir MyPerol" data-i18n-aria-label="hero_discover">
+        <svg class="scroll-cue-icon" viewBox="0 0 24 56" aria-hidden="true">
+          <path d="M12 2v48m-5-5 5 5 5-5"></path>
+        </svg>
+      </a>
+    </section>
 
+    <section id="experiencia" class="feature-cards home-primary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-entry-scroll-target>
+      <SectionCornerControls instanceId="primary-cards" />
+
+      <div class="feature-cards-header home-primary-cards-header">
+        <h2 class="home-primary-cards-heading" data-i18n="home_feature_cards_heading">La sensación de un espacio transformado.</h2>
+      </div>
+
+      <div class="feature-cards-shell home-primary-cards-shell">
+        <div class="feature-cards-track home-primary-cards-track" id="featureCardsTrack">
+          <article class="feature-card home-primary-card">
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_1_text">Un suelo MyPerol no solo cambia la superficie, cambia la percepción COMPLETA del lugar.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="percepcion-title percepcion-desc">
+              <title id="percepcion-title" data-i18n="home_primary_card_1_icon_title">Percepción transformada</title>
+              <desc id="percepcion-desc" data-i18n="home_primary_card_1_icon_desc">Un ojo sobre una superficie continua representa cómo el pavimento transforma la percepción del espacio.</desc>
+              <path d="M8 24.5C13.8 16.8 21.9 13 32 13s18.2 3.8 24 11.5C50.2 32.2 42.1 36 32 36S13.8 32.2 8 24.5Z"></path>
+              <circle cx="32" cy="24.5" r="6.5"></circle>
+              <circle cx="32" cy="24.5" r="2" fill="currentColor" stroke="none"></circle>
+              <path d="m15 43 17-6 17 6-17 8-17-8Z"></path>
+              <path d="M32 51v5M15 43v5l17 8 17-8v-5"></path>
+              <path d="M50 8v7M46.5 11.5h7"></path>
+            </svg>
+          </article>
+          <article class="feature-card home-primary-card">
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_2_text">La ausencia de juntas, la continuidad visual y el acabado uniforme generan una sensación de amplitud, orden, comodidad y limpieza inexplicable desde el primer momento.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="continuidad-title continuidad-desc">
+              <title id="continuidad-title" data-i18n="home_primary_card_2_icon_title">Continuidad y amplitud</title>
+              <desc id="continuidad-desc" data-i18n="home_primary_card_2_icon_desc">Una superficie continua con flechas abiertas representa ausencia de juntas, amplitud, orden y limpieza.</desc>
+              <path d="M12 16h40v29H12z"></path>
+              <path d="m12 45 10-12h20l10 12"></path>
+              <path d="M22 33h20"></path>
+              <path d="M27 25H16M16 25l4-4M16 25l4 4"></path>
+              <path d="M37 25h11M48 25l-4-4M48 25l-4 4"></path>
+              <path d="M18 51h28"></path>
+              <path d="M22 56h20"></path>
+              <path d="M48 9v5M45.5 11.5h5"></path>
+            </svg>
+          </article>
+          <article class="feature-card home-primary-card">
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_3_text">Al caminar sobre él se percibe una superficie sólida, continua y cuidada, con un acabado pensado para transmitir calidad tanto a la vista como la sensación de caminar por él.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="solidez-title solidez-desc">
+              <title id="solidez-title" data-i18n="home_primary_card_3_icon_title">Solidez y confort</title>
+              <desc id="solidez-desc" data-i18n="home_primary_card_3_icon_desc">Una superficie continua con un acabado suave se apoya sobre una base sólida y estable.</desc>
+              <path d="M43 9v10M38 14h10"></path>
+              <path d="M51 21v5M48.5 23.5h5"></path>
+              <path d="m8 40 24-10 24 10-24 12L8 40Z"></path>
+              <path d="M18.5 41c5.2-4.4 9.8-5.7 14.3-3.4 4.3 2.1 8.2 1.1 12.7-2.4"></path>
+              <path d="M8 46.5 32 58l24-11.5"></path>
+              <path d="M32 52v6"></path>
+            </svg>
+          </article>
+          <article class="feature-card home-primary-card">
+            <p class="home-primary-card-copy" data-i18n="home_primary_card_4_text">Los espacios ganan presencia y el suelo deja de ser un elemento funcional para convertirse en la parte protagonista del diseño y ambiente.</p>
+            <svg class="home-primary-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" role="img" aria-labelledby="protagonista-title protagonista-desc">
+              <title id="protagonista-title" data-i18n="home_primary_card_4_icon_title">El suelo como protagonista</title>
+              <desc id="protagonista-desc" data-i18n="home_primary_card_4_icon_desc">Un espacio arquitectónico conduce la mirada hacia una superficie central iluminada.</desc>
+              <path d="M10 9.5h44v43H10z"></path>
+              <path d="M10 29h44"></path>
+              <path d="M10 52.5 24 29h16l14 23.5"></path>
+              <path d="M25 42.5c4.2-2.7 9.8-2.7 14 0"></path>
+              <circle cx="32" cy="37.2" r="2.2" fill="currentColor" stroke="none"></circle>
+              <path d="M32 15v11M27.5 17.5 32 26l4.5-8.5"></path>
+            </svg>
+          </article>
+        </div>
+
+        <button
+          class="feature-cards-arrow feature-cards-prev home-primary-cards-prev"
+          type="button"
+          aria-label="Ver tarjetas anteriores"
+          data-i18n-aria-label="carousel_prev"
+          data-carousel-prev
+          hidden
+        >
+          <span aria-hidden="true">&lsaquo;</span>
+        </button>
+
+        <button
+          class="feature-cards-arrow feature-cards-next home-primary-cards-next"
+          type="button"
+          aria-label="Ver más tarjetas"
+          data-i18n-aria-label="carousel_next"
+          data-carousel-next
+          hidden
+        >
+          <span aria-hidden="true">&rsaquo;</span>
+        </button>
+
+        <div class="feature-cards-dots home-primary-cards-dots home-carousel-dots-on-light" aria-hidden="true" data-carousel-dots></div>
+      </div>
+    </section>
+
+    <section id="myperol-benefits-wave" class="feature-cards home-secondary-cards" aria-label="Novedades MyPerol" data-i18n-aria-label="feature_cards_aria" data-floating-controls-exclusion>
+      <BenefitsWave />
+      <div class="feature-cards-shell home-secondary-cards-shell">
+        <div class="feature-cards-track home-secondary-cards-track">
+          <article class="feature-card home-secondary-card">
+            <h2 data-i18n="feature_card_1_title">{messages.feature_card_1_title}</h2>
+            <p data-i18n="feature_card_1_text">{messages.feature_card_1_text}</p>
+            <footer class="home-secondary-card-footer">
+              <div class="home-secondary-card-metric home-secondary-card-metric--statement">
+                <strong data-i18n="feature_card_1_metric">{messages.feature_card_1_metric}</strong>
+              </div>
+              <small data-i18n="feature_card_1_note">{messages.feature_card_1_note}</small>
+            </footer>
+          </article>
+          <article class="feature-card home-secondary-card">
+            <h2 data-i18n="feature_card_2_title">{messages.feature_card_2_title}</h2>
+            <p data-i18n="feature_card_2_text">{messages.feature_card_2_text}</p>
+            <footer class="home-secondary-card-footer">
+              <div class="home-secondary-card-metric home-secondary-card-metric--statement">
+                <strong data-i18n="feature_card_2_metric">{messages.feature_card_2_metric}</strong>
+              </div>
+              <small data-i18n="feature_card_2_note">{messages.feature_card_2_note}</small>
+            </footer>
+          </article>
+          <article class="feature-card home-secondary-card">
+            <h2 data-i18n="feature_card_3_title">{messages.feature_card_3_title}</h2>
+            <p data-i18n="feature_card_3_text">{messages.feature_card_3_text}</p>
+            <footer class="home-secondary-card-footer">
+              <div class="home-secondary-card-metric">
+                <strong data-i18n="feature_card_3_metric">{messages.feature_card_3_metric}</strong>
+                <span data-i18n="feature_card_3_metric_label">{messages.feature_card_3_metric_label}</span>
+              </div>
+              <small data-i18n="feature_card_3_note">{messages.feature_card_3_note}</small>
+            </footer>
+          </article>
+          <article class="feature-card home-secondary-card">
+            <h2 data-i18n="feature_card_4_title">{messages.feature_card_4_title}</h2>
+            <p data-i18n="feature_card_4_text">{messages.feature_card_4_text}</p>
+            <footer class="home-secondary-card-footer">
+              <div class="home-secondary-card-metric home-secondary-card-metric--statement">
+                <strong data-i18n="feature_card_4_metric">{messages.feature_card_4_metric}</strong>
+              </div>
+              <small data-i18n="feature_card_4_note">{messages.feature_card_4_note}</small>
+            </footer>
+          </article>
+        </div>
+
+        <button
+          class="feature-cards-arrow feature-cards-prev home-secondary-cards-prev"
+          type="button"
+          aria-label="Ver tarjetas anteriores"
+          data-i18n-aria-label="carousel_prev"
+          data-carousel-prev
+          hidden
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
+        </button>
+
+        <button
+          class="feature-cards-arrow feature-cards-next home-secondary-cards-next"
+          type="button"
+          aria-label="Ver más tarjetas"
+          data-i18n-aria-label="carousel_next"
+          data-carousel-next
+          hidden
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9 6 6 6-6 6"></path>
+          </svg>
+        </button>
+
+      </div>
+    </section>
+
+    <MPCare />
+    <SplineScroll />
+    <ServicesShowcase />
+    <Calculator />
+  </main>
 </BaseLayout>
 
-
+<script>
+  import "../scripts/home";
+</script>

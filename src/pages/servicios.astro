@@ -1,0 +1,63 @@
+---
+import messages from "../i18n/json/es.json";
+import ServiceCard from "../components/ServiceCard.astro";
+import { standaloneServices } from "../data/services";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SectionCornerControls from "../components/SectionCornerControls.astro";
+---
+
+<BaseLayout
+  titleKey="services_page_title"
+  descriptionKey="services_page_description"
+  bodyClass="services-route"
+>
+  <main class="services-page reveal-enabled">
+    <section class="hero-placeholder services-hero" aria-label="MyPerol">
+    </section>
+
+    <section class="feature-cards services-feature-cards" aria-label="Servicios MyPerol" data-i18n-aria-label="services_aria">
+      <SectionCornerControls instanceId="services" />
+      <div class="feature-cards-header">
+        <p id="services-feature-heading" class="services-feature-heading" data-i18n="feature_cards_heading">Explora posibilidades para tu espacio.</p>
+        <div class="services-feature-subtitle">
+          <p id="services-performance-copy-2" data-i18n-html="services_description" set:html={messages.services_description} />
+        </div>
+      </div>
+
+      <div class="feature-cards-shell">
+        <div class="feature-cards-track">
+          {standaloneServices.map(service => <ServiceCard service={service} />)}
+        </div>
+
+        <button
+          class="feature-cards-arrow feature-cards-prev"
+          type="button"
+          aria-label="Ver tarjetas anteriores"
+          data-i18n-aria-label="carousel_prev"
+          data-carousel-prev
+          hidden
+        >
+          <span aria-hidden="true">&lsaquo;</span>
+        </button>
+
+        <button
+          class="feature-cards-arrow feature-cards-next"
+          type="button"
+          aria-label="Ver mas tarjetas"
+          data-i18n-aria-label="carousel_next"
+          data-carousel-next
+          hidden
+        >
+          <span aria-hidden="true">&rsaquo;</span>
+        </button>
+
+        <div class="feature-cards-dots" aria-hidden="true" data-carousel-dots></div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  import { initializeServiceCards } from "../scripts/service-dialog";
+  initializeServiceCards(".services-feature-cards .service-card-expandable", "service_request");
+</script>
